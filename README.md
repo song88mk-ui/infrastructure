@@ -12,7 +12,7 @@ This includes, but not limited to:
 We use the following tools:
 - [Terraform][terraform] & [Terragrunt][terragrunt] for managing the core AWS infrastructure
 - [Helm][helm]/[Helmfile][helmfile] & [Kubectl][kubectl] for managing the Kubernetes deployments of core components.
-- AWS CLI & aws-vault for managing AWS credentials.
+- [AWS CLI][aws_cli] & [aws-vault][aws_vault] for managing AWS credentials.
 
 You could install all those tools on your system independently or follow the instructions below that
 use [nix][nix] and [direnv][direnv] that do this automatically for a Linux system.
@@ -66,3 +66,5 @@ Finally you can navigate to the desired environment/project under the `live` dir
 [helmfile]: https://github.com/helmfile/helmfile
 [kubectl]: https://kubernetes.io/docs/reference/kubectl/
 [tg_quick_start]: https://terragrunt.gruntwork.io/docs/getting-started/quick-start/
+[aws_cli]: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+[aws_vault]: https://github.com/99designs/aws-vault

@@ -1,0 +1,22 @@
+clusterName: song88-sandbox-cluster
+
+storageClassName: "gp3"
+
+slackChannel: "#song88-nonprod-alerts"
+
+accountID: TBD
+
+grafanaPassword: "ref+awssecrets://sandbox/song88/grafana?region=ap-east-1#password"
+slackApiUrl: "ref+awssecrets://sandbox/song88/slack?region=ap-east-1#api_url"
+pagerdutyRoutingKey: "ref+awssecrets://sandbox/song88/pagerduty?region=ap-east-1#routing_key"
+
+argoCD:
+  clientID: "ref+awssecrets://sandbox/song88/argocd?region=ap-east-1#client_id"
+  clientSecret: "ref+awssecrets://sandbox/song88/argocd?region=ap-east-1#client_secret"
+  deployKey: "ref+awssecrets://sandbox/song88/deploy/key?region=ap-east-1"
+  slackToken: "ref+awssecrets://sandbox/song88/argocd?region=ap-east-1#slack_token"
+  grafanaApiKey: "ref+awssecrets://sandbox/song88/argocd?region=ap-east-1#grafana_api_key"
+
+globalWhitelistSourceRange: []
+
+awsRegion: ap-east-1

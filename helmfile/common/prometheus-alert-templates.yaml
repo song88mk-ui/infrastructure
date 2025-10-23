@@ -1,0 +1,70 @@
+#
+# This part of the config is a separate file in order to avoid escaping multiple layers of {{  }}
+#
+
+alertmanager:
+  templateFiles:
+     slack.tmpl: |-
+        {{ define "__slack_severity_icon" -}}
+          {{ if ne .Status "firing" -}}
+        :white_check_mark:
+          {{- else if eq .CommonLabels.severity "critical" "high" -}}
+        :fire:
+          {{- else if eq .CommonLabels.severity "warning" "WARNING" -}}
+        :warning:
+          {{- else -}}
+        :question:
+          {{- end -}}
+        {{- end -}}
+
+        {{ define "__alert_silence_link" }}
+        {{- .ExternalURL }}/#/silences/new?comment=ack-from-slack&filter=%7B
+        {{- range .CommonLabels.SortedPairs -}}
+          {{- if ne .Name "alertname" -}}
+        {{- .Name }}%3D"{{- .Value | urlquery | reReplaceAll "\\+" "%20" -}}"%2C%20
+          {{- end -}}
+        {{- end -}}
+        alertname%3D"{{ .CommonLabels.alertname | urlquery | reReplaceAll "\\+" "%20" }}"%7D
+        {{- end -}}
+
+        # Alert subject
+        {{ define "__subject" }}
+        {{- $cluster := (index .Alerts 0).Labels.cluster -}}
+        {{ (index .Alerts 0).Labels.alertname }} is {{ if eq .Status "firing" }}{{ (index .Alerts 0).Labels.severity | toUpper }}{{ else }}OK{{ end }} in {{ $cluster | toUpper }} [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}]
+        {{ end }}
+
+        # Slack Alert Title
+        {{ define "__slack_title" }}
+        {{ template "__slack_severity_icon" . -}} {{ template "__subject" . -}}
+        {{ end }}
+
+        {{ define "__slack_text" }}
+        {{ with index .Alerts 0 -}}
+        {{- if .Labels.cluster }}
+        *Cluster:* `{{ .Labels.cluster }}`
+        {{- end }}
+        {{- if .Labels.env }}
+        *Env:* `{{ .Labels.env }}`
+        {{- end }}
+        {{ end }}
+        {{ range .Alerts -}}
+        {{ if .Annotations.summary }}*{{ .Annotations.summary }}*{{printf "\n"}}{{ end -}}
+        {{ if or (.Annotations.message) (.Annotations.description) }}*{{ .Annotations.message }}{{ .Annotations.description }}.*{{printf "\n"}}{{ end -}}
+        *Date*: _{{ .StartsAt.Format "Jan 02, 2006 15:04:05 UTC" }}_
+        *Details*:
+          {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+          {{ end }}
+        {{ end }}
+        {{ end }}
+
+        {{ define "__slack_color" -}}
+        {{ if eq .Status "firing" -}}
+          {{ if eq .CommonLabels.severity "warning" "WARNING" -}}
+        warning
+          {{- else -}}
+        danger
+          {{- end -}}
+        {{ else -}}
+        good
+        {{- end }}
+        {{- end }}

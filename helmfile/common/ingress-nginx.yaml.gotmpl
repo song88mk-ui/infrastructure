@@ -1,0 +1,101 @@
+defaultBackend:
+  enabled: true
+controller:
+  allowSnippetAnnotations: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 256Mi
+    limits:
+      memory: 256Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 85
+    targetMemoryUtilizationPercentage: 85
+  metrics:
+    enabled: true
+    prometheusRule:
+      enabled: true
+      additionalLabels:
+        release: prometheus-operator
+      rules:
+        - alert: NginxHighHttp4xxErrorRate
+          expr: sum by (ingress) (rate(nginx_ingress_controller_requests{status=~"4..",ingress!~"loki"}[1m])) / sum by (ingress) (rate(nginx_ingress_controller_requests[1m])) * 100 > 40
+          for: 10m
+          labels:
+            cluster: {{ .Values.clusterName }}
+            env: {{ .Environment.Name }}
+            severity: critical
+          annotations:
+            summary: Nginx high HTTP 4xx error rate (instance {{`{{ $labels.instance }}`}})
+            description: Too many HTTP requests with status 4xx (> 40%)
+        - alert: NginxHighHttp5xxErrorRate
+          expr: sum by (ingress) (rate(nginx_ingress_controller_requests{status=~"^5..",ingress!~"loki"}[1m])) / sum by (ingress) (rate(nginx_ingress_controller_requests[1m])) * 100 > 40
+          for: 10m
+          labels:
+            severity: critical
+            cluster: {{ .Values.clusterName }}
+            env: {{ .Environment.Name }}
+          annotations:
+            summary: Nginx high HTTP 5xx error rate (instance {{ `{{ $labels.instance }}` }})
+            description: Too many HTTP requests with status 5xx (> 40%)
+        - alert: NginxLatencyHigh
+          expr: histogram_quantile(0.99, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket[30m])) by (host, node)) > 4
+          for: 5m
+          labels:
+            severity: warning
+            cluster: {{ .Values.clusterName }}
+            env: {{ .Environment.Name }}
+          annotations:
+            summary: Nginx latency high (instance {{ `{{ $labels.instance }}` }})
+            description: Nginx p99 latency is higher than 4 seconds
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: prometheus-operator
+  config:
+    use-gzip: "true"
+    gzip-level: "6"
+    gzip-min-length: "128"
+    error-log-level: "warn"
+    use-proxy-protocol: "true"
+    proxy-body-size: "50m"
+    http-snippet: |
+      map true $pass_access_scheme {
+        default "https";
+      }
+      map true $pass_port {
+        default 443;
+      }
+      server {
+        listen 2443 proxy_protocol;
+        return 308 https://$host$request_uri;
+      }
+    real-ip-header: "proxy_protocol"
+    set-real-ip-from: "0.0.0.0/0"
+    use-forwarded-headers: "true"
+    upstream-keepalive-timeout: "300"
+    proxy-read-timeout: "3600"
+    proxy-send-timeout: "3600"
+    proxy-buffering: "on"
+    annotations-risk-level: Critical
+    log-format-upstream: '$remote_addr - $http_x_forwarded_for [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $request_length $request_time [$proxy_upstream_name] [$proxy_alternative_upstream_name] $upstream_addr $upstream_response_length $upstream_response_time $upstream_status $req_id'
+    {{- if .Values.globalWhitelistSourceRange }}
+    whitelist-source-range: {{ .Values.globalWhitelistSourceRange | join "," }}
+    {{- end }}
+  containerPort:
+    http: 80
+    https: 443
+    # Workaround based on https://github.com/kubernetes/ingress-nginx/issues/2724 and https://github.com/kubernetes/ingress-nginx/issues/6822
+    tohttps: 2443
+  service:
+    targetPorts:
+      http: tohttps
+      https: http
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+      service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
+      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+      service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: '3600'

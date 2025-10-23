@@ -1,0 +1,128 @@
+# vi: ft=yaml
+
+---
+environments:
+  sandbox:
+    kubeContext: song88-sandbox-cluster
+    values:
+    - environments/sandbox/values.yaml
+---
+repositories:
+- name: prometheus
+  url: https://prometheus-community.github.io/helm-charts
+- name: cluster-autoscaler
+  url: https://kubernetes.github.io/autoscaler
+- name: aws
+  url: https://aws.github.io/eks-charts
+- name: metrics-server
+  url: https://kubernetes-sigs.github.io/metrics-server
+- name: aws-ebs-csi-driver
+  url: https://kubernetes-sigs.github.io/aws-ebs-csi-driver
+- name: grafana
+  url: https://grafana.github.io/helm-charts
+- name: bitnami
+  url: https://charts.bitnami.com/bitnami
+- name: argo
+  url: https://argoproj.github.io/argo-helm
+- name: fluent
+  url: https://fluent.github.io/helm-charts
+- name: ingress-nginx
+  url: https://kubernetes.github.io/ingress-nginx
+- name: external-secrets
+  url: https://charts.external-secrets.io
+- name: external-dns 
+  url: https://kubernetes-sigs.github.io/external-dns/
+
+helmDefaults:
+  verify: false
+  wait: true
+  waitForJobs: true
+  timeout: 600
+  recreatePods: false
+  force: false
+  historyMax: 10
+  createNamespace: true
+
+releases:
+  - name: prometheus-operator
+    namespace: monitoring
+    createNamespace: true
+    chart: prometheus/kube-prometheus-stack
+    version: 78.4.0
+    values:
+      - common/prometheus-operator.yaml.gotmpl
+      - common/prometheus-alert-templates.yaml
+      - environments/{{ .Environment.Name }}/prometheus-operator.yaml.gotmpl
+
+  - name: cluster-autoscaler
+    namespace: kube-system
+    chart: cluster-autoscaler/cluster-autoscaler
+    version: 9.52.1
+    values:
+      - common/cluster-autoscaler.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/cluster-autoscaler.yaml
+
+  - name: metrics-server
+    namespace: kube-system
+    chart: metrics-server/metrics-server
+    version: 3.13.0
+    values: []
+
+  - name: loki
+    namespace: monitoring
+    chart: grafana/loki
+    version: 6.44.0
+    values:
+      - common/loki.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/loki.yaml.gotmpl
+
+  - name: external-dns-aws
+    namespace: kube-system
+    chart: external-dns/external-dns
+    version: 1.19.0
+    values:
+      - common/external-dns-aws.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/external-dns-aws.yaml.gotmpl
+
+  - name: argocd
+    namespace: argocd
+    createNamespace: true
+    chart: argo/argo-cd
+    version: 9.0.4
+    values:
+      - common/argocd.yaml.gotmpl
+      - common/argocd-notifications.yaml
+      - environments/{{ .Environment.Name }}/argocd.yaml.gotmpl
+
+  - name: argocd-image-updater
+    namespace: argocd
+    createNamespace: true
+    chart: argo/argocd-image-updater
+    version: 0.14.0
+    values:
+      - common/argocd-image-updater.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/argocd-image-updater.yaml
+
+  - name: fluent-bit
+    namespace: kube-system
+    chart: fluent/fluent-bit
+    version: 0.54.0
+    values:
+      - common/fluent-bit.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/fluent-bit.yaml
+
+  - name: ingress-nginx
+    namespace: ingress-nginx
+    chart: ingress-nginx/ingress-nginx
+    version: 4.13.3
+    values:
+      - common/ingress-nginx.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/ingress-nginx.yaml
+
+  - name: external-secrets
+    namespace: external-secrets
+    chart: external-secrets/external-secrets
+    version: 0.20.3
+    values:
+      - installCRDs: true
+      - environments/{{ .Environment.Name }}/external-secrets.yaml

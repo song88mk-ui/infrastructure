@@ -1,0 +1,38 @@
+prometheus:
+  prometheusSpec:
+    scrapeInterval: 30s
+    additionalScrapeConfigs: []
+
+    storageSpec:
+      volumeClaimTemplate:
+       spec:
+         resources:
+           requests:
+             storage: 50Gi
+
+grafana:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+
+    hosts:
+    - grafana.sandbox.int.song88.com
+
+  grafana.ini:
+    server:
+      root_url: https://grafana.sandbox.int.song88.com
+      domain: grafana.sandbox.int.song88.com
+      enable_gzip: true
+    auth.azuread:
+      name: Azure AD
+      enabled: true
+      allow_sign_up: true
+      client_id: "ref+awssecrets://sandbox/song88/grafana?region=ap-east-1#client_id"
+      client_secret: "ref+awssecrets://sandbox/song88/grafana?region=ap-east-1#client_secret"
+      scopes: openid email profile
+      auth_url: https://login.microsoftonline.com/db9c6ce8-acbf-455d-96d7-d9969e976d0d/oauth2/v2.0/authorize
+      token_url: https://login.microsoftonline.com/db9c6ce8-acbf-455d-96d7-d9969e976d0d/oauth2/v2.0/token
+      role_attribute_strict: false
+      allow_assign_grafana_admin: false
+      allowed_domains: ""
+      allowed_groups: ""

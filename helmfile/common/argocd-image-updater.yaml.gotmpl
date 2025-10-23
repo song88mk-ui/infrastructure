@@ -1,0 +1,32 @@
+config:
+  registries:
+  - name: ECR
+    api_url: https://{{ .Environment.accountID }}.dkr.ecr.{{ .Environment.awsRegion }}.amazonaws.com
+    prefix: {{ .Environment.accountID }}.dkr.ecr.{{ .Environment.awsRegion }}.amazonaws.com   # before v0.12 this needed to be set empty, prefix: ""
+    default: true  # not supported before v0.12
+    ping: yes
+    insecure: no
+    credentials: ext:/scripts/ecr-login.sh  #script name should match here and in authScripts
+    credsexpire: 11h
+
+  gitCommitTemplate: |-
+    build: automatic update of {{ `{{ .AppName }}` }}
+
+    {{ `{{ range .AppChanges -}}` }}
+    {{ `updates image {{ .Image }} tag from '{{ .OldTag }}' to '{{ .NewTag }}'` }}
+    {{ `{{ end -}}` }}
+
+authScripts:
+  enabled: true
+  scripts:
+    ecr-login.sh: |   # notice script name matches above
+      #!/bin/sh
+      aws ecr --region $AWS_REGION get-authorization-token --output text --query 'authorizationData[].authorizationToken' | base64 -d
+
+extraEnv:
+  - name: AWS_REGION
+    value: {{ .Environment.awsRegion }}
+
+serviceAccount:
+  create: true
+  name: "argocd-image-updater"

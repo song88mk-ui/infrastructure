@@ -1,0 +1,93 @@
+image:
+  repository: cr.fluentbit.io/fluent/fluent-bit
+
+serviceMonitor:
+  enabled: true
+  selector:
+    release: prometheus-operator
+
+prometheusRule:
+  enabled: true
+  rules:
+   - alert: NoOutputBytesProcessed
+     expr: rate(fluentbit_output_proc_bytes_total[5m]) == 0
+     annotations:
+       message: |
+         Fluent Bit instance {{ `{{ $labels.instance }}` }} output plugin {{ `{{ $labels.name }}` }} has not processed any bytes for at least 15 minutes.
+       summary: No Output Bytes Processed
+     for: 15m
+     labels:
+       severity: critical
+
+dashboards:
+  enabled: true
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+    release: prometheus-operator
+
+logLevel: info
+
+resources:
+   limits:
+     memory: 512Mi
+   requests:
+     cpu: 30m
+     memory: 128Mi
+
+## https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/configuration-file
+config:
+  ## https://docs.fluentbit.io/manual/pipeline/inputs
+  inputs: |
+    [INPUT]
+        name             tail
+        path             /var/log/containers/*.log
+        multiline.parser docker, cri
+        tag              kube.*
+
+    [INPUT]
+        name           systemd
+        tag            systemd.*
+        systemd_filter _SYSTEMD_UNIT=kubelet.service
+        systemd_filter _SYSTEMD_UNIT=docker.service
+        read_from_tail On
+
+  ## https://docs.fluentbit.io/manual/pipeline/filters
+  filters: |
+    [FILTER]
+        name        kubernetes
+        match       kube.*
+        merge_log   On
+        keep_log    Off
+        labels      On
+        annotations Off
+
+    [FILTER]
+        Name   modify
+        Match  kube.*
+        Rename message log
+
+    [FILTER]
+        name          record_modifier
+        match         systemd.*
+        allowlist_key MESSAGE
+        allowlist_key SYSLOG_IDENTIFIER
+        allowlist_key _HOSTNAME
+        allowlist_key _CMDLINE
+
+  ## https://docs.fluentbit.io/manual/pipeline/outputs
+  outputs: |
+    [OUTPUT]
+        name   loki
+        host   loki-write.monitoring.svc.cluster.local
+        port   3100
+        match  systemd.*
+        labels job=fluentbit-systemd, service=$SYSLOG_IDENTIFIER, host=$_HOSTNAME
+
+    [OUTPUT]
+        name                   loki
+        host                   loki-write.monitoring.svc.cluster.local
+        port                   3100
+        match                  kube.*
+        labels                 job=fluentbit-kube, stream=$stream, namespace=$kubernetes['namespace_name'], container=$kubernetes['container_name'], pod=$kubernetes['pod_name'], host=$kubernetes['host']
+        auto_kubernetes_labels Off

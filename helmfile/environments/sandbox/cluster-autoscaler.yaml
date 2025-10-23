@@ -1,0 +1,6 @@
+awsRegion: ap-east-1
+
+rbac:
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::{{ .Environment.accountID }}:role/sandbox-cluster-autoscaler

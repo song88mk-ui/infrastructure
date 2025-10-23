@@ -1,0 +1,263 @@
+crds:
+  upgradeJob:
+    enabled: true
+
+defaultRules:
+  create: true
+  labels:
+    env: {{ .Environment.Name }}
+    cluster: {{ .Values.clusterName }}
+  additionalRuleLabels:
+    env: {{ .Environment.Name }}
+    cluster: {{ .Values.clusterName }}
+  rules:
+    kubeScheduler: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeApiserverAvailability: false
+    etcd: false
+    kubeStateMetrics: false
+    kubelet: true
+  disabled:
+    KubePdbNotEnoughHealthyPods: true
+    KubeletPodStartUpLatencyHigh: true
+    KubeletTooManyPods: true
+    KubeMemoryOvercommit: true
+    KubeCPUOvercommit: true
+    KubeHpaMaxedOut: true
+
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubelet:
+  enabled: true
+  namespace: default
+
+grafana:
+  assertNoLeakedSecrets: false
+  plugins:
+  - grafana-github-datasource
+
+  enabled: true
+  adminPassword: {{ .Values.grafanaPassword | fetchSecretValue }}
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'default'
+        orgId: 1
+        folder: 'Imported'
+        type: file
+        disableDeletion: false
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/default
+
+  dashboards:
+    default:
+      node-exporter-full:
+        gnetId: 1860
+        revision: 28
+        datasource: Prometheus
+      kube-state-metrics-v2:
+        gnetId: 13332
+        revision: 12
+        datasource: Prometheus
+      nginx-ingress:
+        gnetId: 9614
+        revision: 1
+        datasource: Prometheus
+
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClassName: gp3
+
+  additionalDataSources:
+  - name: Loki
+    type: loki
+    access: proxy
+    url: 'http://loki-read:3100'
+
+  ingress:
+    enabled: false
+    ingressClassName: nginx
+
+    hosts:
+      - grafana.{{ .Environment.Name }}.int.song88.com
+
+  grafana.ini:
+    analytics:
+      check_for_updates: false
+      reporting_enabled: false
+    security:
+      disable_gravatar: true
+
+prometheusOperator:
+  kubeletService:
+    enabled: false
+
+prometheus:
+  enabled: true
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - prometheus.{{ .Environment.Name }}.int.song88.com
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  prometheusSpec:
+    scrapeInterval: 45s
+    scrapeTimeout: 10s
+    evaluationInterval: 1m
+    retention: 60d
+    retentionSize: 30GB
+    replicas: 1
+
+    # Monitor all namespaces for rules/serviceMonitor/podmonitors
+    # with the `release: prometheus-operator` label.
+    ruleSelector:
+      matchLabels:
+        release: prometheus-operator
+    ruleNamespaceSelector: {}
+    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorSelector:
+      matchLabels:
+        release: prometheus-operator
+    serviceMonitorNamespaceSelector: {}
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector:
+      matchLabels:
+        release: prometheus-operator
+    podMonitorNamespaceSelector: {}
+    probeSelectorNilUsesHelmValues: false
+    probeSelector:
+      matchLabels:
+        release: prometheus-operator
+    probeNamespaceSelector: {}
+    probeSelectorNilUsesHelmValues: false
+
+    # The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node.
+    podAntiAffinity: "hard"
+    podAntiAffinityTopologyKey: kubernetes.io/hostname
+    storageSpec:
+      volumeClaimTemplate:
+       spec:
+         storageClassName: {{ .Values.storageClassName }}
+         accessModes: ["ReadWriteOnce"]
+         resources:
+           requests:
+             storage: 50Gi
+
+alertmanager:
+  enabled: true
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - alertmanager.{{ .Environment.Name }}.int.song88.com
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  alertmanagerSpec:
+    replicas: 2
+    # The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node.
+    podAntiAffinity: "hard"
+    podAntiAffinityTopologyKey: kubernetes.io/hostname
+    resources:
+      limits:
+        memory: 512Mi
+      requests:
+        cpu: 30m
+        memory: 100Mi
+
+  config:
+    global:
+      resolve_timeout: 5m
+      pagerduty_url: https://events.pagerduty.com/v2/enqueue
+    route:
+      receiver: slack
+      group_by:
+      - alertname
+      - severity
+      - cluster
+      - env
+      continue: false
+      routes:
+      - receiver: silences
+        matchers:
+          - alertname =~ "Watchdog|InfoInhibitor"
+        continue: false
+        group_wait: 0s
+        group_interval: 1m
+        repeat_interval: 1m
+      - receiver: pagerduty
+        matchers:
+          - severity = "critical"
+          - env = "{{ .Environment.Name }}"
+        continue: true
+      - receiver: slack
+        continue: false
+      group_wait: 20s
+      group_interval: 5m
+      repeat_interval: 3h
+    receivers:
+    - name: silences
+    - name: slack
+      slack_configs:
+      - send_resolved: true
+        api_url: {{ .Values.slackApiUrl | fetchSecretValue | quote }}
+        channel: {{ .Values.slackChannel | quote }}
+        username: {{ `'{{ template "slack.default.username" . }}'` }}
+        color: {{ `'{{ template "__slack_color" . }}'` }}
+        title: {{ `'{{ template "__slack_title" . }}'` }}
+        title_link: {{ `'{{ template "slack.default.titlelink" . }}'` }}
+        pretext: {{ `'{{ template "slack.default.pretext" . }}'` }}
+        text: {{ `'{{ template "__slack_text" . }}'` }}
+        short_fields: false
+        footer: {{ `'{{ template "slack.default.footer" . }}'` }}
+        fallback: {{ `'{{ template "slack.default.fallback" . }}'` }}
+        callback_id: {{ `'{{ template "slack.default.callbackid" . }}'` }}
+        icon_emoji: ':prometheus_icon:'
+        icon_url: {{ `'{{ template "slack.default.iconurl" . }}'` }}
+        link_names: false
+        actions:
+        - type: button
+          text: 'Runbook :green_book:'
+          url: {{ `'{{ (index .Alerts 0).Annotations.runbook_url }}'` }}
+        - type: button
+          text: 'Query :prometheus_icon:'
+          url: {{ `'{{ (index .Alerts 0).GeneratorURL }}'` }}
+        - type: button
+          text: 'Dashboard :grafana:'
+          url: {{ `'{{ (index .Alerts 0).Annotations.dashboard }}'` }}
+        - type: button
+          text: 'Silence :no_bell:'
+          url: {{ `'{{ template "__alert_silence_link" . }}'` }}
+    - name: pagerduty
+      pagerduty_configs:
+      - routing_key: {{ .Values.pagerdutyRoutingKey | fetchSecretValue | quote }}
+        send_resolved: true
+        links:
+        - text: "Grafana"
+          href: "https://grafana.{{ .Environment.Name }}.int.song88.com"
+        - text: "Prometheus"
+          href: "https://prometheus.{{ .Environment.Name }}.int.song88.com"
+        - text: "Alertmanager"
+          href: "https://alertmanager.{{ .Environment.Name}}.int.song88.com"
+    templates:
+    - '/etc/alertmanager/config/*.tmpl'
+    - "slack.tmpl"
+
+  tplConfig: false

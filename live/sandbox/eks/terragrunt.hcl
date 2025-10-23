@@ -1,0 +1,68 @@
+include "root" {
+  path = find_in_parent_folders()
+}
+
+terraform {
+  source = "tfr:///terraform-aws-modules/eks/aws//.?version=21.6.1"
+}
+
+locals {
+  env_vars       = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  project_prefix = local.env_vars.locals.project_prefix
+  environment    = local.env_vars.locals.environment
+  aws_region     = local.env_vars.locals.aws_region
+  cidr           = local.env_vars.vpc_cidr
+}
+
+dependency "vpc" {
+  config_path = "../vpc"
+}
+
+inputs = {
+  name               = "${local.project_prefix}-${local.environment}-cluster"
+  kubernetes_version = "1.34"
+  region             = local.aws_region
+
+  endpoint_public_access                   = true
+  endpoint_public_access_cidrs             = ["0.0.0.0/0"]
+  enable_cluster_creator_admin_permissions = true
+
+  vpc_id     = dependency.vpc.outputs.vpc_id
+  subnet_ids = dependency.vpc.outputs.private_subnet_ids
+
+  cloudwatch_log_group_retention_in_days = 3
+  cloudwatch_log_group_tags              = local.env_vars.locals.tags
+
+  cluster_tags = local.env_vars.locals.tags
+
+  eks_managed_node_groups = {
+    main = {
+      instance_types = ["t4a.large", "t3a.large"]
+      ami_type       = "AL2023_x86_64_STANDARD"
+
+      min_size = 2
+      max_size = 5
+
+      # This value is ignored after the initial creation
+      # https://github.com/bryantbiggs/eks-desired-size-hack
+      desired_size = 2
+    }
+  }
+
+  enabled_log_types = []
+
+  addons = {
+    coredns = {}
+    eks-pod-identity-agent = {
+      before_compute = true
+    }
+    kube-proxy = {}
+    vpc-cni = {
+      before_compute = true
+    }
+  }
+
+  tags = merge(local.env_vars.locals.tags, {
+    "TerragruntPath" = "${get_path_from_repo_root()}"
+  })
+}

@@ -4,7 +4,7 @@ storageClassName: "gp3"
 
 slackChannel: "#song88-nonprod-alerts"
 
-accountID: TBD
+accountID: "418541840646"
 
 grafanaPassword: "ref+awssecrets://sandbox/song88/grafana?region=ap-east-1#password"
 slackApiUrl: "ref+awssecrets://sandbox/song88/slack?region=ap-east-1#api_url"

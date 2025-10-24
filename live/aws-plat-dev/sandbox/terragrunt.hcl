@@ -20,8 +20,7 @@ provider "aws" {
   region = "ap-east-1"
 
   # Only these AWS Account IDs may be operated on by this template
-  # TODO: Update with the correct account ID.
-  allowed_account_ids = ["0000000"]
+  allowed_account_ids = ["418541840646"]
 }
 
 ${file(find_in_parent_folders("providers.hcl"))}

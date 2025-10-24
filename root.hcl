@@ -14,11 +14,10 @@ remote_state {
     bucket       = "song88-${local.env_vars.locals.environment}-terraform-state"
     key          = "${path_relative_to_include()}/terraform.tfstate"
     region       = local.aws_region
-    use_lockfile = true
   }
   generate = {
     path      = "backend.tf"
-    if_exists = "overwrite_terragrunt"
+    if_exists = "overwrite"
   }
 }
 

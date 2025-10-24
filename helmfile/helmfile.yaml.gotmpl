@@ -20,8 +20,6 @@ repositories:
   url: https://kubernetes-sigs.github.io/aws-ebs-csi-driver
 - name: grafana
   url: https://grafana.github.io/helm-charts
-- name: bitnami
-  url: https://charts.bitnami.com/bitnami
 - name: argo
   url: https://argoproj.github.io/argo-helm
 - name: fluent
@@ -126,3 +124,8 @@ releases:
     values:
       - installCRDs: true
       - environments/{{ .Environment.Name }}/external-secrets.yaml
+
+  - name: storage-class
+    namespace: kube-system
+    chart: charts/storage-class
+    version: 1.0.0

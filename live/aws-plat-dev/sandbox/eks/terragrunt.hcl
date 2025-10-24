@@ -58,6 +58,7 @@ inputs = {
       before_compute = true
     }
     kube-proxy = {}
+    aws-ebs-csi-driver = {}
     vpc-cni = {
       before_compute = true
     }

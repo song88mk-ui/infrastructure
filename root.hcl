@@ -1,19 +1,19 @@
 locals {
-  env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  env_vars     = read_terragrunt_config(find_in_parent_folders("env.hcl"))
   account_vars = read_terragrunt_config(find_in_parent_folders("account.hcl"))
 
   # Extract the variables we need for easy access
-  account_id   = local.account_vars.locals.aws_account_id
-  aws_region   = local.env_vars.locals.aws_region
+  account_id = local.account_vars.locals.aws_account_id
+  aws_region = local.env_vars.locals.aws_region
 }
 
 remote_state {
   backend = "s3"
   config = {
-    encrypt        = true
-    bucket         = "song88-${local.env_vars.locals.environment}-terraform-state"
-    key            = "${path_relative_to_include()}/terraform.tfstate"
-    region         = local.aws_region
+    encrypt      = true
+    bucket       = "song88-${local.env_vars.locals.environment}-terraform-state"
+    key          = "${path_relative_to_include()}/terraform.tfstate"
+    region       = local.aws_region
     use_lockfile = true
   }
   generate = {

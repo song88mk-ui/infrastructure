@@ -1,5 +1,5 @@
 include "root" {
-  path = find_in_parent_folders()
+  path = find_in_parent_folders("root.hcl")
 }
 
 terraform {
@@ -7,11 +7,12 @@ terraform {
 }
 
 locals {
-  env_vars       = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+
   project_prefix = local.env_vars.locals.project_prefix
   environment    = local.env_vars.locals.environment
   aws_region     = local.env_vars.locals.aws_region
-  cidr           = local.env_vars.vpc_cidr
+  cidr           = local.env_vars.locals.vpc_cidr
 }
 
 dependency "vpc" {
@@ -28,7 +29,7 @@ inputs = {
   enable_cluster_creator_admin_permissions = true
 
   vpc_id     = dependency.vpc.outputs.vpc_id
-  subnet_ids = dependency.vpc.outputs.private_subnet_ids
+  subnet_ids = dependency.vpc.outputs.private_subnets
 
   cloudwatch_log_group_retention_in_days = 3
   cloudwatch_log_group_tags              = local.env_vars.locals.tags
@@ -37,7 +38,7 @@ inputs = {
 
   eks_managed_node_groups = {
     main = {
-      instance_types = ["t4a.large", "t3a.large"]
+      instance_types = ["t3.large"]
       ami_type       = "AL2023_x86_64_STANDARD"
 
       min_size = 2

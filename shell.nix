@@ -11,7 +11,7 @@
 
 pkgs.mkShell {
   NPINS_DIRECTORY = "nix/npins";
-  TG_LOG_FORMAT = "bare";
+  TG_DISABLE_INIT = "false";
 
   packages = with pkgs; [
     npins

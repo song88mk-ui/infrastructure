@@ -58,6 +58,71 @@ $ aws sts get-caller-identity
 Finally you can navigate to the desired environment/project under the `live` directory and run
 `terragrunt` commands as usual.
 
+## Creation of a new environment
+
+All the terragrunt configuration can be found under the `live` directory. The first level should be a
+list of the AWS accounts we maintain (e.g `aws-plat-dev`). Under that level there are the
+environments that can be found in the account. An environment is a collection of resources that work
+together to server common purpose. Finally on each environments we have components which are pieces
+of infrastructure like an RDS server, an EC2 instance etc. The more granular the approach we take
+when defining environments and components the better as this will better allow us to make
+modification faster and independently.
+
+The example below shows two AWS accounts (`aws-plat-dev` & `aws-plat-prod`) with different
+environments and the same components.
+
+```bash
+$ tree live
+
+live
+└── aws-plat-dev
+    └── account.hcl
+    └── sandbox
+        ├── eks
+        ├── env.hcl
+        ├── mongodb
+        ├── mssql-server
+        ├── mssql-server-sg
+        ├── rabbitmq
+        └── vpc
+    └── staging
+        ├── eks
+        ├── env.hcl
+        ├── mongodb
+        ├── mssql-server
+        ├── mssql-server-sg
+        ├── rabbitmq
+        └── vpc
+└── aws-plat-prod
+    └── account.hcl
+    └── prod
+        ├── eks
+        ├── env.hcl
+        ├── mongodb
+        ├── mssql-server
+        ├── mssql-server-sg
+        ├── rabbitmq
+        └── vpc
+```
+
+Adding a new environment will be copying over the structure from an existing environment and
+adjusting the components accordingly.
+
+The two important files to consider are `env.hcl` which contains the variables and configs specific
+to that environment. e.g name, vpc prefix and the `terragrunt.hcl` at the root of each environment
+which contains the configuration for the s3 backend that will be used to store the terraform state.
+We use different backends for each environment to keep them separated.
+
+Once you've created the environment structure, you can start creating the environment with the
+following commands, for each component.
+
+```bash
+cd <aws-account>/<env>/<component>
+terragrunt apply
+```
+
+You can go over the [examples][terragrunt_live] repo for Terragrunt for more information.
+
 [direnv]: https://direnv.net
 [nix]: https://nixos.org/
 [terraform]: https://developer.hashicorp.com/terraform
@@ -68,3 +133,4 @@ Finally you can navigate to the desired environment/project under the `live` dir
 [tg_quick_start]: https://terragrunt.gruntwork.io/docs/getting-started/quick-start/
 [aws_cli]: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 [aws_vault]: https://github.com/99designs/aws-vault
+[terragrunt_live]: https://github.com/gruntwork-io/terragrunt-infrastructure-live-stacks-example

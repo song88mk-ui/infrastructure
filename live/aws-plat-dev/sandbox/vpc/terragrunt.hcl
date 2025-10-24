@@ -1,5 +1,5 @@
 include "root" {
-  path = find_in_parent_folders()
+  path = find_in_parent_folders("root.hcl")
 }
 
 terraform {
@@ -11,7 +11,7 @@ locals {
   project_prefix = local.env_vars.locals.project_prefix
   environment    = local.env_vars.locals.environment
   aws_region     = local.env_vars.locals.aws_region
-  cidr           = local.env_vars.vpc_cidr
+  cidr           = local.env_vars.locals.vpc_cidr
 }
 
 inputs = {

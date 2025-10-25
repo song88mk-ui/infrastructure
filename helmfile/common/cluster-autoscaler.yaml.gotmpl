@@ -1,23 +1,18 @@
 autoDiscovery:
   clusterName: {{ .Values.clusterName }}
 
-image:
-  tag: v1.27.2
-
 replicaCount: 2
 
 podDisruptionBudget:
   maxUnavailable: 1
 
 resources:
-  limits:
-    memory: 128Mi
   requests:
     cpu: 10m
-    memory: 50Mi
+    memory: 80Mi
 
 rbac:
   create: true
   serviceAccount:
     create: true
-    name: cluster-autoscaler
+    name: cluster-autoscaler-sa

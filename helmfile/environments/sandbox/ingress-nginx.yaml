@@ -1,4 +1,5 @@
-controller:
-  service:
-    annotations:
-      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:{{ .Environment.awsRegion }}:{{ .Environment.accountID }}:certificate/c0c451a8-dddd-4edc-b737-2216032fc88d
+# TODO: Replace when the domain is available
+# controller:
+#   service:
+#     annotations:
+#       service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:{{ .Environment.awsRegion }}:{{ .Environment.accountID }}:certificate/c0c451a8-dddd-4edc-b737-2216032fc88d

@@ -6,16 +6,16 @@ slackChannel: "#song88-nonprod-alerts"
 
 accountID: "418541840646"
 
-grafanaPassword: "ref+awssecrets://sandbox/song88/grafana?region=ap-east-1#password"
-slackApiUrl: "ref+awssecrets://sandbox/song88/slack?region=ap-east-1#api_url"
-pagerdutyRoutingKey: "ref+awssecrets://sandbox/song88/pagerduty?region=ap-east-1#routing_key"
+grafanaPassword: "ref+awsssm://sandbox/song88/grafana/password?region=ap-east-1"
+slackApiUrl: "ref+awsssm://sandbox/song88/slack/api-url?region=ap-east-1"
+pagerdutyRoutingKey: "ref+awsssm://sandbox/song88/pagerduty/routing-key?region=ap-east-1"
 
 argoCD:
-  clientID: "ref+awssecrets://sandbox/song88/argocd?region=ap-east-1#client_id"
-  clientSecret: "ref+awssecrets://sandbox/song88/argocd?region=ap-east-1#client_secret"
-  deployKey: "ref+awssecrets://sandbox/song88/deploy/key?region=ap-east-1"
-  slackToken: "ref+awssecrets://sandbox/song88/argocd?region=ap-east-1#slack_token"
-  grafanaApiKey: "ref+awssecrets://sandbox/song88/argocd?region=ap-east-1#grafana_api_key"
+  clientID: "ref+awsssm://sandbox/song88/argocd/client-id?region=ap-east-1"
+  clientSecret: "ref+awsssm://sandbox/song88/argocd/client-secret?region=ap-east-1"
+  deployKey: "ref+awsssm://sandbox/song88/deploy/key?region=ap-east-1"
+  slackToken: "ref+awsssm://sandbox/song88/argocd/slack-token?region=ap-east-1"
+  grafanaApiKey: "ref+awsssm://sandbox/song88/argocd/grafana-api-key?region=ap-east-1"
 
 globalWhitelistSourceRange: []
 

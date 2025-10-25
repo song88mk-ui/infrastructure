@@ -44,9 +44,8 @@ helmDefaults:
 releases:
   - name: prometheus-operator
     namespace: monitoring
-    createNamespace: true
     chart: prometheus/kube-prometheus-stack
-    version: 78.4.0
+    version: 78.5.0
     values:
       - common/prometheus-operator.yaml.gotmpl
       - common/prometheus-alert-templates.yaml
@@ -121,11 +120,17 @@ releases:
     namespace: external-secrets
     chart: external-secrets/external-secrets
     version: 0.20.3
+    timeout: 600
     values:
-      - installCRDs: true
+      - common/external-secrets.yaml
       - environments/{{ .Environment.Name }}/external-secrets.yaml
 
   - name: storage-class
     namespace: kube-system
     chart: charts/storage-class
+    version: 1.0.0
+
+  - name: priority-class
+    namespace: kube-system
+    chart: charts/priority-class
     version: 1.0.0

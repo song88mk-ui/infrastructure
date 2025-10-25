@@ -1,4 +1,5 @@
 crds:
+  enabled: true
   upgradeJob:
     enabled: true
 
@@ -38,9 +39,6 @@ kubelet:
 
 grafana:
   assertNoLeakedSecrets: false
-  plugins:
-  - grafana-github-datasource
-
   enabled: true
   adminPassword: {{ .Values.grafanaPassword | fetchSecretValue }}
 
@@ -63,10 +61,6 @@ grafana:
         gnetId: 1860
         revision: 28
         datasource: Prometheus
-      kube-state-metrics-v2:
-        gnetId: 13332
-        revision: 12
-        datasource: Prometheus
       nginx-ingress:
         gnetId: 9614
         revision: 1
@@ -74,7 +68,7 @@ grafana:
 
   persistence:
     enabled: true
-    size: 10Gi
+    size: 5Gi
     storageClassName: gp3
 
   additionalDataSources:
@@ -115,6 +109,7 @@ prometheus:
     minAvailable: 1
 
   prometheusSpec:
+    priorityClassName: critical-apps
     scrapeInterval: 45s
     scrapeTimeout: 10s
     evaluationInterval: 1m
@@ -171,6 +166,7 @@ alertmanager:
     minAvailable: 1
 
   alertmanagerSpec:
+    priorityClassName: critical-apps
     replicas: 2
     # The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node.
     podAntiAffinity: "hard"

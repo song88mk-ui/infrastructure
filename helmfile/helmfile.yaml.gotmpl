@@ -134,3 +134,28 @@ releases:
     namespace: kube-system
     chart: charts/priority-class
     version: 1.0.0
+
+  # NOTE: Applications that will be moved to ArgoCD once ready
+  - name: bg-rabbitmq-api
+    namespace: bet-genius-apps
+    chart: charts/bet-genius-app
+    version: 0.1.0
+    values:
+      - common/bg-rabbitmq-api.yaml
+      - common/{{ .Environment.Name }}/bg-rabbitmq-api.yaml
+
+  - name: bg-receiver-service
+    namespace: bet-genius-apps
+    chart: charts/bet-genius-app
+    version: 0.1.0
+    values:
+      - common/bg-receiver-service.yaml
+      - common/{{ .Environment.Name }}/bg-receiver-service.yaml
+
+  - name: bg-feed-receiver-api
+    namespace: bet-genius-apps
+    chart: charts/bet-genius-app
+    version: 0.1.0
+    values:
+      - common/bg-feed-receiver-api.yaml
+      - common/{{ .Environment.Name }}/bg-feed-receiver-api.yaml

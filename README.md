@@ -38,6 +38,40 @@ direnv: error .../.envrc is blocked. Run `direnv allow` to approve its content
 
 Run `direnv allow` and wait for `direnv` to fetch all dependencies and prepare your shell.
 
+## Getting AWS credentials
+
+The recommended way to get a shell with the AWS credentials is to use `aws-vault`, or go directly to
+the [AWS SSO][aws_sso] page to manually get the credentials.
+
+To use `aws-vault` place the following in your `~/.aws/config` file. The example shows a specific AWS
+child account, but you can replace the account id with another.
+```
+[profile song88-plat-dev]
+sso_start_url = https://d-9667bfe8f0.awsapps.com/start
+sso_region = ap-southeast-1
+sso_account_id = 418541840646 # Replace with another account if needed.
+sso_role_name = AdministratorAccess # DevOps will have Admin, but this role name might be different for Developers
+region = ap-east-1
+```
+
+Once done, run the following on a shell to get the credentials. A browser window will open and prompt
+you to login and allow the connection.
+
+```bash
+aws-vault exec song88-plat-dev
+```
+
+Once done you can validate that you have the right credentials by running the following
+
+```bash
+aws sts get-caller-identity
+{
+    "UserId": "AROAWC4YJVEDOK5Y5DZSW:<YOUR_USERNAME>",
+    "Account": "418541840646",
+    "Arn": "arn:aws:sts::418541840646:assumed-role/AWSReservedSSO_AdministratorAccess_9c7abba21d9ec5d2/<YOUR_USERNAME>"
+}
+```
+
 ## Updating infrastructure components
 
 Ensure you've went through the [Quick Start][tg_quick_start] for Terragrunt to get familiar with the
@@ -134,3 +168,4 @@ You can go over the [examples][terragrunt_live] repo for Terragrunt for more inf
 [aws_cli]: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 [aws_vault]: https://github.com/99designs/aws-vault
 [terragrunt_live]: https://github.com/gruntwork-io/terragrunt-infrastructure-live-stacks-example
+[aws_sso]: https://d-9667bfe8f0.awsapps.com

@@ -30,6 +30,8 @@ repositories:
   url: https://charts.external-secrets.io
 - name: external-dns 
   url: https://kubernetes-sigs.github.io/external-dns/
+- name: simcube
+  url: https://simcubeltd.github.io/simcube-helm-charts/
 
 helmDefaults:
   verify: false
@@ -142,7 +144,6 @@ releases:
     version: 0.1.0
     values:
       - common/bg-rabbitmq-api.yaml
-      - common/{{ .Environment.Name }}/bg-rabbitmq-api.yaml
 
   - name: bg-receiver-service
     namespace: bet-genius-apps
@@ -150,7 +151,6 @@ releases:
     version: 0.1.0
     values:
       - common/bg-receiver-service.yaml
-      - common/{{ .Environment.Name }}/bg-receiver-service.yaml
 
   - name: bg-feed-receiver-api
     namespace: bet-genius-apps
@@ -158,4 +158,26 @@ releases:
     version: 0.1.0
     values:
       - common/bg-feed-receiver-api.yaml
-      - common/{{ .Environment.Name }}/bg-feed-receiver-api.yaml
+
+  # NOTE: Temporary mssql instance
+  - name: mssql
+    namespace: bet-genius-apps
+    chart: simcube/mssqlserver-2022
+    version: 1.2.3
+    values:
+      - sapassword: YourStrong@Passw0rd123
+      - acceptEula:
+          value: "Y"
+      - persistence:
+          enabled: true
+          storageClass: "gp3"
+          dataSize: 10Gi
+      - resources:
+          limits:
+            memory: 2Gi
+          requests:
+            cpu: 10m
+            memory: 2Gi
+
+  # NOTE: Rabbitmq is installed following: https://www.rabbitmq.com/kubernetes/operator/quickstart-operator
+  # TODO: Integrate with helmfile

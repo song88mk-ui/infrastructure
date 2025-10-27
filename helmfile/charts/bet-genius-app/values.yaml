@@ -29,9 +29,7 @@ service:
 
 ingress:
   enabled: false
-  className: ""
-  annotations:
-    kubernetes.io/ingress.class: nginx
+  className: "nginx"
   hosts: []
   tls: []
 
@@ -45,15 +43,9 @@ resources:
     cpu: 10m
     memory: 128Mi
 
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
+livenessProbe: {}
 
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
+readinessProbe: {}
 
 autoscaling:
   enabled: false

@@ -1,0 +1,28 @@
+image:
+  repository: 418541840646.dkr.ecr.ap-east-1.amazonaws.com/bg-receiver-service
+  tag: pr-sha-207e5c2
+
+nameOverride: "bg-receiver-service"
+
+serviceAccount:
+  name: "bg-receiver-service-sa"
+
+env:
+  MessageBroker__Host: rabbitmq-main-cluster.bet-genius-apps.svc
+  MessageBroker__Username: default_user_UIwteCseCcfw9vLqO4I
+  MessageBroker__Password: CirUnta9bqconlkmeP-FXsyDTFX8O1xz
+  MessageBroker__VirtualHost: "/"
+  MessageBroker__Exchange: ""
+  MessageBroker__Queue: ""
+  MessageBroker__Consumer: ""
+  MessageBroker__RoutingKey: ""
+  Custom__MongoDB-Trading: "mongodb+srv://preproduction:nxv6BdKGfTEX6dCJ@preprod-trading.n6svy.mongodb.net/trading?retryWrites=true&w=0"
+
+ingress:
+  enabled: true
+  hosts:
+  - host: bg-receiver-service.sandbox.song88.com
+    paths:
+      - path: /
+        pathType: ImplementationSpecific
+

@@ -1,0 +1,19 @@
+image:
+  repository: 418541840646.dkr.ecr.ap-east-1.amazonaws.com/bg-feed-receiver-api
+  tag: pr-sha-207e5c2
+
+nameOverride: "bg-feed-receiver-api"
+
+serviceAccount:
+  name: "bg-feed-receiver-api-sa"
+
+env:
+  API__RabbitMqAPI__Uri: http://bg-rabbitmq-api:80
+
+ingress:
+  enabled: true
+  hosts:
+  - host: bg-feed-receiver-api.sandbox.song88.com
+    paths:
+      - path: /
+        pathType: ImplementationSpecific

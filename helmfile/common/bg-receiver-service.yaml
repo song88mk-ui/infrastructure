@@ -16,7 +16,7 @@ env:
   MessageBroker__Queue: ""
   MessageBroker__Consumer: ""
   MessageBroker__RoutingKey: ""
-  Custom__MongoDB-Trading: "mongodb+srv://preproduction:nxv6BdKGfTEX6dCJ@preprod-trading.n6svy.mongodb.net/trading?retryWrites=true&w=0"
+  Custom__MongoDB-Trading: "mongodb+srv://admin:43J22k6OGKVJ2ubhCSDV@mongodb:27017/main?retryWrites=true&w=0"
 
 ingress:
   enabled: true

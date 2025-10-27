@@ -32,6 +32,8 @@ repositories:
   url: https://kubernetes-sigs.github.io/external-dns/
 - name: simcube
   url: https://simcubeltd.github.io/simcube-helm-charts/
+- name: bitnami
+  url: https://charts.bitnami.com/bitnami
 
 helmDefaults:
   verify: false
@@ -178,6 +180,14 @@ releases:
           requests:
             cpu: 10m
             memory: 2Gi
+
+  # NOTE: Temporary mongodb instance. To be evaluated if an AWS can be used.
+  - name: mongodb
+    namespace: bet-genius-apps
+    chart: bitnami/mongodb
+    version: 18.1.1
+    values:
+      - common/mongodb.yaml
 
   # NOTE: Rabbitmq is installed following: https://www.rabbitmq.com/kubernetes/operator/quickstart-operator
   # TODO: Integrate with helmfile

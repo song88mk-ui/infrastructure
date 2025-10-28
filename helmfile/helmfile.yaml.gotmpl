@@ -161,6 +161,13 @@ releases:
     values:
       - common/bg-feed-receiver-api.yaml
 
+  - name: bg-engine-sportsbook
+    namespace: bet-genius-apps
+    chart: charts/bet-genius-app
+    version: 0.1.0
+    values:
+      - common/bg-engine-sportsbook.yaml
+
   # NOTE: Temporary mssql instance
   - name: mssql
     namespace: bet-genius-apps

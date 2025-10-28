@@ -1,0 +1,20 @@
+image:
+  repository: 418541840646.dkr.ecr.ap-east-1.amazonaws.com/bg-engine-sportsbook
+  tag: pr-sha-207e5c2
+
+nameOverride: "bg-engine-sportsbook"
+
+serviceAccount:
+  name: "bg-engine-sportsbook-sa"
+
+env:
+  MessageBroker__Host: rabbitmq-main-cluster.bet-genius-apps.svc
+  MessageBroker__Username: default_user_UIwteCseCcfw9vLqO4I
+  MessageBroker__Password: CirUnta9bqconlkmeP-FXsyDTFX8O1xz
+  MessageBroker__VirtualHost: "/"
+  MessageBroker__Exchange: "e.central"
+  MessageBroker__Queue: "q.bg.engine.sportsbook"
+  MessageBroker__Consumer: "BG.Engine.Sportsbook"
+  MessageBroker__RoutingKey: "r.bg.receiver.#|r.oe.mapping.bg.#"
+  Custom__MongoDB-Trading: "mongodb+srv://admin:43J22k6OGKVJ2ubhCSDV@mongodb:27017/main?retryWrites=true&w=0"
+  Trading: ""

@@ -27,6 +27,11 @@ inputs = {
       devImageCount  = 50
       prodImageCount  = 70
     }
+    "bg-engine-sportsbook" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
   }
 }
 

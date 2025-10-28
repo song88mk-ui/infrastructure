@@ -72,6 +72,28 @@ aws sts get-caller-identity
 }
 ```
 
+## Logging in to the Kubernetes cluster
+
+Once you're setup with AWS access you'll need to list the available clusters, on a specific region.
+Here you're using `ap-east-1`.
+
+```bash
+$ aws eks list-clusters --region ap-east-1
+{
+    "clusters": [
+        "song88-sandbox-cluster"
+    ]
+}
+```
+
+The next step is to import the Kubernetes config
+
+```bash
+aws eks update-kubeconfig --name song88-sandbox-cluster  --alias song88-sandbox-cluster --region ap-east-1
+```
+
+Then you should be able to use `kubectl` as normal after selecting the cluster above.
+
 ## Updating infrastructure components
 
 Ensure you've went through the [Quick Start][tg_quick_start] for Terragrunt to get familiar with the
@@ -79,17 +101,7 @@ concepts and the way it interacts with terraform.
 
 Next ensure that you have working AWS credentials for the environment you want to update.
 
-The following command should show you which AWS account and user you're currently using.
-```
-$ aws sts get-caller-identity
-{
-    "UserId": "AROAMLRMLLJLSDFSDFI2M:1234567890123",
-    "Account": "XXXXXXXXXXXX",
-    "Arn": "arn:aws:sts::XXXXXXX:assumed-role/some-iam-role/1234567890123"
-}
-```
-
-Finally you can navigate to the desired environment/project under the `live` directory and run
+Then you can navigate to the desired environment/project under the `live` directory and run
 `terragrunt` commands as usual.
 
 ## Creation of a new environment

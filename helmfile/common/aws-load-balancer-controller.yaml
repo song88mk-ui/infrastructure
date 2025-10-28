@@ -1,0 +1,19 @@
+serviceAccount:
+  name: aws-load-balancer-controller-sa
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+resources:
+  limits:
+    memory: 100Mi
+  requests:
+    cpu: 50m
+    memory: 100Mi
+
+priorityClassName: system-cluster-critical
+
+defaultTargetType: ip

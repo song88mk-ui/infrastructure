@@ -12,8 +12,16 @@ env:
 
 ingress:
   enabled: true
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: sandbox-eks-alb
+    alb.ingress.kubernetes.io/group.name: apps
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-east-1:418541840646:certificate/327da8a0-1d86-469a-8bce-5b97df83a6eb
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-Res-2021-06
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
   hosts:
   - host: bg-feed-receiver-api.sandbox.song88.com
     paths:
       - path: /
-        pathType: ImplementationSpecific

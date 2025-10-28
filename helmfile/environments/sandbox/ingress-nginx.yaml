@@ -1,5 +1,0 @@
-controller:
-  service:
-    annotations:
-      # Certificate for *.sandbox.song88.com
-      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:ap-east-1:418541840646:certificate/327da8a0-1d86-469a-8bce-5b97df83a6eb

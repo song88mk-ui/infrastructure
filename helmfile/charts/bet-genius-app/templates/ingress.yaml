@@ -30,9 +30,7 @@ spec:
         paths:
           {{- range .paths }}
           - path: {{ .path }}
-            {{- with .pathType }}
-            pathType: {{ . }}
-            {{- end }}
+            pathType: Prefix
             backend:
               service:
                 name: {{ include "bet-genius-app.fullname" $ }}

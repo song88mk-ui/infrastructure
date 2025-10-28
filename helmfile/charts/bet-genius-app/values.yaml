@@ -29,7 +29,7 @@ service:
 
 ingress:
   enabled: false
-  className: "nginx"
+  className: "alb"
   hosts: []
   tls: []
 

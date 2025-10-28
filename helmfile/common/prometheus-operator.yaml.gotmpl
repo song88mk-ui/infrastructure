@@ -61,10 +61,6 @@ grafana:
         gnetId: 1860
         revision: 28
         datasource: Prometheus
-      nginx-ingress:
-        gnetId: 9614
-        revision: 1
-        datasource: Prometheus
 
   persistence:
     enabled: true
@@ -79,7 +75,15 @@ grafana:
 
   ingress:
     enabled: false
-    ingressClassName: nginx
+    ingressClassName: alb
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: sandbox-eks-alb
+      alb.ingress.kubernetes.io/group.name: apps
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/ssl-redirect: '443'
+      alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-Res-2021-06
+      alb.ingress.kubernetes.io/healthcheck-path: /healthz
 
     hosts:
       - grafana.{{ .Environment.Name }}.int.song88.com
@@ -100,7 +104,15 @@ prometheus:
 
   ingress:
     enabled: true
-    ingressClassName: nginx
+    ingressClassName: alb
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: sandbox-eks-alb
+      alb.ingress.kubernetes.io/group.name: apps
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/ssl-redirect: '443'
+      alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-Res-2021-06
+      alb.ingress.kubernetes.io/healthcheck-path: /healthz
     hosts:
       - prometheus.{{ .Environment.Name }}.int.song88.com
 
@@ -157,7 +169,15 @@ alertmanager:
 
   ingress:
     enabled: true
-    ingressClassName: nginx
+    ingressClassName: alb
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: sandbox-eks-alb
+      alb.ingress.kubernetes.io/group.name: apps
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/ssl-redirect: '443'
+      alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-Res-2021-06
+      alb.ingress.kubernetes.io/healthcheck-path: /healthz
     hosts:
       - alertmanager.{{ .Environment.Name }}.int.song88.com
 

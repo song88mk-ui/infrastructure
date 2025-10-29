@@ -1,6 +1,6 @@
 image:
   repository: 418541840646.dkr.ecr.ap-east-1.amazonaws.com/bg-receiver-service
-  tag: pr-sha-207e5c2
+  tag: main-sha-2837f17
 
 nameOverride: "bg-receiver-service"
 
@@ -16,4 +16,4 @@ env:
   MessageBroker__Queue: ""
   MessageBroker__Consumer: ""
   MessageBroker__RoutingKey: ""
-  Custom__MongoDB-Trading: "mongodb+srv://admin:43J22k6OGKVJ2ubhCSDV@mongodb/main?retryWrites=true&w=0"
+  Custom__MongoDB-Trading: "mongodb+srv://admin:43J22k6OGKVJ2ubhCSDV@mongodb.bet-genius-apps.svc.cluster.local/main?retryWrites=true&w=0"

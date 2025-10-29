@@ -1,6 +1,6 @@
 image:
   repository: 418541840646.dkr.ecr.ap-east-1.amazonaws.com/bg-engine-sportsbook
-  tag: pr-sha-207e5c2
+  tag: main-sha-2837f17
 
 nameOverride: "bg-engine-sportsbook"
 
@@ -16,5 +16,5 @@ env:
   MessageBroker__Queue: "q.bg.engine.sportsbook"
   MessageBroker__Consumer: "BG.Engine.Sportsbook"
   MessageBroker__RoutingKey: "r.bg.receiver.#|r.oe.mapping.bg.#"
-  Custom__MongoDB-Trading: "mongodb+srv://admin:43J22k6OGKVJ2ubhCSDV@mongodb:27017/main?retryWrites=true&w=0"
+  Custom__MongoDB-Trading: "mongodb+srv://admin:43J22k6OGKVJ2ubhCSDV@mongodb.bet-genius-apps.svc.cluster.local/main?retryWrites=true&w=0"
   Trading: ""

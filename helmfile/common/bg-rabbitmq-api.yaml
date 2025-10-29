@@ -12,7 +12,7 @@ env:
   MessageBroker__Username: default_user_UIwteCseCcfw9vLqO4I
   MessageBroker__Password: CirUnta9bqconlkmeP-FXsyDTFX8O1xz
   MessageBroker__VirtualHost: "/"
-  MessageBroker__Exchange: ""
+  MessageBroker__Exchange: "e.central"
   MessageBroker__Queue: ""
   MessageBroker__Consumer: ""
   MessageBroker__RoutingKey: ""

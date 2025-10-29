@@ -12,8 +12,8 @@ env:
   MessageBroker__Username: default_user_UIwteCseCcfw9vLqO4I
   MessageBroker__Password: CirUnta9bqconlkmeP-FXsyDTFX8O1xz
   MessageBroker__VirtualHost: "/"
-  MessageBroker__Exchange: ""
-  MessageBroker__Queue: ""
-  MessageBroker__Consumer: ""
-  MessageBroker__RoutingKey: ""
+  MessageBroker__Exchange: "e.central"
+  MessageBroker__Queue: "q.bg.receiver"
+  MessageBroker__Consumer: "BG.Receiver.Service"
+  MessageBroker__RoutingKey: "r.bg.onprocessmessage"
   Custom__MongoDB-Trading: "mongodb+srv://admin:43J22k6OGKVJ2ubhCSDV@mongodb.bet-genius-apps.svc.cluster.local/main?retryWrites=true&w=0"

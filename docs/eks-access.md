@@ -9,7 +9,7 @@ The SSO page is the gateway to the rest of the accounts. Ask DevOps if you don't
 account there. Below is the view of the main page showing all the AWS accounts that are available to
 you.
 
-![SSO Dashboard](img/sso-dashboard.png "SSO Dashboard")
+![SSO Dashboard](imgs/sso-dashboard.png "SSO Dashboard")
 
 Link of the SSO Page: https://d-9667bfe8f0.awsapps.com
 

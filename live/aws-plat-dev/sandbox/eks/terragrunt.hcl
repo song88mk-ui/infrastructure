@@ -19,6 +19,14 @@ dependency "vpc" {
   config_path = "../vpc"
 }
 
+dependency "cluster_creator_role" {
+  config_path = "../../global/eks-cluster-creator-role/"
+}
+
+dependency "developers_role" {
+  config_path = "../../global/eks-developer-role/"
+}
+
 inputs = {
   name               = "${local.project_prefix}-${local.environment}-cluster"
   kubernetes_version = "1.34"
@@ -61,6 +69,37 @@ inputs = {
     aws-ebs-csi-driver = {}
     vpc-cni = {
       before_compute = true
+    }
+  }
+
+  authentication_mode = "API"
+
+  access_entries = {
+    eks_cluster_creator_role = {
+      principal_arn = dependency.cluster_creator_role.outputs.arn
+
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+
+    developers_role = {
+      principal_arn = dependency.developers_role.outputs.arn
+
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy"
+          access_scope = {
+            type      = "namespace"
+            namespaces = ["bet-genius-apps"]
+          }
+        }
+      }
     }
   }
 

@@ -19,7 +19,7 @@ need to have the `EKSPowerUserAccess` permissions if you're on the development t
 
 ## Setup with aws-vault
 
-[aws-vault][https://github.com/99designs/aws-vault] is a CLI tool that we'll be using to get the
+[aws-vault](https://github.com/99designs/aws-vault) is a CLI tool that we'll be using to get the
 necessary credentials loaded in a shell and then be able to authenticate to Kubernetes.
 
 > [!NOTE]
@@ -81,7 +81,7 @@ $ kubectl config set-context song88-sandbox-cluster
 
 Now you should be able to run normal kubectl commands.
 
-> [!NOTE]
+> [!WARNING]
 > The developer role has admin access only on the namespace that the apps live, so add the -n flag in your commands to specify the namespace.
 
 The namespace for the apps currently is `bet-genius-apps`.
@@ -94,5 +94,5 @@ kubectl get pods -n bet-genius-apps
 kubectl port-forward svc/rabbitmq-main-cluster 15672 -n bet-genius-apps
 ```
 
-See the [kubectl docs][https://kubernetes.io/docs/reference/kubectl/] for all the commands and
+See the [kubectl docs](https://kubernetes.io/docs/reference/kubectl/) for all the commands and
 options available.

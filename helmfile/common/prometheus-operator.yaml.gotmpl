@@ -103,7 +103,7 @@ prometheus:
   enabled: true
 
   ingress:
-    enabled: true
+    enabled: false
     ingressClassName: alb
     annotations:
       alb.ingress.kubernetes.io/load-balancer-name: sandbox-eks-alb
@@ -168,7 +168,7 @@ alertmanager:
   enabled: true
 
   ingress:
-    enabled: true
+    enabled: false
     ingressClassName: alb
     annotations:
       alb.ingress.kubernetes.io/load-balancer-name: sandbox-eks-alb

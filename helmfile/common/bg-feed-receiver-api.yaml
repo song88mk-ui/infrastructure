@@ -21,6 +21,10 @@ ingress:
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-east-1:418541840646:certificate/327da8a0-1d86-469a-8bce-5b97df83a6eb
     alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-Res-2021-06
     alb.ingress.kubernetes.io/healthcheck-path: /healthz
+
+    # Whitelist only access from betgenius
+    # TODO: Convert this into a WAFv2 rule
+    alb.ingress.kubernetes.io/inbound-cidrs: 54.72.77.116/32,34.242.67.155/32,34.242.6.161/32,34.241.220.64/32,52.19.163.53/32,52.213.172.249/32,52.214.86.245/32,99.80.74.200/32,54.76.226.75/32,34.240.244.24/32,34.252.158.247/32,54.77.177.22/32
   hosts:
   - host: bg-feed-receiver-api.sandbox.song88.com
     paths:

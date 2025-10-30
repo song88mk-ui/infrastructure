@@ -1,6 +1,6 @@
 image:
   repository: 418541840646.dkr.ecr.ap-east-1.amazonaws.com/bg-rabbitmq-api
-  tag: main-sha-2837f17
+  tag: main-sha-b608e7c
 
 nameOverride: "bg-rabbitmq-api"
 

@@ -127,6 +127,141 @@ inputs = {
       devImageCount  = 50
       prodImageCount  = 70
     }
+    "platform-api" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-betforwarder-service" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-betinfo-service" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-betstatus-service" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-betting-api" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-cachesync-service" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-cancellation-service" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-cashout-service" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-cashoutstake-service" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-client-api" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-client-topmarket-service" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-clientplatform-api" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-clientsportsbook-api" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-job-ccf" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-job-forexeur" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-job-operator-score" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-job-resettlement" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-operator-api" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-operator-cashout-service" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-operator-service" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-placement-service" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-rabbitmq-api" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-settlement-service" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-sportsbook-api" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-wallet-api" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-websocket-api" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
+    "platform-websocket-client" = {
+      devImagePrefix = "main-sha"
+      devImageCount  = 50
+      prodImageCount  = 70
+    }
   }
 }
 

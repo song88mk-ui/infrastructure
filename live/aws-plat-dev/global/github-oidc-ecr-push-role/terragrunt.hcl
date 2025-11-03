@@ -62,5 +62,6 @@ POLICY
   github_repositories = [
     "FlyingCockatoo/bet-genius:*",
     "FlyingCockatoo/oddsengine:*",
+    "FlyingCockatoo/platform-final:*",
   ]
 }

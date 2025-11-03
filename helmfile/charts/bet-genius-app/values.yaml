@@ -37,11 +37,9 @@ httpRoute:
   enabled: false
 
 resources:
-  limits:
-    memory: 128Mi
   requests:
     cpu: 10m
-    memory: 128Mi
+    memory: 400Mi
 
 livenessProbe: {}
 

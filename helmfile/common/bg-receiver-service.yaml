@@ -16,4 +16,4 @@ env:
   MessageBroker__Queue: "q.bg.receiver"
   MessageBroker__Consumer: "BG.Receiver.Service"
   MessageBroker__RoutingKey: "r.bg.onprocessmessage"
-  Custom__MongoDB-Trading: "mongodb+srv://admin:43J22k6OGKVJ2ubhCSDV@mongodb.bet-genius-apps.svc.cluster.local/main?retryWrites=true&w=0"
+  Custom__MongoDB-Trading: "mongodb+srv://admin:43J22k6OGKVJ2ubhCSDV@mongodb.bet-genius-apps.svc.cluster.local/Trading?retryWrites=true&w=0&tls=false"

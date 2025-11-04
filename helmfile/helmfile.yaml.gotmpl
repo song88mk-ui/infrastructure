@@ -82,10 +82,9 @@ releases:
   - name: loki
     namespace: monitoring
     chart: grafana/loki
-    version: 6.44.0
+    version: 6.45.2
     values:
       - common/loki.yaml.gotmpl
-      - environments/{{ .Environment.Name }}/loki.yaml.gotmpl
 
   # Needs the corresponding IAM role and DNS zone created by Terraform.
   - name: external-dns-aws
@@ -120,7 +119,6 @@ releases:
     version: 0.54.0
     values:
       - common/fluent-bit.yaml.gotmpl
-      - environments/{{ .Environment.Name }}/fluent-bit.yaml
     needs:
       - monitoring/loki
 
@@ -156,28 +154,28 @@ releases:
     chart: charts/bet-genius-app
     version: 0.1.0
     values:
-      - common/bg-rabbitmq-api.yaml
+      - common/bg-rabbitmq-api.yaml.gotmpl
 
   - name: bg-receiver-service
     namespace: bet-genius-apps
     chart: charts/bet-genius-app
     version: 0.1.0
     values:
-      - common/bg-receiver-service.yaml
+      - common/bg-receiver-service.yaml.gotmpl
 
   - name: bg-feed-receiver-api
     namespace: bet-genius-apps
     chart: charts/bet-genius-app
     version: 0.1.0
     values:
-      - common/bg-feed-receiver-api.yaml
+      - common/bg-feed-receiver-api.yaml.gotmpl
 
   - name: bg-engine-sportsbook
     namespace: bet-genius-apps
     chart: charts/bet-genius-app
     version: 0.1.0
     values:
-      - common/bg-engine-sportsbook.yaml
+      - common/bg-engine-sportsbook.yaml.gotmpl
 
   # NOTE: Temporary mssql instance
   - name: mssql

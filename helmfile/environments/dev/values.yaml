@@ -22,3 +22,5 @@ wildcardCertificate: arn:aws:acm:ap-south-1:418541840646:certificate/ed922e6e-6b
 awsRegion: ap-south-1
 
 vpcId: vpc-0db17cb536658be84
+
+lokiLogsBucket: song88-dev-loki-logs

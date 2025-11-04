@@ -1,0 +1,124 @@
+
+# The loki deployment needs at least 2 replicas to work.
+write:
+  replicas: 2
+  persistence:
+    storageClass: gp3
+    size: 2Gi
+
+read:
+  replicas: 2
+  persistence:
+    storageClass: gp3
+    size: 2Gi
+
+backend:
+  replicas: 2
+  persistence:
+    storageClass: gp3
+    size: 2Gi
+
+serviceAccount:
+  create: true
+  name: loki
+
+ingress:
+  enabled: false
+
+gateway:
+  basicAuth:
+    enabled: false
+
+loki:
+  server:
+    log_level: warn
+
+  auth_enabled: false
+
+  runtimeConfig:
+    overrides:
+      fake:
+        deletion_mode: "filter-and-delete"
+
+  ruler:
+    enable_api: true
+    storage:
+      type: s3
+      s3:
+        region: {{ .Values.awsRegion }}
+        bucketnames: {{ .Values.lokiLogsBucket }}
+        s3forcepathstyle: false
+      alertmanager_url: http://prometheus-operator-kube-p-alertmanager:9093
+
+  querier:
+    max_concurrent: 4
+
+  # https://github.com/grafana/loki/issues/12711
+  schemaConfig:
+    configs:
+    - from: 2023-01-01
+      store: tsdb
+      object_store: s3
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+  storage_config:
+    aws:
+      region: {{ .Values.awsRegion }}
+      bucketnames: {{ .Values.lokiLogsBucket }}
+      s3forcepathstyle: false
+
+  storage:
+    type: s3
+    s3:
+      region: {{ .Values.awsRegion }}
+    bucketNames:
+      chunks: {{ .Values.lokiLogsBucket }}
+      ruler: {{ .Values.lokiLogsBucket }}
+      admin: {{ .Values.lokiLogsBucket }}
+
+  ingester:
+    chunk_encoding: snappy
+
+  pattern_ingester:
+    enabled: true
+
+  limits_config:
+    allow_structured_metadata: true
+    volume_enabled: true
+    retention_period: 672h # 28 days retention
+
+  compactor:
+    retention_enabled: true
+    delete_request_store: s3
+
+monitoring:
+  selfMonitoring:
+    enabled: false
+
+  rules:
+    enabled: true
+    labels:
+      release: prometheus-operator
+
+  dashboards:
+    enabled: true
+    labels:
+      release: prometheus-operator
+      grafana_dashboard: "1"
+
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus-operator
+
+test:
+  enabled: false
+
+lokiCanary:
+  enabled: false
+
+chunksCache:
+  allocatedMemory: 1800

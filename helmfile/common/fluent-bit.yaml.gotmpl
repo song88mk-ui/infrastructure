@@ -29,11 +29,9 @@ dashboards:
 logLevel: info
 
 resources:
-   limits:
-     memory: 128Mi
    requests:
-     cpu: 30m
-     memory: 128Mi
+     cpu: 20m
+     memory: 100Mi
 
 ## https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/configuration-file
 config:
@@ -89,5 +87,5 @@ config:
         host                   loki-write.monitoring.svc.cluster.local
         port                   3100
         match                  kube.*
-        labels                 job=fluentbit-kube, stream=$stream, namespace=$kubernetes['namespace_name'], container=$kubernetes['container_name'], pod=$kubernetes['pod_name'], host=$kubernetes['host']
+        labels                 job=fluentbit-k8s, stream=$stream, namespace=$kubernetes['namespace_name'], container=$kubernetes['container_name'], pod=$kubernetes['pod_name'], host=$kubernetes['host']
         auto_kubernetes_labels Off

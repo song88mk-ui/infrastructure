@@ -29,6 +29,7 @@ pkgs.mkShell {
     helmfile
     awscli2
     aws-vault
+    mongosh
     (writeShellApplication {
       name = "fmt";
       text = ''

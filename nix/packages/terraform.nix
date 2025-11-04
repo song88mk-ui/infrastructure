@@ -5,8 +5,8 @@
 }:
 
 let
-  version = "1.13.3";
-  hash = "sha256-Hfs4K4wWuwRKaRdlNJ/sCRAB1ZPqkyiZREO7fQb7kBs=";
+  version = "1.13.4";
+  hash = "sha256-qbsZfxcSmJRRfKKgeWRvViNGk0Vzq6jRVXCIZgsRIBs=";
   platform = "linux_amd64";
 
 in

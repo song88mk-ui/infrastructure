@@ -4,8 +4,8 @@
 }:
 
 let
-  version = "0.91.2";
-  hash = "1b1fxpibisynj3n2g7li35270x5cbkgdhsv6ppcr7i4vq6kx83z4";
+  version = "0.92.1";
+  hash = "175bqkvl1pl3ycqlar0p6r69ak5w9gnnbzbm0c5pbl704v7ppvr4";
   platform = "linux_amd64";
 
 in
@@ -14,7 +14,7 @@ stdenv.mkDerivation rec {
   inherit version;
 
   src = builtins.fetchurl {
-    url = "https://github.com/gruntwork-io/terragrunt/releases/download/v0.91.2/terragrunt_linux_amd64";
+    url = "https://github.com/gruntwork-io/terragrunt/releases/download/v${version}/terragrunt_linux_amd64";
     sha256 = hash;
   };
 

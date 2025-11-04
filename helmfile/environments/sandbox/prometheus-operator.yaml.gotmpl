@@ -1,4 +1,8 @@
 prometheus:
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-east-1:418541840646:certificate/327da8a0-1d86-469a-8bce-5b97df83a6eb
+
   prometheusSpec:
     scrapeInterval: 30s
     additionalScrapeConfigs: []
@@ -36,11 +40,6 @@ grafana:
       allowed_groups: ""
 
 alertmanager:
-  ingress:
-    annotations:
-      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-east-1:418541840646:certificate/327da8a0-1d86-469a-8bce-5b97df83a6eb
-
-prometheus:
   ingress:
     annotations:
       alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-east-1:418541840646:certificate/327da8a0-1d86-469a-8bce-5b97df83a6eb

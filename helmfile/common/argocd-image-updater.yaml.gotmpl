@@ -1,8 +1,8 @@
 config:
   registries:
   - name: ECR
-    api_url: https://{{ .Environment.accountID }}.dkr.ecr.{{ .Environment.awsRegion }}.amazonaws.com
-    prefix: {{ .Environment.accountID }}.dkr.ecr.{{ .Environment.awsRegion }}.amazonaws.com   # before v0.12 this needed to be set empty, prefix: ""
+    api_url: https://{{ .Environment.Values.accountID }}.dkr.ecr.{{ .Environment.Values.awsRegion }}.amazonaws.com
+    prefix: {{ .Environment.Values.accountID }}.dkr.ecr.{{ .Environment.Values.awsRegion }}.amazonaws.com   # before v0.12 this needed to be set empty, prefix: ""
     default: true  # not supported before v0.12
     ping: yes
     insecure: no
@@ -25,7 +25,7 @@ authScripts:
 
 extraEnv:
   - name: AWS_REGION
-    value: {{ .Environment.awsRegion }}
+    value: {{ .Environment.Values.awsRegion }}
 
 serviceAccount:
   create: true

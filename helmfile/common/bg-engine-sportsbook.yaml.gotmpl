@@ -1,5 +1,5 @@
 image:
-  repository: 418541840646.dkr.ecr.ap-east-1.amazonaws.com/bg-engine-sportsbook
+  repository: {{ .Values.accountID }}.dkr.ecr.{{ .Values.awsRegion }}.amazonaws.com/bg-engine-sportsbook
   tag: main-sha-61749b7
 
 nameOverride: "bg-engine-sportsbook"

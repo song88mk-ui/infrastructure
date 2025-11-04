@@ -57,21 +57,15 @@ Below are the steps necessary in order to deploy all the core apps on an empty E
 bootstrapping process is a bit different from the regular updates because we need have a certain
 order for things to properly work.
 
-1. Install the `gp3` storage class. By default the EKS cluster has the `gp2` storage class which
-   isn't encrypted and also doesn't use the ebs csi driver. For those reasons we skip it and set the
-   default to `gp3`.
-   ```
-   helmfile -e <env> -l name=storage-class apply -i
-   ```
-2. Install the priority classes chart. This is required for the rest of the apps in order to
-   establish the different priority levels during scheduling.
-   ```
-   helmfile -e <env> -l name=priority-class apply -i
-   ```
-3. Install the [CRS][prom_crds] for the prometheus-operator chart and then install the `prometheus-operator` chart.
-   ```
-   helmfile -e <env> -l name=prometheus-operator apply -i
-   ```
+0. Update the `<environment>/values.yaml` with the specific environment values. Use one of the
+   existing environments as templates on what you should fill out. Note that things will fail if a
+   variable is not set.
+1. Install the [CRDs][prom_crds] for the prometheus-operator chart.
+2. Install the [CRDs][alb_crds] for the alb-load-balancer-controller chart.
+3. Install the [CRDs][external_secret_crds] for the external-secrets chart.
+4. Install the rest of the charts normally
 
 [helmfile]: https://github.com/helmfile/helmfile
 [prom_crds]: https://github.com/prometheus-community/helm-charts/blob/8a2b77a39aaffec79a6a33fc5a585bd4ca22b746/charts/kube-prometheus-stack/UPGRADE.md#from-77x-to-78x
+[alb_crds]: https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/d37f75cb547c3e696e46d67dfcc4adcbe5a3044c/helm/aws-load-balancer-controller#installing-the-chart
+[external_secret_crds]: https://raw.githubusercontent.com/external-secrets/external-secrets/refs/heads/main/deploy/crds/bundle.yaml

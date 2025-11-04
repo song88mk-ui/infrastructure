@@ -11,9 +11,13 @@ resources:
   limits:
     memory: 100Mi
   requests:
-    cpu: 50m
+    cpu: 30m
     memory: 100Mi
 
 priorityClassName: system-cluster-critical
 
 defaultTargetType: ip
+
+clusterName: {{ .Values.clusterName }}
+vpcId: {{ .Values.vpcId }}
+region: {{ .Values.awsRegion }}

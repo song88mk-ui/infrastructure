@@ -1,36 +1,21 @@
 prometheus:
-  ingress:
-    annotations:
-      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-east-1:418541840646:certificate/327da8a0-1d86-469a-8bce-5b97df83a6eb
+  # We don't care about redundancy on a non-prod environment.
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
 
   prometheusSpec:
-    scrapeInterval: 30s
-    additionalScrapeConfigs: []
-
-    storageSpec:
-      volumeClaimTemplate:
-       spec:
-         resources:
-           requests:
-             storage: 50Gi
+    replicas: 1
 
 grafana:
-  ingress:
-    enabled: true
-    annotations:
-      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-east-1:418541840646:certificate/327da8a0-1d86-469a-8bce-5b97df83a6eb
-
   grafana.ini:
-    server:
-      root_url: https://grafana.sandbox.int.song88.com
-      domain: grafana.sandbox.int.song88.com
-      enable_gzip: true
+    # TODO: Figure out which OAuth backend we'll use
     auth.azuread:
       name: Azure AD
       enabled: true
       allow_sign_up: true
-      client_id: "ref+awsssm://sandbox/song88/grafana/client-id?region=ap-east-1"
-      client_secret: "ref+awsssm://sandbox/song88/grafana/client-secret?region=ap-east-1"
+      client_id: "ref+awsssm://sandbox/song88/grafana/client-id?region=ap-south-1"
+      client_secret: "ref+awsssm://sandbox/song88/grafana/client-secret?region=ap-south-1"
       scopes: openid email profile
       auth_url: https://login.microsoftonline.com/db9c6ce8-acbf-455d-96d7-d9969e976d0d/oauth2/v2.0/authorize
       token_url: https://login.microsoftonline.com/db9c6ce8-acbf-455d-96d7-d9969e976d0d/oauth2/v2.0/token
@@ -40,6 +25,9 @@ grafana:
       allowed_groups: ""
 
 alertmanager:
-  ingress:
-    annotations:
-      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-east-1:418541840646:certificate/327da8a0-1d86-469a-8bce-5b97df83a6eb
+  # We don't care about redundancy on a non-prod environment.
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+  alertmanagerSpec:
+    replicas: 1

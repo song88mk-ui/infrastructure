@@ -1,0 +1,24 @@
+clusterName: song88-dev-cluster
+
+storageClassName: "gp3"
+
+slackChannel: "#song88-nonprod-alerts"
+
+accountID: "418541840646"
+
+grafanaPassword: "ref+awsssm://dev/song88/grafana/password?region=ap-south-1"
+slackApiUrl: "ref+awsssm://dev/song88/slack/api-url?region=ap-south-1"
+pagerdutyRoutingKey: "ref+awsssm://dev/song88/pagerduty/routing-key?region=ap-south-1"
+
+argoCD:
+  clientID: "ref+awsssm://dev/song88/argocd/client-id?region=ap-south-1"
+  clientSecret: "ref+awsssm://dev/song88/argocd/client-secret?region=ap-south-1"
+  deployKey: "ref+awsssm://dev/song88/deploy/key?region=ap-south-1"
+  slackToken: "ref+awsssm://dev/song88/argocd/slack-token?region=ap-south-1"
+  grafanaApiKey: "ref+awsssm://dev/song88/argocd/grafana-api-key?region=ap-south-1"
+
+wildcardCertificate: arn:aws:acm:ap-south-1:418541840646:certificate/ed922e6e-6b95-4fdf-a10c-1a7253d35313
+
+awsRegion: ap-south-1
+
+vpcId: vpc-0db17cb536658be84

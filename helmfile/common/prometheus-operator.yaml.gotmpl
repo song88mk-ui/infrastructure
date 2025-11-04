@@ -64,7 +64,7 @@ grafana:
 
   persistence:
     enabled: true
-    size: 5Gi
+    size: 1Gi
     storageClassName: gp3
 
   additionalDataSources:
@@ -74,21 +74,26 @@ grafana:
     url: 'http://loki-read:3100'
 
   ingress:
-    enabled: false
+    enabled: true
     ingressClassName: alb
     annotations:
-      alb.ingress.kubernetes.io/load-balancer-name: sandbox-eks-alb
+      alb.ingress.kubernetes.io/load-balancer-name: {{ .Environment.Name }}-eks-alb
       alb.ingress.kubernetes.io/group.name: apps
       alb.ingress.kubernetes.io/scheme: internet-facing
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
       alb.ingress.kubernetes.io/ssl-redirect: '443'
       alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-Res-2021-06
       alb.ingress.kubernetes.io/healthcheck-path: /healthz
+      alb.ingress.kubernetes.io/certificate-arn: {{ .Values.wildcardCertificate }}
 
     hosts:
-      - grafana.{{ .Environment.Name }}.int.song88.com
+      - grafana.{{ .Environment.Name }}.song88.com
 
   grafana.ini:
+    server:
+      root_url: https://grafana.{{ .Environment.Name }}.song88.com
+      domain: grafana.{{ .Environment.Name }}.song88.com
+      enable_gzip: true
     analytics:
       check_for_updates: false
       reporting_enabled: false
@@ -106,15 +111,17 @@ prometheus:
     enabled: false
     ingressClassName: alb
     annotations:
-      alb.ingress.kubernetes.io/load-balancer-name: sandbox-eks-alb
+      alb.ingress.kubernetes.io/load-balancer-name: {{ .Environment.Name }}-eks-alb
       alb.ingress.kubernetes.io/group.name: apps
       alb.ingress.kubernetes.io/scheme: internet-facing
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
       alb.ingress.kubernetes.io/ssl-redirect: '443'
       alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-Res-2021-06
       alb.ingress.kubernetes.io/healthcheck-path: /healthz
+      alb.ingress.kubernetes.io/certificate-arn: {{ .Values.wildcardCertificate }}
+
     hosts:
-      - prometheus.{{ .Environment.Name }}.int.song88.com
+      - prometheus.{{ .Environment.Name }}.song88.com
 
   podDisruptionBudget:
     enabled: true
@@ -122,12 +129,21 @@ prometheus:
 
   prometheusSpec:
     priorityClassName: critical-apps
-    scrapeInterval: 45s
+    scrapeInterval: 30s
     scrapeTimeout: 10s
     evaluationInterval: 1m
     retention: 60d
-    retentionSize: 30GB
-    replicas: 1
+    retentionSize: 20GB
+    replicas: 2
+
+    additionalScrapeConfigs: []
+
+    storageSpec:
+      volumeClaimTemplate:
+       spec:
+         resources:
+           requests:
+             storage: 25Gi
 
     # Monitor all namespaces for rules/serviceMonitor/podmonitors
     # with the `release: prometheus-operator` label.
@@ -171,15 +187,17 @@ alertmanager:
     enabled: false
     ingressClassName: alb
     annotations:
-      alb.ingress.kubernetes.io/load-balancer-name: sandbox-eks-alb
+      alb.ingress.kubernetes.io/load-balancer-name: {{ .Environment.Name }}-eks-alb
       alb.ingress.kubernetes.io/group.name: apps
       alb.ingress.kubernetes.io/scheme: internet-facing
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
       alb.ingress.kubernetes.io/ssl-redirect: '443'
       alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-Res-2021-06
       alb.ingress.kubernetes.io/healthcheck-path: /healthz
+      alb.ingress.kubernetes.io/certificate-arn: {{ .Values.wildcardCertificate }}
+
     hosts:
-      - alertmanager.{{ .Environment.Name }}.int.song88.com
+      - alertmanager.{{ .Environment.Name }}.song88.com
 
   podDisruptionBudget:
     enabled: true
@@ -192,10 +210,8 @@ alertmanager:
     podAntiAffinity: "hard"
     podAntiAffinityTopologyKey: kubernetes.io/hostname
     resources:
-      limits:
-        memory: 512Mi
       requests:
-        cpu: 30m
+        cpu: 20m
         memory: 100Mi
 
   config:
@@ -267,11 +283,11 @@ alertmanager:
         send_resolved: true
         links:
         - text: "Grafana"
-          href: "https://grafana.{{ .Environment.Name }}.int.song88.com"
+          href: "https://grafana.{{ .Environment.Name }}.song88.com"
         - text: "Prometheus"
-          href: "https://prometheus.{{ .Environment.Name }}.int.song88.com"
+          href: "https://prometheus.{{ .Environment.Name }}.song88.com"
         - text: "Alertmanager"
-          href: "https://alertmanager.{{ .Environment.Name}}.int.song88.com"
+          href: "https://alertmanager.{{ .Environment.Name}}.song88.com"
     templates:
     - '/etc/alertmanager/config/*.tmpl'
     - "slack.tmpl"

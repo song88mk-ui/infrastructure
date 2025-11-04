@@ -17,6 +17,8 @@ argoCD:
   slackToken: "ref+awsssm://sandbox/song88/argocd/slack-token?region=ap-east-1"
   grafanaApiKey: "ref+awsssm://sandbox/song88/argocd/grafana-api-key?region=ap-east-1"
 
-globalWhitelistSourceRange: []
+wildcardCertificate: arn:aws:acm:ap-east-1:418541840646:certificate/327da8a0-1d86-469a-8bce-5b97df83a6eb
 
 awsRegion: ap-east-1
+
+vpcId: vpc-0db17cb536658be84

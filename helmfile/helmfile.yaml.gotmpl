@@ -6,6 +6,10 @@ environments:
     kubeContext: song88-sandbox-cluster
     values:
     - environments/sandbox/values.yaml
+  dev:
+    kubeContext: song88-dev-cluster
+    values:
+    - environments/dev/values.yaml
 ---
 repositories:
 - name: prometheus
@@ -46,22 +50,28 @@ helmDefaults:
   createNamespace: true
 
 releases:
+  # Before the chart is deployed for the first time we need to manually install the CRDS:
+  # https://github.com/prometheus-community/helm-charts/blob/fe336479d023ffa08590a5958b044bfa4754c162/charts/kube-prometheus-stack/UPGRADE.md
   - name: prometheus-operator
     namespace: monitoring
     chart: prometheus/kube-prometheus-stack
-    version: 78.5.0
+    version: 79.0.1
     values:
       - common/prometheus-operator.yaml.gotmpl
       - common/prometheus-alert-templates.yaml
       - environments/{{ .Environment.Name }}/prometheus-operator.yaml.gotmpl
+    needs:
+      - kube-system/storage-class
+      - kube-system/priority-class
+      - kube-system/aws-load-balancer-controller
 
+  # Needs the corresponding IAM role created by Terraform.
   - name: cluster-autoscaler
     namespace: kube-system
     chart: cluster-autoscaler/cluster-autoscaler
     version: 9.52.1
     values:
       - common/cluster-autoscaler.yaml.gotmpl
-      - environments/{{ .Environment.Name }}/cluster-autoscaler.yaml
 
   - name: metrics-server
     namespace: kube-system
@@ -77,13 +87,13 @@ releases:
       - common/loki.yaml.gotmpl
       - environments/{{ .Environment.Name }}/loki.yaml.gotmpl
 
+  # Needs the corresponding IAM role and DNS zone created by Terraform.
   - name: external-dns-aws
     namespace: kube-system
     chart: external-dns/external-dns
     version: 1.19.0
     values:
       - common/external-dns-aws.yaml.gotmpl
-      - environments/{{ .Environment.Name }}/external-dns-aws.yaml.gotmpl
 
   - name: argocd
     namespace: argocd
@@ -111,22 +121,24 @@ releases:
     values:
       - common/fluent-bit.yaml.gotmpl
       - environments/{{ .Environment.Name }}/fluent-bit.yaml
+    needs:
+      - monitoring/loki
 
+  # Needs the corresponding IAM role created by Terraform and manually installing the CRDs.
   - name: aws-load-balancer-controller
     namespace: kube-system
     chart: eks/aws-load-balancer-controller
     version: 1.14.1
     values:
-      - common/aws-load-balancer-controller.yaml
+      - common/aws-load-balancer-controller.yaml.gotmpl
 
+  # Needs the corresponding IAM role created by Terraform.
   - name: external-secrets
     namespace: external-secrets
     chart: external-secrets/external-secrets
     version: 0.20.3
-    timeout: 600
     values:
       - common/external-secrets.yaml
-      - environments/{{ .Environment.Name }}/external-secrets.yaml
 
   - name: storage-class
     namespace: kube-system

@@ -19,6 +19,7 @@ pkgs.mkShell {
     nix
     git
     nvd
+    vals
     direnv
     nixfmt
     (pkgs.callPackage ./nix/packages/terraform.nix { })

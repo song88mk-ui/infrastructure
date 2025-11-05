@@ -1,13 +1,13 @@
 config:
   registries:
   - name: ECR
-    api_url: https://{{ .Environment.Values.accountID }}.dkr.ecr.{{ .Environment.Values.awsRegion }}.amazonaws.com
-    prefix: {{ .Environment.Values.accountID }}.dkr.ecr.{{ .Environment.Values.awsRegion }}.amazonaws.com   # before v0.12 this needed to be set empty, prefix: ""
+    api_url: https://{{ .Values.accountID }}.dkr.ecr.{{ .Values.awsRegion }}.amazonaws.com
+    prefix: {{ .Values.accountID }}.dkr.ecr.{{ .Values.awsRegion }}.amazonaws.com   # before v0.12 this needed to be set empty, prefix: ""
     default: true  # not supported before v0.12
-    ping: yes
-    insecure: no
+    ping: true
+    insecure: false
     credentials: ext:/scripts/ecr-login.sh  #script name should match here and in authScripts
-    credsexpire: 11h
+    credsexpire: 12h
 
   gitCommitTemplate: |-
     build: automatic update of {{ `{{ .AppName }}` }}
@@ -19,13 +19,14 @@ config:
 authScripts:
   enabled: true
   scripts:
+    # https://github.com/argoproj-labs/argocd-image-updater/issues/720
     ecr-login.sh: |   # notice script name matches above
       #!/bin/sh
-      aws ecr --region $AWS_REGION get-authorization-token --output text --query 'authorizationData[].authorizationToken' | base64 -d
+      HOME=/tmp aws ecr --region $AWS_REGION get-authorization-token --output text --query 'authorizationData[].authorizationToken' | base64 -d
 
 extraEnv:
   - name: AWS_REGION
-    value: {{ .Environment.Values.awsRegion }}
+    value: {{ .Values.awsRegion }}
 
 serviceAccount:
   create: true

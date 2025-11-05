@@ -1,0 +1,16 @@
+environment: {{ .Environment.Name }}
+namespace: bet-genius-apps
+project: default
+
+accountID: "{{ .Values.accountID }}"
+awsRegion: "{{ .Values.awsRegion }}"
+
+apps:
+  - name: bg-engine-sportsbook
+    chart: betgenius-app
+  - name: bg-feed-receiver-api
+    chart: betgenius-app
+  - name: bg-rabbitmq-api
+    chart: betgenius-app
+  - name: bg-receiver-service
+    chart: betgenius-app

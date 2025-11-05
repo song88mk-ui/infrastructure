@@ -23,8 +23,8 @@ inputs = {
   name = "external-secrets-iam-role-${local.environment}"
 
   attach_external_secrets_policy        = true
-  external_secrets_ssm_parameter_arns   = ["arn:aws:ssm:*:*:parameter/${local.environment}"]
-  external_secrets_secrets_manager_arns = ["arn:aws:secretsmanager:*:*:secret:${local.environment}/"]
+  external_secrets_ssm_parameter_arns   = ["arn:aws:ssm:${local.aws_region}:${get_aws_account_id()}:parameter/${local.environment}/*"]
+  external_secrets_secrets_manager_arns = ["arn:aws:secretsmanager:${local.aws_region}:${get_aws_account_id()}:secret:${local.environment}/*"]
   external_secrets_create_permission    = true
 
   association_defaults = {

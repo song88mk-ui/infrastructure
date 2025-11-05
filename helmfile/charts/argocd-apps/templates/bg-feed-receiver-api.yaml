@@ -1,0 +1,35 @@
+{{- range .Values.apps }}
+---
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: {{ .name }}
+  annotations:
+    argocd-image-updater.argoproj.io/git-branch: main
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/image-list: "appimage={{ $.Values.accountID }}.dkr.ecr.{{ $.Values.awsRegion }}.amazonaws.com/{{ .name }}"
+    argocd-image-updater.argoproj.io/appimage.update-strategy: newest-build
+    argocd-image-updater.argoproj.io/appimage.allow-tags: "regexp:{{ $.Values.tagPrefix }}"
+    argocd-image-updater.argoproj.io/appimage.helm.image-name: image.repository
+    argocd-image-updater.argoproj.io/appimage.helm.image-tag: image.tag
+spec:
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: {{ $.Values.namespace }}
+
+  source:
+    repoURL: "git@github.com:FlyingCockatoo/argocd.git"
+    path: charts/{{ .chart }}
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - ../../apps/{{ .name }}/{{ $.Values.environment }}.yaml
+
+  project: {{ $.Values.project }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+{{- end }}

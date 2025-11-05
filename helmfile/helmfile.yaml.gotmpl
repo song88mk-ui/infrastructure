@@ -106,12 +106,10 @@ releases:
 
   - name: argocd-image-updater
     namespace: argocd
-    createNamespace: true
     chart: argo/argocd-image-updater
     version: 0.14.0
     values:
       - common/argocd-image-updater.yaml.gotmpl
-      - environments/{{ .Environment.Name }}/argocd-image-updater.yaml
 
   - name: fluent-bit
     namespace: kube-system
@@ -134,7 +132,7 @@ releases:
   - name: external-secrets
     namespace: external-secrets
     chart: external-secrets/external-secrets
-    version: 0.20.3
+    version: 0.20.4
     values:
       - common/external-secrets.yaml
 
@@ -148,34 +146,24 @@ releases:
     chart: charts/priority-class
     version: 1.0.0
 
-  # NOTE: Applications that will be moved to ArgoCD once ready
-  - name: bg-rabbitmq-api
-    namespace: bet-genius-apps
-    chart: charts/bet-genius-app
-    version: 0.1.0
+  - name: secret-stores
+    namespace: external-secrets
+    chart: charts/secret-stores
+    version: 1.0.0
     values:
-      - common/bg-rabbitmq-api.yaml.gotmpl
+      - common/secret-stores.yaml.gotmpl
+    needs:
+      - external-secrets
 
-  - name: bg-receiver-service
-    namespace: bet-genius-apps
-    chart: charts/bet-genius-app
-    version: 0.1.0
+  - name: bg-apps
+    namespace: argocd
+    chart: charts/argocd-apps
+    version: 1.0.0
     values:
-      - common/bg-receiver-service.yaml.gotmpl
-
-  - name: bg-feed-receiver-api
-    namespace: bet-genius-apps
-    chart: charts/bet-genius-app
-    version: 0.1.0
-    values:
-      - common/bg-feed-receiver-api.yaml.gotmpl
-
-  - name: bg-engine-sportsbook
-    namespace: bet-genius-apps
-    chart: charts/bet-genius-app
-    version: 0.1.0
-    values:
-      - common/bg-engine-sportsbook.yaml.gotmpl
+      - common/bg-apps.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/bg-apps.yaml.gotmpl
+    needs:
+      - argocd
 
   # NOTE: Temporary mssql instance. It should be moved to AWS when ready
   - name: mssql

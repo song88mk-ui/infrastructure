@@ -7,6 +7,10 @@ spec:
   replicas: 1
   persistence:
     storageClassName: "gp3"
+  resources:
+    requests:
+      cpu: 10m
+      memory: 800Mi
   rabbitmq:
     additionalPlugins:
     - rabbitmq_management

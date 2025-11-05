@@ -177,7 +177,7 @@ releases:
     values:
       - common/bg-engine-sportsbook.yaml.gotmpl
 
-  # NOTE: Temporary mssql instance
+  # NOTE: Temporary mssql instance. It should be moved to AWS when ready
   - name: mssql
     namespace: bet-genius-apps
     chart: simcube/mssqlserver-2022
@@ -191,13 +191,12 @@ releases:
           storageClass: "gp3"
           dataSize: 10Gi
       - resources:
-          limits:
-            memory: 2Gi
           requests:
             cpu: 10m
-            memory: 2Gi
+            memory: 2Gi # Minimum requirement
 
   # NOTE: Temporary mongodb instance. To be evaluated if an AWS can be used.
+  # TODO: It should be moved to AWS when ready
   - name: mongodb
     namespace: bet-genius-apps
     chart: bitnami/mongodb
@@ -206,4 +205,4 @@ releases:
       - common/mongodb.yaml
 
   # NOTE: Rabbitmq is installed following: https://www.rabbitmq.com/kubernetes/operator/quickstart-operator
-  # TODO: Integrate with helmfile
+  # TODO: It should be moved to AWS when ready

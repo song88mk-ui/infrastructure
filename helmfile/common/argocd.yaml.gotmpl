@@ -1,0 +1,49 @@
+crds:
+  install: true
+  keep: true
+
+global:
+  domain: argocd.{{ .Environment.Name }}.song88.com
+
+  logging:
+    format: json
+    level: info
+
+priorityClassName: critical-apps
+
+configs:
+  params:
+    server.insecure: true
+  cm:
+    create: true
+    exec.enabled: true
+    admin.enabled: true
+    statusbadge.enabled: true
+
+    dex.config: |
+      connectors:
+        - type: github
+          id: github
+          name: GitHub
+          config:
+            clientID: {{ .Values.argoCD.clientID | fetchSecretValue }}
+            clientSecret: {{ .Values.argoCD.clientSecret | fetchSecretValue }}
+            orgs:
+              - name: FlyingCockatoo
+
+server:
+  ingress:
+    enabled: true
+    controller: aws
+    ingressClassName: alb
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: {{ .Environment.Name }}-eks-alb
+      alb.ingress.kubernetes.io/group.name: apps
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/ssl-redirect: '443'
+      alb.ingress.kubernetes.io/certificate-arn: {{ .Values.wildcardCertificate }}
+      alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-Res-2021-06
+    aws:
+      serviceType: ClusterIP
+      backendProtocolVersion: GRPC

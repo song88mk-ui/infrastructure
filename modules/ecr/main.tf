@@ -9,8 +9,8 @@ resource "aws_ecr_repository" "this" {
 }
 
 locals {
-  defaultDevImageCount  = 50
-  defaultProdImageCount = 70
+  defaultDevImageCount  = 15
+  defaultProdImageCount = 30
   defaultDevImagePrefix = "main-sha"
 }
 
@@ -27,7 +27,7 @@ resource "aws_ecr_lifecycle_policy" "this" {
       "description": "Retain at least ${lookup(each.value, "devImageCount", local.defaultDevImageCount)} images tagged as ${lookup(each.value, "devImagePrefix", local.defaultDevImagePrefix)}",
       "selection": {
         "tagStatus": "tagged",
-        "tagPatternList": ["${lookup(each.value, "devImagePrefix", local.defaultDevImagePrefix)}-*"],
+        "tagPatternList": ["${lookup(each.value, "devImagePrefix", local.defaultDevImagePrefix)}*"],
         "countType": "imageCountMoreThan",
         "countNumber": ${lookup(each.value, "devImageCount", local.defaultDevImageCount)}
       },
@@ -55,7 +55,7 @@ resource "aws_ecr_lifecycle_policy" "this" {
         "tagStatus": "tagged",
         "tagPatternList": ["pr-*"],
         "countType": "imageCountMoreThan",
-        "countNumber": 20
+        "countNumber": 5
       },
       "action": {
         "type": "expire"

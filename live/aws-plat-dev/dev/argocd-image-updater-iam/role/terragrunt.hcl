@@ -26,8 +26,8 @@ inputs = {
   attach_custom_policy = true
   policy_statements = [
     {
-      sid       = "ECRPullPolicy"
-      actions   = [
+      sid = "ECRPullPolicy"
+      actions = [
         "ecr:GetAuthorizationToken",
         "ecr:BatchCheckLayerAvailability",
         "ecr:GetDownloadUrlForLayer",

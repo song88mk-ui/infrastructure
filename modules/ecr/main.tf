@@ -8,6 +8,12 @@ resource "aws_ecr_repository" "this" {
   name = each.key
 }
 
+locals {
+  defaultDevImageCount  = 50
+  defaultProdImageCount = 70
+  defaultDevImagePrefix = "main-sha"
+}
+
 resource "aws_ecr_lifecycle_policy" "this" {
   for_each = var.repositories
 
@@ -18,12 +24,12 @@ resource "aws_ecr_lifecycle_policy" "this" {
   "rules": [
     {
       "rulePriority": 1,
-      "description": "Retain at least ${each.value.devImageCount} images tagged as ${each.value.devImagePrefix}",
+      "description": "Retain at least ${lookup(each.value, "devImageCount", local.defaultDevImageCount)} images tagged as ${lookup(each.value, "devImagePrefix", local.defaultDevImagePrefix)}",
       "selection": {
         "tagStatus": "tagged",
-        "tagPatternList": ["${each.value.devImagePrefix}-*"],
+        "tagPatternList": ["${lookup(each.value, "devImagePrefix", local.defaultDevImagePrefix)}-*"],
         "countType": "imageCountMoreThan",
-        "countNumber": ${each.value.devImageCount}
+        "countNumber": ${lookup(each.value, "devImageCount", local.defaultDevImageCount)}
       },
       "action": {
         "type": "expire"
@@ -31,12 +37,12 @@ resource "aws_ecr_lifecycle_policy" "this" {
     },
     {
       "rulePriority": 2,
-      "description": "Retain at least ${each.value.prodImageCount} images tagged as v*",
+      "description": "Retain at least ${lookup(each.value, "prodImageCount", local.defaultProdImageCount)} images tagged as v*",
       "selection": {
         "tagStatus": "tagged",
         "tagPatternList": ["v*"],
         "countType": "imageCountMoreThan",
-        "countNumber": ${each.value.prodImageCount}
+        "countNumber": ${lookup(each.value, "prodImageCount", local.defaultProdImageCount)}
       },
       "action": {
         "type": "expire"

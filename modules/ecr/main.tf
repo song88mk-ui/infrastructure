@@ -50,7 +50,7 @@ resource "aws_ecr_lifecycle_policy" "this" {
     },
     {
       "rulePriority": 3,
-      "description": "Retain at least 20 images tagged as pr*",
+      "description": "Retain at least 5 images tagged as pr*",
       "selection": {
         "tagStatus": "tagged",
         "tagPatternList": ["pr-*"],

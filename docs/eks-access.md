@@ -34,12 +34,12 @@ sso_start_url = https://d-9667bfe8f0.awsapps.com/start
 sso_region = ap-southeast-1
 sso_account_id = 418541840646
 sso_role_name = EKSPowerUserAccess
-region = ap-east-1
+region = ap-south-1
 
 [profile song88-plat-dev-eks-developer]
 source_profile = song88-plat-dev
 role_arn = arn:aws:iam::418541840646:role/eks-developer-access-role
-region = ap-east-1
+region = ap-south-1
 ```
 
 > [!NOTE]
@@ -66,17 +66,17 @@ Using the shell from the previous step run the following commands to find the ex
 add them to your local kubectl context.
 
 ```bash
-$ aws eks list-clusters --region ap-east-1
+$ aws eks list-clusters --region ap-south-1
 {
     "clusters": [
-        "song88-sandbox-cluster"
+        "song88-dev-cluster"
     ]
 }
 
-$ aws eks update-kubeconfig --name song88-sandbox-cluster  --alias song88-sandbox-cluster --region ap-east-1
-Updated context song88-sandbox-cluster in /home/user/.kube/config
+$ aws eks update-kubeconfig --name song88-dev-cluster  --alias song88-dev-cluster --region ap-south-1
+Updated context song88-dev-cluster in /home/user/.kube/config
 
-$ kubectl config set-context song88-sandbox-cluster
+$ kubectl config set-context song88-dev-cluster
 ```
 
 Now you should be able to run normal kubectl commands.

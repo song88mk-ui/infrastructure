@@ -1,3 +1,0 @@
-serviceAccount:
-  annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::{{ .Environment.Values.accountID }}:role/sandbox-cluster-argocd-iam-role

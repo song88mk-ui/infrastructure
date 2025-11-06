@@ -51,7 +51,7 @@ sso_start_url = https://d-9667bfe8f0.awsapps.com/start
 sso_region = ap-southeast-1
 sso_account_id = 418541840646 # Replace with another account if needed.
 sso_role_name = AdministratorAccess # DevOps will have Admin, but this role name might be different for Developers
-region = ap-east-1
+region = ap-south-1
 ```
 
 Once done, run the following on a shell to get the credentials. A browser window will open and prompt
@@ -75,13 +75,13 @@ aws sts get-caller-identity
 ## Logging in to the Kubernetes cluster
 
 Once you're setup with AWS access you'll need to list the available clusters, on a specific region.
-Here you're using `ap-east-1`.
+Here you're using `ap-south-1`.
 
 ```bash
-$ aws eks list-clusters --region ap-east-1
+$ aws eks list-clusters --region ap-south-1
 {
     "clusters": [
-        "song88-sandbox-cluster"
+        "song88-dev-cluster"
     ]
 }
 ```
@@ -89,7 +89,7 @@ $ aws eks list-clusters --region ap-east-1
 The next step is to import the Kubernetes config
 
 ```bash
-aws eks update-kubeconfig --name song88-sandbox-cluster  --alias song88-sandbox-cluster --region ap-east-1
+aws eks update-kubeconfig --name song88-dev-cluster  --alias song88-dev-cluster --region ap-south-1
 ```
 
 Then you should be able to use `kubectl` as normal after selecting the cluster above.
@@ -123,7 +123,7 @@ $ tree live
 live
 └── aws-plat-dev
     └── account.hcl
-    └── sandbox
+    └── dev
         ├── eks
         ├── env.hcl
         ├── mongodb

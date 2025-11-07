@@ -63,5 +63,6 @@ POLICY
     "FlyingCockatoo/bet-genius:*",
     "FlyingCockatoo/oddsengine:*",
     "FlyingCockatoo/platform-final:*",
+    "FlyingCockatoo/Auth:*",
   ]
 }

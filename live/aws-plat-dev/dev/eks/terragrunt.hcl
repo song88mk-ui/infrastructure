@@ -46,15 +46,15 @@ inputs = {
 
   eks_managed_node_groups = {
     main = {
-      instance_types = ["t3a.large"]
+      instance_types = ["t3a.xlarge"]
       ami_type       = "AL2023_x86_64_STANDARD"
 
-      min_size = 2
+      min_size = 3
       max_size = 5
 
       # This value is ignored after the initial creation
       # https://github.com/bryantbiggs/eks-desired-size-hack
-      desired_size = 2
+      desired_size = 3
     }
   }
 

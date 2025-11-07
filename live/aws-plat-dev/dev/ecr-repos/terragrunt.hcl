@@ -16,6 +16,7 @@ inputs = {
     "bg-receiver-service"               = {}
     "bg-feed-receiver-api"              = {}
     "bg-engine-sportsbook"              = {}
+    # old oddsengine
     "oe-rabbitmq-api"                   = {}
     "oe-adapter-service"                = {}
     "oe-adapter-translation-service"    = {}
@@ -35,6 +36,9 @@ inputs = {
     "oe-marketactivation-service"       = {}
     "oe-translation-service"            = {}
     "oe-utility-service"                = {}
+    # oddsengine-2
+    "oev2-adapter-service"              = {}
+    # platform apps
     "platform-api"                      = {}
     "platform-betforwarder-service"     = {}
     "platform-betinfo-service"          = {}

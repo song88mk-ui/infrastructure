@@ -171,6 +171,17 @@ releases:
     needs:
       - argocd
 
+  # odds-engine-2 applications
+  - name: oev2-apps
+    namespace: argocd
+    chart: charts/argocd-apps
+    version: 1.0.0
+    values:
+      - common/oev2-apps.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/oev2-apps.yaml.gotmpl
+    needs:
+      - argocd
+
   # NOTE: Temporary mssql instance. It should be moved to AWS when ready
   - name: mssql
     namespace: bet-genius-apps

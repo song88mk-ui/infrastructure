@@ -23,7 +23,7 @@ spec:
     targetRevision: HEAD
     helm:
       valueFiles:
-        - ../../apps/{{ .name }}/{{ $.Values.environment }}.yaml
+        - ../../apps/{{ .config | default .name }}/{{ $.Values.environment }}.yaml
 
   project: {{ $.Values.project }}
   syncPolicy:

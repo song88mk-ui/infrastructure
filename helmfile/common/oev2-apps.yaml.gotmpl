@@ -1,0 +1,13 @@
+# vi: ft=yaml
+
+environment: {{ .Environment.Name }}
+namespace: oddsengine
+project: default
+
+accountID: "{{ .Values.accountID }}"
+awsRegion: "{{ .Values.awsRegion }}"
+
+apps:
+  - name: oe-adapter-service
+    config: oev2-adapter-service
+    chart: platform-app

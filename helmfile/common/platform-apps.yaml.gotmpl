@@ -1,0 +1,18 @@
+# vi: ft=yaml
+
+environment: {{ .Environment.Name }}
+namespace: platform-apps
+project: default
+
+accountID: "{{ .Values.accountID }}"
+awsRegion: "{{ .Values.awsRegion }}"
+
+apps:
+  - name: platform-rabbitmq-api
+    chart: platform-app
+  - name: platform-sportsbook-api
+    chart: platform-app
+  - name: platform-betting-api
+    chart: platform-app
+  - name: platform-api
+    chart: platform-app

@@ -161,6 +161,16 @@ releases:
     needs:
       - argocd
 
+  - name: platform-apps
+    namespace: argocd
+    chart: charts/argocd-apps
+    version: 1.0.0
+    values:
+      - common/platform-apps.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/platform-apps.yaml.gotmpl
+    needs:
+      - argocd
+
   # NOTE: Temporary mssql instance. It should be moved to AWS when ready
   - name: mssql
     namespace: bet-genius-apps

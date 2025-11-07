@@ -62,6 +62,7 @@ inputs = {
     "platform-wallet-api"               = {}
     "platform-websocket-api"            = {}
     "platform-websocket-client"         = {}
+    "auth-api"                          = {}
   }
 }
 

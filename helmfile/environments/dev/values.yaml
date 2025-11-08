@@ -2,7 +2,7 @@ clusterName: song88-dev-cluster
 
 storageClassName: "gp3"
 
-slackChannel: "#song88-nonprod-alerts"
+slackChannel: "#alerts-env-dev"
 
 accountID: "418541840646"
 

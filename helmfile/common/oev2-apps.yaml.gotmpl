@@ -9,5 +9,66 @@ awsRegion: "{{ .Values.awsRegion }}"
 
 apps:
   - name: oe-adapter-service
+    image: oev2-adapter-service
     config: oev2-adapter-service
     chart: platform-app
+  - name: oe-sportsbook-service-00
+    image: oev2-sportsbook-service
+    config: oev2-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-00.yaml
+  - name: oe-sportsbook-service-01
+    image: oev2-sportsbook-service
+    config: oev2-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-01.yaml
+  - name: oe-sportsbook-service-02
+    image: oev2-sportsbook-service
+    config: oev2-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-02.yaml
+  - name: oe-sportsbook-service-03
+    image: oev2-sportsbook-service
+    config: oev2-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-03.yaml
+  - name: oe-sportsbook-service-04
+    image: oev2-sportsbook-service
+    config: oev2-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-04.yaml
+  - name: oe-sportsbook-service-05
+    image: oev2-sportsbook-service
+    config: oev2-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-05.yaml
+  - name: oe-sportsbook-service-06
+    image: oev2-sportsbook-service
+    config: oev2-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-06.yaml
+  - name: oe-sportsbook-service-07
+    image: oev2-sportsbook-service
+    config: oev2-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-07.yaml
+  - name: oe-sportsbook-service-08
+    image: oev2-sportsbook-service
+    config: oev2-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-08.yaml
+  - name: oe-sportsbook-service-09
+    image: oev2-sportsbook-service
+    config: oev2-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-09.yaml

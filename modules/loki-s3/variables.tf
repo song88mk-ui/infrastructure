@@ -35,3 +35,7 @@ variable "enable_bucket_versioning" {
   type    = bool
   default = false
 }
+
+variable "tags" {
+  type = map(string)
+}

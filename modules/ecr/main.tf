@@ -2,10 +2,15 @@ variable "repositories" {
   type = map(any)
 }
 
+variable "tags" {
+  type = map(string)
+}
+
 resource "aws_ecr_repository" "this" {
   for_each = var.repositories
 
   name = each.key
+  tags = var.tags
 }
 
 locals {

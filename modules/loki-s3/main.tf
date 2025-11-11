@@ -37,6 +37,8 @@ module "loki_logs_bucket" {
       }
     }
   }
+
+  tags = var.tags
 }
 
 module "loki_writer_role" {
@@ -59,6 +61,8 @@ module "loki_writer_role" {
       cluster_name = var.eks_cluster_name
     }
   }
+
+  tags = var.tags
 }
 
 data "aws_iam_policy_document" "loki_s3_policy_document" {
@@ -88,4 +92,6 @@ module "loki_s3_iam_policy" {
   description = "Policy for Loki to use S3 as storage backend"
 
   policy = data.aws_iam_policy_document.loki_s3_policy_document.json
+
+  tags = var.tags
 }

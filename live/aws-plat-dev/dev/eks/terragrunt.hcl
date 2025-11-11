@@ -96,7 +96,11 @@ inputs = {
           policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy"
           access_scope = {
             type       = "namespace"
-            namespaces = ["bet-genius-apps"]
+            namespaces = [
+              "bet-genius-apps",
+              "platform-apps",
+              "oddsengine",
+            ]
           }
         }
       }

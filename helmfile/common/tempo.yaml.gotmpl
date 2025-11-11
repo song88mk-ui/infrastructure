@@ -1,0 +1,25 @@
+tempo:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 1Gi
+
+  memBallastSizeMbs: 256
+  reportingEnabled: false
+
+  metricsGenerator:
+    enabled: true
+    remoteWriteUrl: http://prometheus-operator-kube-p-prometheus.monitoring:9090/api/v1/write
+
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: {{ .Values.tempoTracesBucket }}
+        endpoint: s3.dualstack.{{ .Values.awsRegion }}.amazonaws.com
+
+persistence:
+  enabled: true
+  enableStatefulSetAutoDeletePVC: true
+  storageClassName: gp3
+  size: 5Gi

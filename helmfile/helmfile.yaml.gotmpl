@@ -82,6 +82,13 @@ releases:
     values:
       - common/loki.yaml.gotmpl
 
+  - name: tempo
+    namespace: monitoring
+    chart: grafana/tempo
+    version: 1.24.0
+    values:
+      - common/tempo.yaml.gotmpl
+
   # Needs the corresponding IAM role and DNS zone created by Terraform.
   - name: external-dns-aws
     namespace: kube-system

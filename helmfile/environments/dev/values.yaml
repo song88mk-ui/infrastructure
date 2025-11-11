@@ -24,3 +24,4 @@ awsRegion: ap-south-1
 vpcId: vpc-0db17cb536658be84
 
 lokiLogsBucket: song88-dev-loki-logs
+tempoTracesBucket: song88-dev-tempo-traces

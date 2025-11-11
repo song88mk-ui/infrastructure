@@ -51,7 +51,7 @@ releases:
   - name: prometheus-operator
     namespace: monitoring
     chart: prometheus/kube-prometheus-stack
-    version: 79.0.1
+    version: 79.4.1
     values:
       - common/prometheus-operator.yaml.gotmpl
       - common/prometheus-alert-templates.yaml
@@ -78,7 +78,7 @@ releases:
   - name: loki
     namespace: monitoring
     chart: grafana/loki
-    version: 6.45.2
+    version: 6.46.0
     values:
       - common/loki.yaml.gotmpl
 
@@ -94,7 +94,7 @@ releases:
     namespace: argocd
     createNamespace: true
     chart: argo/argo-cd
-    version: 9.0.4
+    version: 9.1.0
     values:
       - common/argocd.yaml.gotmpl
       - common/argocd-notifications.yaml
@@ -127,7 +127,7 @@ releases:
   - name: external-secrets
     namespace: external-secrets
     chart: external-secrets/external-secrets
-    version: 0.20.4
+    version: 1.0.0
     values:
       - common/external-secrets.yaml
 

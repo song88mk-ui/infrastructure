@@ -4,8 +4,8 @@
 }:
 
 let
-  version = "0.92.1";
-  hash = "175bqkvl1pl3ycqlar0p6r69ak5w9gnnbzbm0c5pbl704v7ppvr4";
+  version = "0.93.5";
+  hash = "0pwk351zv2zqndvaidb48rd2jpqjyl2sja8vcf4m8pjg9fa6r6dz";
   platform = "linux_amd64";
 
 in

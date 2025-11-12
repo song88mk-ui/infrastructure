@@ -53,17 +53,26 @@ config:
   ## https://docs.fluentbit.io/manual/pipeline/filters
   filters: |
     [FILTER]
-        name        kubernetes
-        match       kube.*
-        merge_log   On
-        keep_log    Off
-        labels      On
-        annotations Off
+        Name           kubernetes
+        Match          kube.*
+        Merge_Log      On
+        Merge_Log_Trim Off
+        Keep_Log       Off
+        Labels         On
+        Annotations    On
+
+        K8S-Logging.Exclude On
+        K8S-Logging.Parser  On
 
     [FILTER]
-        Name   modify
+        name          record_modifier
+        match         kube.*
+        remove_key    _p
+
+    [FILTER]
+        Name          modify
         Match  kube.*
-        Rename message log
+        Rename detected_level level
 
     [FILTER]
         name          record_modifier
@@ -87,5 +96,5 @@ config:
         host                   loki-write.monitoring.svc.cluster.local
         port                   3100
         match                  kube.*
-        labels                 job=fluentbit-k8s, stream=$stream, namespace=$kubernetes['namespace_name'], container=$kubernetes['container_name'], pod=$kubernetes['pod_name'], host=$kubernetes['host']
-        auto_kubernetes_labels Off
+        labels                 job=fluentbit-k8s, namespace=$kubernetes['namespace_name'], pod=$kubernetes['pod_name'], host=$kubernetes['host'], level=$LogLevel, category=$Category
+        auto_kubernetes_labels On

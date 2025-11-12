@@ -96,5 +96,5 @@ config:
         host                   loki-write.monitoring.svc.cluster.local
         port                   3100
         match                  kube.*
-        labels                 job=fluentbit-k8s, namespace=$kubernetes['namespace_name'], pod=$kubernetes['pod_name'], host=$kubernetes['host'], level=$LogLevel, category=$Category
-        auto_kubernetes_labels On
+        labels                 job=fluentbit-k8s,namespace=$kubernetes['namespace_name'],pod=$kubernetes['pod_name'],level=$LogLevel,category=$Category,app=$kubernetes['labels']['app.kubernetes.io/name'],host=$kubernetes['host']
+        auto_kubernetes_labels Off

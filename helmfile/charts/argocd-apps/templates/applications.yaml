@@ -4,6 +4,8 @@ kind: Application
 apiVersion: argoproj.io/v1alpha1
 metadata:
   name: {{ .name }}
+  labels:
+    env: {{ $.Values.environment }}
   annotations:
     argocd-image-updater.argoproj.io/git-branch: main
     argocd-image-updater.argoproj.io/write-back-method: git
@@ -12,6 +14,11 @@ metadata:
     argocd-image-updater.argoproj.io/appimage.allow-tags: "regexp:{{ $.Values.tagPrefix }}"
     argocd-image-updater.argoproj.io/appimage.helm.image-name: image.repository
     argocd-image-updater.argoproj.io/appimage.helm.image-tag: image.tag
+    notifications.argoproj.io/subscriptions: |
+        - trigger: [on-sync-succeeded, on-sync-status-unknown, on-sync-failed, on-deployed, app-deployed ]
+          destinations:
+            - service: slack
+              recipients: [argocd-deploy-{{ $.Values.environment }}]
 spec:
   destination:
     server: "https://kubernetes.default.svc"

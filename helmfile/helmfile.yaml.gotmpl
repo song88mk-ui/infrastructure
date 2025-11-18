@@ -51,7 +51,7 @@ releases:
   - name: prometheus-operator
     namespace: monitoring
     chart: prometheus/kube-prometheus-stack
-    version: 79.4.1
+    version: 79.5.0
     values:
       - common/prometheus-operator.yaml.gotmpl
       - common/prometheus-alert-templates.yaml
@@ -101,7 +101,7 @@ releases:
     namespace: argocd
     createNamespace: true
     chart: argo/argo-cd
-    version: 9.1.0
+    version: 9.1.3
     values:
       - common/argocd.yaml.gotmpl
       - common/argocd-notifications.yaml
@@ -109,7 +109,7 @@ releases:
   - name: argocd-image-updater
     namespace: argocd
     chart: argo/argocd-image-updater
-    version: 0.14.0
+    version: 1.0.1
     values:
       - common/argocd-image-updater.yaml.gotmpl
 

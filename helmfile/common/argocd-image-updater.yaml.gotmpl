@@ -9,7 +9,7 @@ config:
     credentials: ext:/scripts/ecr-login.sh  #script name should match here and in authScripts
     credsexpire: 12h
 
-  gitCommitTemplate: |-
+  git.commit-message-template: |-
     build: automatic update of {{ `{{ .AppName }}` }}
 
     {{ `{{ range .AppChanges -}}` }}

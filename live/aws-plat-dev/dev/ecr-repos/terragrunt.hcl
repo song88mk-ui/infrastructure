@@ -24,6 +24,7 @@ inputs = {
     "oe-adapter-service"             = {}
     "oe-adapter-translation-service" = {}
     "oe-api"                         = {}
+    "oe-fastodds-api"                = {}
     "oe-boostedoddscap-service"      = {}
     "oe-bookmaker-service"           = {}
     "oe-config-service"              = {}

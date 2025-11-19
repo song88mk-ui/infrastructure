@@ -10,5 +10,118 @@ awsRegion: "{{ .Values.awsRegion }}"
 apps:
   - name: oe-rabbitmq-api
     chart: platform-app
+  - name: oe-adapter-uof
+    chart: platform-app
   - name: oe-adapter-service
+    chart: platform-app
+  # oddsengine sportsbook
+  - name: oe-sportsbook-service-00
+    config: oe-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-sportsbook-service/{{ .Environment.Name }}-00.yaml
+  - name: oe-sportsbook-service-01
+    config: oe-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-sportsbook-service/{{ .Environment.Name }}-01.yaml
+  - name: oe-sportsbook-service-02
+    config: oe-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-sportsbook-service/{{ .Environment.Name }}-02.yaml
+  - name: oe-sportsbook-service-03
+    config: oe-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-sportsbook-service/{{ .Environment.Name }}-03.yaml
+  - name: oe-sportsbook-service-04
+    config: oe-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-sportsbook-service/{{ .Environment.Name }}-04.yaml
+  - name: oe-sportsbook-service-05
+    config: oe-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-sportsbook-service/{{ .Environment.Name }}-05.yaml
+  - name: oe-sportsbook-service-06
+    config: oe-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-sportsbook-service/{{ .Environment.Name }}-06.yaml
+  - name: oe-sportsbook-service-07
+    config: oe-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-sportsbook-service/{{ .Environment.Name }}-07.yaml
+  - name: oe-sportsbook-service-08
+    config: oe-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-sportsbook-service/{{ .Environment.Name }}-08.yaml
+  - name: oe-sportsbook-service-09
+    config: oe-sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-sportsbook-service/{{ .Environment.Name }}-09.yaml
+  # odds engine v2
+  - name: oe-engine-service-00
+    config: oe-engine-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-engine-service/{{ .Environment.Name }}-00.yaml
+  - name: oe-engine-service-01
+    config: oe-engine-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-engine-service/{{ .Environment.Name }}-01.yaml
+  - name: oe-engine-service-02
+    config: oe-engine-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-engine-service/{{ .Environment.Name }}-02.yaml
+  - name: oe-engine-service-03
+    config: oe-engine-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-engine-service/{{ .Environment.Name }}-03.yaml
+  - name: oe-engine-service-04
+    config: oe-engine-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-engine-service/{{ .Environment.Name }}-04.yaml
+  - name: oe-engine-service-05
+    config: oe-engine-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-engine-service/{{ .Environment.Name }}-05.yaml
+  - name: oe-engine-service-06
+    config: oe-engine-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-engine-service/{{ .Environment.Name }}-06.yaml
+  - name: oe-engine-service-07
+    config: oe-engine-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-engine-service/{{ .Environment.Name }}-07.yaml
+  - name: oe-engine-service-08
+    config: oe-engine-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-engine-service/{{ .Environment.Name }}-08.yaml
+  - name: oe-engine-service-09
+    config: oe-engine-service
+    chart: platform-app
+    valueFiles:
+      - ../../apps/oe-engine-service/{{ .Environment.Name }}-09.yaml
+  # others
+  - name: oe-mapping-service
+    chart: platform-app
+  - name: oe-adapter-translation-service
+    chart: platform-app
+  - name: oe-fastodds-api
+    chart: platform-app
+  - name: oe-api
     chart: platform-app

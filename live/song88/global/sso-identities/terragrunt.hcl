@@ -104,5 +104,14 @@ inputs = {
       "developers",
       "eks-power-users",
     ]
+  }, {
+    given_name  = "Shaina Mae"
+    family_name = "Hechanova"
+    email       = "shechanova@song88.com"
+
+    groups = [
+      "developers",
+      "eks-power-users",
+    ]
   }]
 }

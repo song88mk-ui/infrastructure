@@ -20,6 +20,7 @@ inputs = {
     "bg-heartbeat-listener"  = {}
     # old oddsengine (old platform)
     "oe-rabbitmq-api"                = {}
+    "oe-adapter-uof"                 = {}
     "oe-adapter-service"             = {}
     "oe-adapter-translation-service" = {}
     "oe-api"                         = {}

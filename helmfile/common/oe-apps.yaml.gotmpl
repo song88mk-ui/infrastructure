@@ -1,0 +1,12 @@
+# vi: ft=yaml
+
+environment: {{ .Environment.Name }}
+namespace: oe
+project: default
+
+accountID: "{{ .Values.accountID }}"
+awsRegion: "{{ .Values.awsRegion }}"
+
+apps:
+  - name: oe-rabbitmq-api
+    chart: platform-app

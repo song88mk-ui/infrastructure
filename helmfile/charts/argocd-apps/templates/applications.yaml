@@ -15,7 +15,7 @@ metadata:
     argocd-image-updater.argoproj.io/appimage.helm.image-name: image.repository
     argocd-image-updater.argoproj.io/appimage.helm.image-tag: image.tag
     notifications.argoproj.io/subscriptions: |
-        - trigger: [on-sync-status-unknown, on-sync-failed, on-deployed, app-deployed ]
+        - trigger: [on-deployed, on-health-degraded, on-sync-failed, on-sync-running, on-sync-status-unknown, on-sync-succeeded ]
           destinations:
             - service: slack
               recipients: [argocd-deploy-{{ $.Values.environment }}]

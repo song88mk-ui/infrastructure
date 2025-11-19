@@ -177,6 +177,17 @@ releases:
     needs:
       - argocd
 
+  # oddsengine applications (old)
+  - name: oe-apps
+    namespace: argocd
+    chart: charts/argocd-apps
+    version: 1.0.0
+    values:
+      - common/oe-apps.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/oe-apps.yaml.gotmpl
+    needs:
+      - argocd
+
   # odds-engine-2 applications
   - name: oev2-apps
     namespace: argocd

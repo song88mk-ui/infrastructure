@@ -18,7 +18,7 @@ inputs = {
     "bg-engine-sportsbook"   = {}
     "bg-feed-logger-service" = {}
     "bg-heartbeat-listener"  = {}
-    # old oddsengine
+    # old oddsengine (old platform)
     "oe-rabbitmq-api"                = {}
     "oe-adapter-service"             = {}
     "oe-adapter-translation-service" = {}
@@ -41,7 +41,7 @@ inputs = {
     # oddsengine-2
     "oev2-adapter-service"    = {}
     "oev2-sportsbook-service" = {}
-    # platform apps
+    # platform apps (old platform)
     "platform-api"                      = {}
     "platform-betforwarder-service"     = {}
     "platform-betinfo-service"          = {}

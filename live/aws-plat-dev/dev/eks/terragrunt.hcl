@@ -46,7 +46,7 @@ inputs = {
 
   eks_managed_node_groups = {
     main = {
-      instance_types = ["t3a.xlarge"]
+      instance_types = ["t3a.2xlarge"]
       ami_type       = "AL2023_x86_64_STANDARD"
 
       min_size = 3

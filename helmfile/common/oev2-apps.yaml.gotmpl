@@ -1,74 +1,67 @@
 # vi: ft=yaml
-
+#
+# repo: odds-engine-2
+# Bet Genius based OddsEngine
+#
 environment: {{ .Environment.Name }}
 namespace: oddsengine
-project: default
+project: oddsengine
+appPrefix: oev2
 
 accountID: "{{ .Values.accountID }}"
 awsRegion: "{{ .Values.awsRegion }}"
 
 apps:
-  - name: oe-adapter-service
-    image: oev2-adapter-service
-    config: oev2-adapter-service
-    chart: platform-app
-  - name: oe-sportsbook-service-00
-    image: oev2-sportsbook-service
-    config: oev2-sportsbook-service
-    chart: platform-app
+  - name: adapter-service
+    config: adapter-service
+    chart: oev2-app
+  - name: sportsbook-service-00
+    config: sportsbook-service
+    chart: oev2-app
     valueFiles:
-      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-00.yaml
-  - name: oe-sportsbook-service-01
-    image: oev2-sportsbook-service
-    config: oev2-sportsbook-service
-    chart: platform-app
+      - {{ .Environment.Name }}-00.yaml
+  - name: sportsbook-service-01
+    config: sportsbook-service
+    chart: oev2-app
     valueFiles:
-      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-01.yaml
-  - name: oe-sportsbook-service-02
-    image: oev2-sportsbook-service
-    config: oev2-sportsbook-service
-    chart: platform-app
+      - {{ .Environment.Name }}-01.yaml
+  - name: sportsbook-service-02
+    config: sportsbook-service
+    chart: oev2-app
     valueFiles:
-      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-02.yaml
-  - name: oe-sportsbook-service-03
-    image: oev2-sportsbook-service
-    config: oev2-sportsbook-service
-    chart: platform-app
+      - {{ .Environment.Name }}-02.yaml
+  - name: sportsbook-service-03
+    config: sportsbook-service
+    chart: oev2-app
     valueFiles:
-      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-03.yaml
-  - name: oe-sportsbook-service-04
-    image: oev2-sportsbook-service
-    config: oev2-sportsbook-service
-    chart: platform-app
+      - {{ .Environment.Name }}-03.yaml
+  - name: sportsbook-service-04
+    config: sportsbook-service
+    chart: oev2-app
     valueFiles:
-      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-04.yaml
-  - name: oe-sportsbook-service-05
-    image: oev2-sportsbook-service
-    config: oev2-sportsbook-service
-    chart: platform-app
+      - {{ .Environment.Name }}-04.yaml
+  - name: sportsbook-service-05
+    config: sportsbook-service
+    chart: oev2-app
     valueFiles:
-      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-05.yaml
-  - name: oe-sportsbook-service-06
-    image: oev2-sportsbook-service
-    config: oev2-sportsbook-service
-    chart: platform-app
+      - {{ .Environment.Name }}-05.yaml
+  - name: sportsbook-service-06
+    config: sportsbook-service
+    chart: oev2-app
     valueFiles:
-      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-06.yaml
-  - name: oe-sportsbook-service-07
-    image: oev2-sportsbook-service
-    config: oev2-sportsbook-service
-    chart: platform-app
+      - {{ .Environment.Name }}-06.yaml
+  - name: sportsbook-service-07
+    config: sportsbook-service
+    chart: oev2-app
     valueFiles:
-      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-07.yaml
-  - name: oe-sportsbook-service-08
-    image: oev2-sportsbook-service
-    config: oev2-sportsbook-service
-    chart: platform-app
+      - {{ .Environment.Name }}-07.yaml
+  - name: sportsbook-service-08
+    config: sportsbook-service
+    chart: oev2-app
     valueFiles:
-      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-08.yaml
-  - name: oe-sportsbook-service-09
-    image: oev2-sportsbook-service
-    config: oev2-sportsbook-service
-    chart: platform-app
+      - {{ .Environment.Name }}-08.yaml
+  - name: sportsbook-service-09
+    config: sportsbook-service
+    chart: oev2-app
     valueFiles:
-      - ../../apps/oev2-sportsbook-service/{{ .Environment.Name }}-09.yaml
+      - {{ .Environment.Name }}-09.yaml

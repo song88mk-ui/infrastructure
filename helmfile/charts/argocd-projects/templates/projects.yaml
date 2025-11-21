@@ -1,0 +1,36 @@
+{{- range .Values.projects }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .namespace }}
+  labels:
+    project: {{ .name }}
+annotations:
+  description: {{ .description }}
+
+---
+kind: AppProject
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: {{ .name }}
+  namespace: argocd
+spec:
+  description: {{ .description }}
+  orphanedResources:
+    warn: false
+  sourceRepos:
+    - "*"
+  destinations:
+    - namespace: '!kube-system'
+      server: '*'
+    - namespace: {{ .namespace }}
+      server: https://kubernetes.default.svc
+      name: in-cluster
+  clusterResourceWhiteList:
+    - group: ''
+      kind: Namespace
+  sourceNamespaces:
+    - argocd
+    - {{ .namespace }}
+{{- end }}

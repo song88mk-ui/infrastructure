@@ -1,15 +1,16 @@
-{{- range .Values.apps }}
+{{- range $app := .Values.apps }}
 ---
 kind: Application
 apiVersion: argoproj.io/v1alpha1
 metadata:
-  name: {{ $.Values.namespace }}-{{ .name }}
+  name: {{ $app.name }}
+  namespace: {{ $.Values.namespace }}
   labels:
     env: {{ $.Values.environment }}
   annotations:
     argocd-image-updater.argoproj.io/git-branch: main
     argocd-image-updater.argoproj.io/write-back-method: git
-    argocd-image-updater.argoproj.io/image-list: "appimage={{ $.Values.accountID }}.dkr.ecr.{{ $.Values.awsRegion }}.amazonaws.com/{{ .image | default .name }}"
+    argocd-image-updater.argoproj.io/image-list: "appimage={{ $.Values.accountID }}.dkr.ecr.{{ $.Values.awsRegion }}.amazonaws.com/{{ $.Values.appPrefix}}-{{ $app.config | default $app.name }}"
     argocd-image-updater.argoproj.io/appimage.update-strategy: newest-build
     argocd-image-updater.argoproj.io/appimage.allow-tags: "regexp:{{ $.Values.tagPrefix }}"
     argocd-image-updater.argoproj.io/appimage.helm.image-name: image.repository
@@ -30,10 +31,10 @@ spec:
     targetRevision: HEAD
     helm:
       valueFiles:
-        - ../../apps/{{ .config | default .name }}/{{ $.Values.environment }}.yaml
-        {{- range .valueFiles }}
-        - {{ . }}
-        {{- end }}
+        - ../../apps/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml
+        {{- range $vf := .valueFiles }}
+        - ../../apps/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $vf }}
+        {{- end}}
 
   project: {{ $.Values.project }}
   syncPolicy:
@@ -41,5 +42,5 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true
+      - CreateNamespace=false
 {{- end }}

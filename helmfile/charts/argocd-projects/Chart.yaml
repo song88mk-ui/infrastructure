@@ -1,0 +1,6 @@
+apiVersion: v2
+name: argocd-projects
+description: A Helm chart containing all the ArgoCD Projects
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

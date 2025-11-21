@@ -211,6 +211,14 @@ releases:
       - argocd
       - argocd-projects
 
+  - name: postgresql
+    namespace: data
+    chart: bitnami/postgresql
+    version: 18.1.10
+    values:
+      - common/postgresql.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/postgresql.yaml.gotmpl
+
   # NOTE: Temporary mssql instance. It should be moved to AWS when ready
   - name: mssql
     namespace: bet-genius-apps

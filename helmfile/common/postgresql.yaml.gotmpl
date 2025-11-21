@@ -1,0 +1,14 @@
+# vi: ft=yaml
+---
+
+architecture: standalone
+
+global:
+  storageClass: gp3
+
+commonAnnotations:
+  fluentbit.io/exclude: "true"
+
+auth:
+  database: {{ .Environment.Name }}
+  postgresPassword: "ref+awsssm://dev/apps/postgresql/postgresPassword?region=ap-south-1"

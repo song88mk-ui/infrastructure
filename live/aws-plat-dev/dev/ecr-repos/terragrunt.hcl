@@ -43,6 +43,7 @@ inputs = {
     # oddsengine-2
     "oev2-adapter-service"    = {}
     "oev2-sportsbook-service" = {}
+    "oev2-websocket-service"  = {}
     # platform apps (old platform)
     "platform-api"                      = {}
     "platform-betforwarder-service"     = {}

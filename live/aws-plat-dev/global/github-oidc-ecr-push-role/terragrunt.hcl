@@ -65,6 +65,6 @@ POLICY
     "FlyingCockatoo/platform-final:*",
     "FlyingCockatoo/Auth:*",
     "FlyingCockatoo/odds-engine-2:*",
-    "FlyingCockatoo/platform-final:*",
+    "FlyingCockatoo/platform-web:*",
   ]
 }

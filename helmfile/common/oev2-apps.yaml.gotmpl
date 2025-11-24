@@ -65,3 +65,8 @@ apps:
     chart: platform-app
     valueFiles:
       - {{ .Environment.Name }}-09.yaml
+  - name: sportsbook-service-10
+    config: sportsbook-service
+    chart: platform-app
+    valueFiles:
+      - {{ .Environment.Name }}-10.yaml

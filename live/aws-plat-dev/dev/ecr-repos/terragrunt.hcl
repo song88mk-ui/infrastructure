@@ -72,6 +72,9 @@ inputs = {
     "platform-websocket-api"            = {}
     "platform-websocket-client"         = {}
     "auth-api"                          = {}
+    # web layouts
+    "platform-web-mockup" = {}
+    "platform-web"        = {}
   }
 }
 

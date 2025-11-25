@@ -176,6 +176,17 @@ releases:
     needs:
       - argocd
 
+  - name: platform-apps
+    namespace: argocd
+    chart: charts/argocd-apps
+    version: 1.0.0
+    values:
+      - common/platform-apps.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/platform-apps.yaml.gotmpl
+    needs:
+      - argocd
+      - argocd-projects
+
   - name: platformsr-apps
     namespace: argocd
     chart: charts/argocd-apps

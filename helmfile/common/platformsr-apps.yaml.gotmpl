@@ -9,26 +9,9 @@ accountID: "{{ .Values.accountID }}"
 awsRegion: "{{ .Values.awsRegion }}"
 
 apps:
-  - name: rabbitmq-api
-    chart: platform-app
-  - name: sportsbook-api
-    chart: platform-app
-  - name: betting-api
-    chart: platform-app
-  - name: api
-    config: platform-api
-    chart: platform-app
-  - name: auth-api
-    chart: platform-app
-  - name: operator-api
-    chart: platform-app
   - name: betinfo-service
     chart: platform-app
   - name: cancellation-service
-    chart: platform-app
-  - name: cashout-service
-    chart: platform-app
-  - name: cashoutstake-service
     chart: platform-app
   - name: client-api
     chart: platform-app
@@ -43,12 +26,4 @@ apps:
   - name: job-resettlement
     chart: platform-app
   - name: operator-cashout-service
-    chart: platform-app
-  - name: operator-service
-    chart: platform-app
-  - name: placement-service
-    chart: platform-app
-  - name: settlement-service
-    chart: platform-app
-  - name: websocket-api
     chart: platform-app

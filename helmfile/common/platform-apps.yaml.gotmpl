@@ -1,0 +1,39 @@
+# vi: ft=yaml
+
+environment: {{ .Environment.Name }}
+namespace: platform
+project: platform
+appPrefix: platform
+
+accountID: "{{ .Values.accountID }}"
+awsRegion: "{{ .Values.awsRegion }}"
+
+apps:
+  - name: auth-api
+    chart: platform-app
+  - name: job-forexeur
+    chart: platform-app
+  - name: settlement-service
+    chart: platform-app
+  - name: operator-service
+    chart: platform-app
+  - name: placement-service
+    chart: platform-app
+  - name: rabbitmq-api
+    chart: platform-app
+  - name: sportsbook-api
+    chart: platform-app
+  - name: betting-api
+    chart: platform-app
+  - name: platform-api
+    chart: platform-app
+  - name: operator-api
+    chart: platform-app
+  - name: cashout-service
+    chart: platform-app
+  - name: cashoutstake-service
+    chart: platform-app
+  - name: websocket-api
+    chart: platform-app
+  - name: wallet-api
+    chart: platform-app

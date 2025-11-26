@@ -9,3 +9,6 @@ annotations:
 
 auth:
   enabled: false
+
+persistence:
+  size: 30Gi

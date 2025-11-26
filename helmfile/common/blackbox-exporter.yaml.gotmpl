@@ -1,0 +1,98 @@
+resources:
+  limits:
+    memory: "50Mi"
+  requests:
+    cpu: "10m"
+    memory: "50Mi"
+
+pspEnabled: false
+
+config:
+  modules:
+    http_2xx:
+      prober: http
+      timeout: 10s
+      http:
+        valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+        valid_status_codes: [200, 301, 302, 303]
+        follow_redirects: true
+        preferred_ip_protocol: "ip4"
+
+    http_200_post:
+      prober: http
+      timeout: 10s
+      http:
+        method: POST
+        valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+        valid_status_codes: [ 200 ]
+        follow_redirects: false
+        preferred_ip_protocol: "ip4"
+
+    http_2xx_no_follow:
+      prober: http
+      timeout: 10s
+      http:
+        valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+        valid_status_codes: [200, 301, 302, 303]
+        follow_redirects: false
+        preferred_ip_protocol: "ip4"
+
+serviceMonitor:
+  enabled: true
+
+  selfMonitor:
+    enabled: true
+
+  defaults:
+    labels:
+      release: prometheus-operator
+    interval: 60s
+    scrapeTimeout: 60s
+    module: http_2xx_no_follow
+  scheme: http
+
+prometheusRule:
+  enabled: true
+  additionalLabels:
+    release: prometheus-operator
+  rules:
+    - alert: BlackBoxProbeFailed
+      expr: probe_success == 0
+      for: 5m
+      labels:
+        severity: critical
+        cluster: {{ .Values.clusterName }}
+        env: {{ .Environment.Name }}
+      annotations:
+        summary: Probe failed for {{`{{ $labels.instance }}`}}
+        description: "The instance might be down"
+    - alert: BlackBoxSlowProbe
+      expr: avg_over_time(probe_duration_seconds[20m]) > 5
+      for: 20m
+      labels:
+        severity: warning
+        cluster: {{ .Values.clusterName }}
+        env: {{ .Environment.Name }}
+      annotations:
+        summary: Slow probe for {{`{{ $labels.instance }}`}}
+        description: "The endpoint took more than 5s to respond. The probes might be timing out."
+    - alert: BlackboxSslCertificateWillExpireSoon
+      expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 30
+      for: 0m
+      labels:
+        severity: warning
+        cluster: {{ .Values.clusterName }}
+        env: {{ .Environment.Name }}
+      annotations:
+        summary: "The SSL certificate will expire soon"
+        description: "SSL certificate expires in 30 days"
+    - alert: BlackboxSslCertificateWillExpireSoon
+      expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 5
+      for: 0m
+      labels:
+        severity: critical
+        cluster: {{ .Values.clusterName }}
+        env: {{ .Environment.Name }}
+      annotations:
+        summary: "The SSL certificate will expire soon"
+        description: "SSL certificate expires in 5 days"

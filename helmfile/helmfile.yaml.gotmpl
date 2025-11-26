@@ -157,6 +157,14 @@ releases:
     needs:
       - external-secrets
 
+  - name: blackbox-exporter
+    namespace: monitoring
+    chart: prometheus/prometheus-blackbox-exporter
+    version: 11.5.0
+    values:
+      - common/blackbox-exporter.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/blackbox-exporter.yaml
+
   - name: argocd-projects
     namespace: argocd
     chart: charts/argocd-projects

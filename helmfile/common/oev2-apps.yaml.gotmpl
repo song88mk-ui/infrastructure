@@ -14,7 +14,12 @@ awsRegion: "{{ .Values.awsRegion }}"
 apps:
   - name: adapter-service
     config: adapter-service
-    chart: paltform-app
+    chart: platform-app
+  - name: uof-client-tso
+    config: uof-client
+    chart: platform-app
+    valueFiles:
+      - {{ .Environment.Name }}-tso.yaml
   - name: sportsbook-service-00
     config: sportsbook-service
     chart: platform-app

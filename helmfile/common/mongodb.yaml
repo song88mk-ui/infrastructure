@@ -12,3 +12,10 @@ auth:
 
 persistence:
   size: 30Gi
+
+resources:
+  requests:
+    cpu: 2
+    memory: 2Gi
+  limits:
+    memory: 2Gi

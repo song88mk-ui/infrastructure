@@ -44,6 +44,7 @@ inputs = {
     "oev2-adapter-service"    = {}
     "oev2-sportsbook-service" = {}
     "oev2-websocket-service"  = {}
+    "oev2-uof-client"         = {}
     # platform apps (old platform)
     "platform-api"                      = {}
     "platform-betforwarder-service"     = {}

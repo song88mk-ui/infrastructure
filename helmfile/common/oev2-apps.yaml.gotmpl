@@ -20,6 +20,11 @@ apps:
     chart: platform-app
     valueFiles:
       - {{ .Environment.Name }}-tso.yaml
+  - name: websocket-service-tso
+    config: websocket-service
+    chart: platform-app
+    valueFiles:
+      - {{ .Environment.Name }}-tso.yaml
   - name: sportsbook-service-00
     config: sportsbook-service
     chart: platform-app

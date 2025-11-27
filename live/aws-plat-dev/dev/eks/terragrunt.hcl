@@ -98,8 +98,13 @@ inputs = {
             type = "namespace"
             namespaces = [
               "bet-genius-apps",
-              "platform-apps",
+              "betgenius",
+              "data",
               "oddsengine",
+              "oddsfeed",
+              "oesr",
+              "platform",
+              "platformsr",
             ]
           }
         }

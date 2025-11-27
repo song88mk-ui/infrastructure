@@ -23,7 +23,7 @@ inputs = {
     "oe-adapter-uof"                 = {}
     "oe-adapter-service"             = {}
     "oe-adapter-translation-service" = {}
-    "oe-api"                         = {}
+    "oe-oe-api"                      = {}
     "oe-fastodds-api"                = {}
     "oe-boostedoddscap-service"      = {}
     "oe-bookmaker-service"           = {}
@@ -46,7 +46,7 @@ inputs = {
     "oev2-websocket-service"  = {}
     "oev2-uof-client"         = {}
     # platform apps (old platform)
-    "platform-api"                      = {}
+    "platform-platform-api"             = {}
     "platform-betforwarder-service"     = {}
     "platform-betinfo-service"          = {}
     "platform-betstatus-service"        = {}

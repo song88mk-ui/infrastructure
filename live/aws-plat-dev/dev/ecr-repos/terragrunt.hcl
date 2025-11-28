@@ -12,12 +12,12 @@ locals {
 
 inputs = {
   repositories = {
-    "bg-rabbitmq-api"        = {}
-    "bg-receiver-service"    = {}
-    "bg-feed-receiver-api"   = {}
-    "bg-engine-sportsbook"   = {}
-    "bg-feed-logger-service" = {}
-    "bg-heartbeat-listener"  = {}
+    "bg-rabbitmq-api"       = {}
+    "bg-receiver-service"   = {}
+    "bg-feed-receiver-api"  = {}
+    "bg-engine-sportsbook"  = {}
+    "bg-feedlogger-service" = {}
+    "bg-heartbeat-listener" = {}
     # old oddsengine (old platform)
     "oe-rabbitmq-api"                = {}
     "oe-adapter-uof"                 = {}

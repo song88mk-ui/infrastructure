@@ -89,13 +89,14 @@ releases:
     values:
       - common/tempo.yaml.gotmpl
 
-  # Needs the corresponding IAM role and DNS zone created by Terraform.
-  - name: external-dns-aws
+  - name: external-dns-cloudflare
     namespace: kube-system
     chart: external-dns/external-dns
     version: 1.19.0
     values:
-      - common/external-dns-aws.yaml.gotmpl
+      - common/external-dns-cloudflare.yaml.gotmpl
+    needs:
+      - external-secrets/secret-stores
 
   - name: argocd
     namespace: argocd

@@ -1,0 +1,41 @@
+provider:
+  name: cloudflare
+
+policy: sync
+
+serviceAccount:
+  name: "external-dns-cf"
+
+extraArgs:
+  - "--cloudflare-proxied"
+
+# Managed by the secret-stores chart.
+env:
+  - name: CF_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-api-token
+        key: token
+
+txtOwnerId: cf-ext
+txtPrefix: cf-
+
+resources:
+  limits:
+    memory: 100Mi
+  requests:
+    cpu: 10m
+    memory: 100Mi
+
+serviceAccount:
+  name: external-dns-cf-sa
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus-operator
+
+domainFilters:
+  - song88.com

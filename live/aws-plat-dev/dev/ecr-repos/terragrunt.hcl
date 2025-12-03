@@ -74,7 +74,7 @@ inputs = {
     "platform-wallet-api"               = {}
     "platform-websocket-api"            = {}
     "platform-websocket-client"         = {}
-    "auth-api"                          = {}
+    "platform-auth-api"                 = {}
     # web layouts
     "platform-web-mockup" = {}
     "platform-web"        = {}

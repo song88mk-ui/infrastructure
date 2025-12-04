@@ -24,15 +24,15 @@ inputs = {
 
   rules = [{
     action      = "skip"
-    description = "grafana-unrestricted"
+    description = "Allow all requests to grafana"
     enabled     = true
-    expression  = "(http.host wildcard \"grafana.*.song88.com\")"
+    expression  = "(http.host in {\"grafana.dev.song88.com\"})"
     logging = {
       enabled = true
     }
     action_parameters = {
-      phases   = ["http_request_firewall_managed"]
-      products = ["uaBlock", "bic", "securityLevel"]
+      phases   = ["http_request_firewall_managed", "http_ratelimit", "http_request_sbfm"]
+      products = ["uaBlock", "bic", "securityLevel", "rateLimit", "zoneLockdown", "hot", "waf"]
       ruleset  = "current"
     }
     }, {

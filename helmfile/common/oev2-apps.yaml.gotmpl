@@ -17,16 +17,16 @@ apps:
     chart: platform-app
   - name: job-keepalive
     chart: platform-app
-  - name: uof-client-tso
+  - name: uof-client-g01
     config: uof-client
     chart: platform-app
     valueFiles:
-      - {{ .Environment.Name }}-tso.yaml
-  - name: websocket-service-tso
+      - {{ .Environment.Name }}-g01.yaml
+  - name: websocket-service-g01
     config: websocket-service
     chart: platform-app
     valueFiles:
-      - {{ .Environment.Name }}-tso.yaml
+      - {{ .Environment.Name }}-g01.yaml
   - name: sportsbook-service-00
     config: sportsbook-service
     chart: platform-app

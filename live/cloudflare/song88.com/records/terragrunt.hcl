@@ -143,5 +143,12 @@ inputs = {
       proxied  = false
       priority = 30
     },
+    {
+      name     = "song88.com"
+      type     = "TXT"
+      content  = "atlassian-domain-verification=u5iqSTBhzZZINyG2Pl2yTN0jgLGXvp/GvShrfUa8OFFk0wxkLoN7809qTyCTCJOo"
+      proxied  = false
+      priority = 30
+    },
   ]
 }

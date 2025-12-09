@@ -207,17 +207,6 @@ releases:
       - argocd
       - argocd-projects
 
-  - name: platformsr-apps
-    namespace: argocd
-    chart: charts/argocd-apps
-    version: 1.0.0
-    values:
-      - common/platformsr-apps.yaml.gotmpl
-      - environments/{{ .Environment.Name }}/platformsr-apps.yaml.gotmpl
-    needs:
-      - argocd
-      - argocd-projects
-
   - name: platformsr-web-apps
     namespace: argocd
     chart: charts/argocd-apps
@@ -225,18 +214,6 @@ releases:
     values:
       - common/platformsr-web-apps.yaml.gotmpl
       - environments/{{ .Environment.Name }}/platformsr-web-apps.yaml.gotmpl
-    needs:
-      - argocd
-      - argocd-projects
-
-  # oddsengine applications (old)
-  - name: oesr-apps
-    namespace: argocd
-    chart: charts/argocd-apps
-    version: 1.0.0
-    values:
-      - common/oesr-apps.yaml.gotmpl
-      - environments/{{ .Environment.Name }}/oesr-apps.yaml.gotmpl
     needs:
       - argocd
       - argocd-projects

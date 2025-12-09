@@ -77,6 +77,7 @@ inputs = {
     "platform-auth-api"                 = {}
     # web layouts
     "platform-web-mockup" = {}
+    "platform-web-config" = {}
     "platform-web"        = {}
     # odds feed
     "of-betting-api"          = {}

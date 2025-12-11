@@ -46,6 +46,7 @@ inputs = {
     "oev2-websocket-service"  = {}
     "oev2-uof-client"         = {}
     "oev2-job-keepalive"      = {}
+    "oev2-job-settlement"     = {}
     # platform apps (old platform)
     "platform-platform-api"             = {}
     "platform-betforwarder-service"     = {}

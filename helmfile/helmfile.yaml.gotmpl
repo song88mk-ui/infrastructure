@@ -207,17 +207,6 @@ releases:
       - argocd
       - argocd-projects
 
-  - name: platformsr-web-apps
-    namespace: argocd
-    chart: charts/argocd-apps
-    version: 1.0.0
-    values:
-      - common/platformsr-web-apps.yaml.gotmpl
-      - environments/{{ .Environment.Name }}/platformsr-web-apps.yaml.gotmpl
-    needs:
-      - argocd
-      - argocd-projects
-
   # odds-engine-2 applications
   - name: oev2-apps
     namespace: argocd

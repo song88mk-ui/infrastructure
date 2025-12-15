@@ -94,6 +94,9 @@ inputs = {
     "of-operator-service"     = {}
     "of-settlement-service"   = {}
     "of-recovery-service"     = {}
+    # client checklist
+    "client-checklist-api"    = {}
+    "client-checklist-web"    = {}
   }
 }
 

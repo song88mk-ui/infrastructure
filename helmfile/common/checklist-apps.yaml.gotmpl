@@ -1,0 +1,15 @@
+# vi: ft=yaml
+
+environment: {{ .Environment.Name }}
+namespace: platform
+project: platform
+appPrefix: client
+
+accountID: "{{ .Values.accountID }}"
+awsRegion: "{{ .Values.awsRegion }}"
+
+apps:
+  - name: checklist-api
+    chart: platform-app
+  - name: checklist-web
+    chart: platform-app

@@ -95,8 +95,8 @@ inputs = {
     "of-settlement-service"   = {}
     "of-recovery-service"     = {}
     # client checklist
-    "client-checklist-api"    = {}
-    "client-checklist-web"    = {}
+    "client-checklist-api" = {}
+    "client-checklist-web" = {}
   }
 }
 

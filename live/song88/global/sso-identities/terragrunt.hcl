@@ -122,5 +122,15 @@ inputs = {
       "developers",
       "eks-power-users",
     ]
-  }]
+    }, {
+    given_name  = "Aldrin"
+    family_name = "Delarea"
+    email       = "adelarea@song88.com"
+
+    groups = [
+      "developers",
+      "eks-power-users",
+    ]
+    }
+  ]
 }

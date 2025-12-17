@@ -40,14 +40,14 @@ configs:
       p, role:org-admin, repositories, *, *, allow
       p, role:org-admin, logs, get, *, allow
       p, role:org-admin, exec, create, */*, allow
-      p, role:app-admin, applications, delete, bg-apps/*, allow
-      p, role:app-admin, applications, get, bg-apps/*, allow
-      p, role:app-admin, applications, sync, bg-apps/*, allow
-      p, role:app-admin, applications, update, bg-apps/*, allow
-      p, role:app-admin, logs, get, bg-apps/*, allow
-      p, role:app-admin, exec, create, bg-apps/*, allow
-      g, "FlyingCockatoo:devops", role:org-admin
-      g, "FlyingCockatoo:backend", role:app-admin
+      p, role:app-admin, applications, get, */*, allow
+      p, role:app-admin, applications, sync, */*, allow
+      p, role:app-admin, applications, update, */*, allow
+      p, role:app-admin, applications, delete/*/Pod/*, *, allow
+      p, role:app-admin, logs, get, */*, allow
+      p, role:app-admin, exec, create, */*, allow
+      g, FlyingCockatoo:devops, role:org-admin
+      g, FlyingCockatoo:backend, role:app-admin
     scopes: '[groups, email]'
 
 server:

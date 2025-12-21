@@ -30,6 +30,7 @@ pkgs.mkShell {
     awscli2
     aws-vault
     mongosh
+    mongodb-tools
     sqlcmd
     (writeShellApplication {
       name = "fmt";

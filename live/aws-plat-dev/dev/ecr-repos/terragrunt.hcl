@@ -98,8 +98,8 @@ inputs = {
     "client-checklist-api" = {}
     "client-checklist-web" = {}
     # backoffice
-    "backoffice-api"               = {}
-    "backoffice-web"               = {}
+    "backoffice-bo-api"            = {}
+    "backoffice-bo-web"            = {}
     "backoffice-utility-service"   = {}
     "backoffice-websocket-service" = {}
     "backoffice-config-service"    = {}

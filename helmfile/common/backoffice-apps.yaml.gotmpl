@@ -1,0 +1,23 @@
+# vi: ft=yaml
+
+environment: {{ .Environment.Name }}
+namespace: corp-apps
+project: corp-apps
+appPrefix: backoffice
+
+accountID: "{{ .Values.accountID }}"
+awsRegion: "{{ .Values.awsRegion }}"
+
+apps:
+  - name: websocket-api
+    chart: platform-app
+  - name: websocket-service
+    chart: platform-app
+  - name: utility-service
+    chart: platform-app
+  - name: config-service
+    chart: platform-app
+  - name: bo-api
+    chart: platform-app
+  - name: bo-web
+    chart: platform-app

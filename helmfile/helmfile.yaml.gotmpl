@@ -218,6 +218,17 @@ releases:
       - argocd
       - argocd-projects
 
+  - name: backoffice-apps
+    namespace: argocd
+    chart: charts/argocd-apps
+    version: 1.0.0
+    values:
+      - common/backoffice-apps.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/backoffice-apps.yaml.gotmpl
+    needs:
+      - argocd
+      - argocd-projects
+
   # odds-engine-2 applications
   - name: oev2-apps
     namespace: argocd

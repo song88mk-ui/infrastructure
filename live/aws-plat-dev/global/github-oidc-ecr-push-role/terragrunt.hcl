@@ -69,5 +69,6 @@ POLICY
     "FlyingCockatoo/oddsfeed:*",
     "FlyingCockatoo/client-checklist:*",
     "FlyingCockatoo/backoffice-final:*",
+    "FlyingCockatoo/internal.s88platform.com:*",
   ]
 }

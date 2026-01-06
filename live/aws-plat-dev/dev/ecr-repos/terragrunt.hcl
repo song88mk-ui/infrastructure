@@ -104,6 +104,8 @@ inputs = {
     "backoffice-websocket-service" = {}
     "backoffice-config-service"    = {}
     "backoffice-websocket-api"     = {}
+    # internal documentation
+    "corp-apps-internal-docs" = {}
   }
 }
 

@@ -229,6 +229,17 @@ releases:
       - argocd
       - argocd-projects
 
+  - name: corp-apps
+    namespace: argocd
+    chart: charts/argocd-apps
+    version: 1.0.0
+    values:
+      - common/corp-apps.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/corp-apps.yaml.gotmpl
+    needs:
+      - argocd
+      - argocd-projects
+
   # odds-engine-2 applications
   - name: oev2-apps
     namespace: argocd

@@ -1,0 +1,13 @@
+# vi: ft=yaml
+
+environment: {{ .Environment.Name }}
+namespace: corp-apps
+project: corp-apps
+appPrefix: corp-apps
+
+accountID: "{{ .Values.accountID }}"
+awsRegion: "{{ .Values.awsRegion }}"
+
+apps:
+  - name: internal-docs
+    chart: platform-app

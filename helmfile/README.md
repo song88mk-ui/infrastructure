@@ -65,6 +65,17 @@ order for things to properly work.
 3. Install the [CRDs][external_secret_crds] for the external-secrets chart.
 4. Install the rest of the charts normally
 
+### Secrets
+
+Some applications require SSM parameters to be available during installation. If a parameter is
+missing, the installation will fail with an error message showing the expected path, allowing you to
+create it.
+
+## Grafana authentication
+
+Depending on the authentication provider used for Grafana, you'll need to create an OAuth app and
+provide its client_id and client_secret
+
 [helmfile]: https://github.com/helmfile/helmfile
 [prom_crds]: https://github.com/prometheus-community/helm-charts/blob/8a2b77a39aaffec79a6a33fc5a585bd4ca22b746/charts/kube-prometheus-stack/UPGRADE.md#from-77x-to-78x
 [alb_crds]: https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/d37f75cb547c3e696e46d67dfcc4adcbe5a3044c/helm/aws-load-balancer-controller#installing-the-chart

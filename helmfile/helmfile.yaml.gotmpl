@@ -266,6 +266,7 @@ releases:
 
   # NOTE: Temporary mssql instance. It should be moved to AWS when ready
   - name: mssql
+    installed: {{ eq .Environment.Name "dev" }}
     namespace: bet-genius-apps
     chart: simcube/mssqlserver-2022
     version: 1.2.3
@@ -285,6 +286,7 @@ releases:
   # NOTE: Temporary mongodb instance. To be evaluated if an AWS can be used.
   # TODO: It should be moved to AWS when ready
   - name: mongodb
+    installed: {{ eq .Environment.Name "dev" }}
     namespace: bet-genius-apps
     chart: bitnami/mongodb
     version: 18.1.1

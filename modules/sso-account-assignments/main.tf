@@ -38,11 +38,11 @@ locals {
     for account in var.accounts : [
       for permission_set_name, groups in account.permission_sets : [
         for group in groups : {
-          account_id         = account.account_id
-          account_name       = account.name
-          permission_set     = permission_set_name
-          group              = group
-          assignment_key     = "${account.name}-${permission_set_name}-${group}"
+          account_id     = account.account_id
+          account_name   = account.name
+          permission_set = permission_set_name
+          group          = group
+          assignment_key = "${account.name}-${permission_set_name}-${group}"
         }
       ]
     ]

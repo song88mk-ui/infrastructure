@@ -40,11 +40,11 @@ output "dns_records" {
   description = "Map of created DNS records"
   value = {
     for idx, record in cloudflare_dns_record.this : idx => {
-      id       = record.id
-      name     = record.name
-      type     = record.type
-      content  = record.content
-      proxied  = record.proxied
+      id      = record.id
+      name    = record.name
+      type    = record.type
+      content = record.content
+      proxied = record.proxied
     }
   }
 }

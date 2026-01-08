@@ -10,11 +10,11 @@ variable "groups" {
 variable "users" {
   description = "List of users to create in the Identity Store"
   type = list(object({
-    given_name   = string
-    family_name  = string
-    email        = string
-    email_type   = optional(string)
-    groups       = optional(list(string), [])
+    given_name  = string
+    family_name = string
+    email       = string
+    email_type  = optional(string)
+    groups      = optional(list(string), [])
   }))
   default = []
 }

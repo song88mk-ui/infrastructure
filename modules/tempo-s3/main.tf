@@ -31,7 +31,7 @@ module "tempo_traces_bucket" {
 }
 
 module "tempo_writer_role" {
-  source = "terraform-aws-modules/eks-pod-identity/aws"
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
   version = "2.2.1"
 
   name = var.iam_role_name

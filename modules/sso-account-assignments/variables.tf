@@ -1,8 +1,8 @@
 variable "accounts" {
   description = "List of AWS accounts with their SSO permission set assignments"
   type = list(object({
-    name       = string
-    account_id = string
+    name            = string
+    account_id      = string
     permission_sets = map(list(string))
   }))
 

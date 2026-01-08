@@ -42,7 +42,7 @@ module "loki_logs_bucket" {
 }
 
 module "loki_writer_role" {
-  source = "terraform-aws-modules/eks-pod-identity/aws"
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
   version = "2.2.1"
 
   name = var.iam_role_name

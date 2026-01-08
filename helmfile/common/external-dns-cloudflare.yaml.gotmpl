@@ -17,8 +17,8 @@ env:
         name: cloudflare-api-token
         key: token
 
-txtOwnerId: cf-ext
-txtPrefix: cf-
+txtOwnerId: cf-ext-{{ .Environment.Name }}
+txtPrefix: cf-{{ .Environment.Name }}
 
 resources:
   limits:

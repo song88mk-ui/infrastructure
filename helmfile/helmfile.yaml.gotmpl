@@ -6,6 +6,10 @@ environments:
     kubeContext: song88-dev-cluster
     values:
     - environments/dev/values.yaml
+  stg:
+    kubeContext: song88-stg-cluster
+    values:
+    - environments/stg/values.yaml
 ---
 repositories:
 - name: prometheus

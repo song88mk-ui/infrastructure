@@ -1,0 +1,27 @@
+clusterName: song88-stg-cluster
+
+storageClassName: "gp3"
+
+slackChannel: "#alerts-env-stg"
+
+accountID: "172065883315"
+
+grafanaPassword: "ref+awsssm://stg/song88/grafana/password?region=ap-south-1"
+slackApiUrl: "ref+awsssm://stg/song88/slack/api-url?region=ap-south-1"
+pagerdutyRoutingKey: "ref+awsssm://stg/song88/pagerduty/routing-key?region=ap-south-1"
+
+argoCD:
+  clientID: "ref+awsssm://stg/song88/argocd/client-id?region=ap-south-1"
+  clientSecret: "ref+awsssm://stg/song88/argocd/client-secret?region=ap-south-1"
+  deployKey: "ref+awsssm://stg/song88/deploy/key?region=ap-south-1"
+  slackToken: "ref+awsssm://stg/song88/argocd/slack-token?region=ap-south-1"
+  grafanaApiKey: "ref+awsssm://stg/song88/argocd/grafana-api-key?region=ap-south-1"
+
+wildcardCertificate: arn:aws:acm:ap-south-1:172065883315:certificate/a6c41251-e9d8-4647-96d0-b06a5c93525c
+
+awsRegion: ap-south-1
+
+vpcId: vpc-032547943401ba447
+
+lokiLogsBucket: song88-stg-loki-logs
+tempoTracesBucket: song88-stg-tempo-traces

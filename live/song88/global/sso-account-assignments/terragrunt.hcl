@@ -45,6 +45,9 @@ inputs = {
       Billing = [
         "billing"
       ]
+      EKSPowerUserAccess = [
+        "developers"
+      ]
     }
     }, {
     name       = "core_public",

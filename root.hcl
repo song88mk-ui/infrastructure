@@ -5,13 +5,14 @@ locals {
   # Extract the variables we need for easy access
   account_id = local.account_vars.locals.aws_account_id
   aws_region = local.env_vars.locals.aws_region
+  suffix     = local.account_vars.locals.account_suffix
 }
 
 remote_state {
   backend = "s3"
   config = {
     encrypt = true
-    bucket  = "song88-${local.env_vars.locals.environment}-terraform-state"
+    bucket  = "song88-${local.env_vars.locals.environment}${local.suffix}-terraform-state"
     key     = "${path_relative_to_include()}/terraform.tfstate"
     region  = local.aws_region
   }

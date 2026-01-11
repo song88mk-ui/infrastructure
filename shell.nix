@@ -22,6 +22,7 @@ pkgs.mkShell {
     vals
     direnv
     nixfmt
+    argocd
     (pkgs.callPackage ./nix/packages/terraform.nix { })
     (pkgs.callPackage ./nix/packages/terragrunt.nix { })
     kubernetes-helm

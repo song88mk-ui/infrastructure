@@ -12,7 +12,11 @@ metadata:
     argocd-image-updater.argoproj.io/write-back-method: git
     argocd-image-updater.argoproj.io/image-list: "appimage={{ $.Values.accountID }}.dkr.ecr.{{ $.Values.awsRegion }}.amazonaws.com/{{ $.Values.appPrefix}}-{{ $app.config | default $app.name }}"
     argocd-image-updater.argoproj.io/appimage.update-strategy: newest-build
+{{- if $.Values.tagPrefix }}
     argocd-image-updater.argoproj.io/appimage.allow-tags: "regexp:{{ $.Values.tagPrefix }}"
+{{- else if $.Values.tagSuffix }}
+    argocd-image-updater.argoproj.io/appimage.allow-tags: "regexp:^.*{{ $.Values.tagSuffix }}$"
+{{- end }}
     argocd-image-updater.argoproj.io/appimage.helm.image-name: image.repository
     argocd-image-updater.argoproj.io/appimage.helm.image-tag: image.tag
     notifications.argoproj.io/subscriptions: |

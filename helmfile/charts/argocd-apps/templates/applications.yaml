@@ -4,14 +4,22 @@ kind: Application
 apiVersion: argoproj.io/v1alpha1
 metadata:
   name: {{ $app.name }}
+  {{- if .appImageOverride }}
+  {{- else }}
   namespace: {{ $.Values.namespace }}
+  {{- end }}
   labels:
     env: {{ $.Values.environment }}
   annotations:
     argocd-image-updater.argoproj.io/git-branch: main
     argocd-image-updater.argoproj.io/write-back-method: git
+    {{- if .appImageOverride }}
+    argocd-image-updater.argoproj.io/write-back-target: "helmvalues:/argocd-image-updater/{{ .appImageOverride }}/{{ $.Values.environment }}.yaml"
+    argocd-image-updater.argoproj.io/image-list: "appimage={{ $.Values.accountID }}.dkr.ecr.{{ $.Values.awsRegion }}.amazonaws.com/{{ .appImageOverride }}"
+    {{- else }}
     argocd-image-updater.argoproj.io/write-back-target: "helmvalues:/argocd-image-updater/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml"
     argocd-image-updater.argoproj.io/image-list: "appimage={{ $.Values.accountID }}.dkr.ecr.{{ $.Values.awsRegion }}.amazonaws.com/{{ $.Values.appPrefix}}-{{ $app.config | default $app.name }}"
+    {{- end }}
     argocd-image-updater.argoproj.io/appimage.update-strategy: {{ $.Values.updateStrategy | default "newest-build" }}
     argocd-image-updater.argoproj.io/appimage.allow-tags: "regexp:{{ $.Values.tagRegex }}"
     argocd-image-updater.argoproj.io/appimage.helm.image-name: image.repository
@@ -33,10 +41,16 @@ spec:
     helm:
       ignoreMissingValueFiles: true
       valueFiles:
+        {{- if .valueFilesOverride }}
+        {{- range $vf := .valueFilesOverride }}
+        - {{ $vf }}
+        {{- end }}
+        {{- else }}
         - ../../apps/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml
         - ../../argocd-image-updater/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml
         {{- range $vf := .valueFiles }}
         - ../../apps/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $vf }}
+        {{- end}}
         {{- end}}
 
   project: {{ $.Values.project }}

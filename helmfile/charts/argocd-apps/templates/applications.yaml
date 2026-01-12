@@ -31,6 +31,7 @@ spec:
     path: charts/{{ .chart }}
     targetRevision: HEAD
     helm:
+      ignoreMissingValueFiles: true
       valueFiles:
         - ../../apps/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml
         - ../../argocd-image-updater/{{ $.Values.appPrefix }}/{{ $app.name }}/{{ $.Values.environment }}.yaml

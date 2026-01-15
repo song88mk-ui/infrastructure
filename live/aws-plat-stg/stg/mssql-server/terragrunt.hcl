@@ -7,7 +7,8 @@ terraform {
 }
 
 locals {
-  env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  env_vars             = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  master_user_password = run_cmd("--terragrunt-quiet", "aws", "ssm", "get-parameter", "--name", "/${local.environment}/mssql/master_user_password", "--region", local.aws_region, "--with-decryption", "--query", "Parameter.Value", "--output", "text")
 
   environment    = local.env_vars.locals.environment
   project_prefix = local.env_vars.locals.project_prefix
@@ -41,8 +42,10 @@ inputs = {
   storage_encrypted = true
   storage_type      = "gp3"
 
-  username                    = "admin"
-  manage_master_user_password = true
+  username = "admin"
+  password = local.master_user_password
+
+  manage_master_user_password = false
   port                        = 1433
 
   multi_az               = false

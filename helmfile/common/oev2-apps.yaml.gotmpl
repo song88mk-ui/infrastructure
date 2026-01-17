@@ -17,16 +17,36 @@ apps:
     chart: platform-app
   - name: job-keepalive
     chart: platform-app
-  - name: uof-client-g01
+  # dev
+  #- name: uof-client-g01
+    #config: uof-client
+    #chart: platform-app
+    #valueFiles:
+      #- {{ .Environment.Name }}-g01.yaml
+  # stg
+  - name: uof-client-g02
     config: uof-client
     chart: platform-app
     valueFiles:
-      - {{ .Environment.Name }}-g01.yaml
-  - name: websocket-service-g01
+      - {{ .Environment.Name }}-g02.yaml
+  # ws/dev
+  #- name: websocket-service-g01
+    #config: websocket-service
+    #chart: platform-app
+    #valueFiles:
+      #- {{ .Environment.Name }}-g01.yaml
+  # ws/stg
+  - name: websocket-service-g02
     config: websocket-service
     chart: platform-app
     valueFiles:
-      - {{ .Environment.Name }}-g01.yaml
+      - {{ .Environment.Name }}-g02.yaml
+  - name: websocket-service-qte
+    config: websocket-service
+    chart: platform-app
+    valueFiles:
+      - {{ .Environment.Name }}-qte.yaml
+
   - name: sportsbook-service-00
     config: sportsbook-service
     chart: platform-app

@@ -12,6 +12,8 @@ locals {
   environment    = local.env_vars.locals.environment
   project_prefix = local.env_vars.locals.project_prefix
   aws_region     = local.env_vars.locals.aws_region
+
+  instance_class = local.env_vars.locals.documentdb_instance_class
 }
 
 dependency "vpc" {
@@ -27,5 +29,7 @@ inputs = {
   master_password_ssm_path = "/${local.environment}/mongodb/master_password"
 
   allowed_cidr_blocks = [local.env_vars.locals.vpc_cidr]
+
+  instance_class = local.instance_class
 }
 

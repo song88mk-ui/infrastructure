@@ -12,6 +12,8 @@ locals {
   environment    = local.env_vars.locals.environment
   project_prefix = local.env_vars.locals.project_prefix
   aws_region     = local.env_vars.locals.aws_region
+
+  instance_class = local.env_vars.locals.documentdb_instance_class
 }
 
 dependency "vpc" {

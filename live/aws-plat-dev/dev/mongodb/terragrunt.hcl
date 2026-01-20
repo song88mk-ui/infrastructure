@@ -29,5 +29,7 @@ inputs = {
   master_password_ssm_path = "/${local.environment}/mongodb/master_password"
 
   allowed_cidr_blocks = [local.env_vars.locals.vpc_cidr]
+
+  instance_class = local.instance_class
 }
 

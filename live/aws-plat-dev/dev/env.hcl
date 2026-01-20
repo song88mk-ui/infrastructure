@@ -6,7 +6,7 @@ locals {
 
   vpc_cidr = "10.29.0.0/16"
 
-  documentdb_instance_class = "db.t3.medium"
+  documentdb_instance_class = "db.r5.xlarge"
 
   tags = {
     Environment   = local.environment

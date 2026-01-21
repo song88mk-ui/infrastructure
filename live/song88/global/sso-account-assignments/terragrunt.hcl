@@ -11,6 +11,7 @@ locals {
 
   plat_dev     = "418541840646"
   plat_stage   = "172065883315"
+  plat_prod    = "525375333516"
   core_public  = "458329143434"
   core_network = "445875720494"
   root         = "460167718646"
@@ -47,6 +48,17 @@ inputs = {
       ]
       EKSPowerUserAccess = [
         "developers"
+      ]
+    }
+    }, {
+    name       = "plat_prod",
+    account_id = local.plat_prod
+    permission_sets = {
+      AdministratorAccess = [
+        "devops"
+      ]
+      Billing = [
+        "billing"
       ]
     }
     }, {

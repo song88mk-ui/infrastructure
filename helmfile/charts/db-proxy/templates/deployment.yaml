@@ -1,0 +1,55 @@
+{{- range $name, $db := .Values.proxies }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "db-proxy.fullname" $ }}-{{ $name }}
+  labels:
+    {{- include "db-proxy.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "db-proxy.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: {{ $name }}
+  template:
+    metadata:
+      labels:
+        {{- include "db-proxy.labels" $ | nindent 8 }}
+        app.kubernetes.io/component: {{ $name }}
+    spec:
+      containers:
+        - name: proxy
+          image: alpine/socat:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              socat TCP-LISTEN:${LISTEN_PORT},fork,reuseaddr TCP:${DB_HOST}:${DB_PORT}
+          env:
+            - name: DB_HOST
+              value: {{ $db.endpoint | quote }}
+            - name: DB_PORT
+              value: {{ $db.remotePort | quote }}
+            - name: LISTEN_PORT
+              value: {{ $db.listenPort | quote }}
+          ports:
+            - containerPort: {{ $db.listenPort }}
+              name: db
+              protocol: TCP
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+{{- end }}

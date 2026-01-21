@@ -1,0 +1,20 @@
+{{- range $name, $db := .Values.proxies }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "db-proxy.fullname" $ }}-{{ $name }}
+  labels:
+    {{- include "db-proxy.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "db-proxy.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+  ports:
+    - port: {{ $db.listenPort }}
+      targetPort: {{ $db.listenPort }}
+      protocol: TCP
+      name: db
+{{- end }}

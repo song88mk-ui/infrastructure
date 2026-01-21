@@ -10,6 +10,10 @@ environments:
     kubeContext: song88-stg-cluster
     values:
     - environments/stg/values.yaml
+  prd:
+    kubeContext: song88-prd-cluster
+    values:
+    - environments/prd/values.yaml
 ---
 repositories:
 - name: prometheus
@@ -264,6 +268,7 @@ releases:
       - common/postgresql.yaml.gotmpl
       - environments/{{ .Environment.Name }}/postgresql.yaml.gotmpl
 
+  - name: mssql
     namespace: bet-genius-apps
     chart: simcube/mssqlserver-2022
     version: 1.2.3

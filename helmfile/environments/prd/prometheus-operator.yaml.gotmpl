@@ -1,0 +1,35 @@
+prometheus:
+  # We don't care about redundancy on a non-prod environment.
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+
+  prometheusSpec:
+    replicas: 1
+
+grafana:
+  grafana.ini:
+    auth.github:
+      name: Github
+      enabled: true
+      allow_sign_up: true
+      role_attribute_strict: true
+      client_id: "ref+awsssm://prd/song88/grafana/client-id?region=ap-east-1"
+      client_secret: "ref+awsssm://prd/song88/grafana/client-secret?region=ap-east-1"
+      scopes: "user:email,read:org"
+      role_attribute_path: >-
+        contains(groups[*], '@FlyingCockatoo/devops') && 'Admin' ||
+        contains(groups[*], '@FlyingCockatoo/backend') && 'Editor' ||
+        contains(groups[*], '@FlyingCockatoo/frontend') && 'Editor' ||
+        contains(groups[*], '@FlyingCockatoo/qa') && 'Editor'
+      auto_assign_org_role: Viewer
+      allowed_organizations:
+      - "FlyingCockatoo"
+
+alertmanager:
+  # We don't care about redundancy on a non-prod environment.
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+  alertmanagerSpec:
+    replicas: 1

@@ -1,0 +1,5 @@
+serviceMonitor:
+  targets:
+  - name: bg-feed-receiver-api
+    url: https://bg-feed-receiver-api.song88.com/v1/sportsbook/heartbeat
+    module: http_200_post

@@ -1,0 +1,27 @@
+clusterName: song88-prd-cluster
+
+storageClassName: "gp3"
+
+slackChannel: "#alerts-env-prd"
+
+accountID: "525375333516"
+
+grafanaPassword: "ref+awsssm://prd/song88/grafana/password?region=ap-east-1"
+slackApiUrl: "ref+awsssm://prd/song88/slack/api-url?region=ap-east-1"
+pagerdutyRoutingKey: "ref+awsssm://prd/song88/pagerduty/routing-key?region=ap-east-1"
+
+argoCD:
+  clientID: "ref+awsssm://prd/song88/argocd/client-id?region=ap-east-1"
+  clientSecret: "ref+awsssm://prd/song88/argocd/client-secret?region=ap-east-1"
+  deployKey: "ref+awsssm://prd/song88/deploy/key?region=ap-east-1"
+  slackToken: "ref+awsssm://prd/song88/argocd/slack-token?region=ap-east-1"
+  grafanaApiKey: "ref+awsssm://prd/song88/argocd/grafana-api-key?region=ap-east-1"
+
+wildcardCertificate: arn:aws:acm:ap-east-1:525375333516:certificate/177fd2b3-cc64-4011-b3b5-1ee30dc2e0e7
+
+awsRegion: ap-east-1
+
+vpcId: vpc-0a6e52d6f9fa0372c
+
+lokiLogsBucket: song88-prd-loki-logs
+tempoTracesBucket: song88-prd-tempo-traces

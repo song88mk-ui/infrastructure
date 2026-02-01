@@ -8,6 +8,10 @@ prometheus:
     replicas: 1
 
 grafana:
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/group.name: eks-apps
+
   grafana.ini:
     auth.github:
       name: Github

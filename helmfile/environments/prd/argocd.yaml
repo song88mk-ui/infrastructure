@@ -1,0 +1,4 @@
+server:
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/group.name: eks-apps

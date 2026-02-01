@@ -114,6 +114,7 @@ releases:
     values:
       - common/argocd.yaml.gotmpl
       - common/argocd-notifications.yaml
+      - environments/{{ .Environment.Name }}/argocd.yaml
 
   - name: argocd-image-updater
     namespace: argocd

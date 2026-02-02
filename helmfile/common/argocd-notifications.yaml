@@ -5,11 +5,61 @@ notifications:
     service.grafana: |
       apiUrl: http://prometheus-operator-grafana.monitoring/api
       apiKey: $grafana-apiKey
+    service.webhook.main: |
+      url: https://hooks.3704labs.com/argocd/song88
+      headers:
+      - name: Content-Type
+        value: application/json
+  subscriptions:
+    - recipients:
+      - main
+      triggers:
+      - on-sync-status-unknown
+      - on-sync-succeeded
+      - on-sync-running
+      - on-sync-failed
+      - on-health-degraded
+      - on-deployed
+      - on-deleted
   enabled: true
   templates:
+    template.app-deleted: |
+      message: Application {{.app.metadata.name}} has been deleted.
+      webhook:
+        main:
+          method: POST
+          body: |
+            {
+              "action": "app-deleted",
+              "name": "{{ .app.metadata.name }}",
+              "syncstatus": "{{ .app.status.sync.status }}",
+              "environment": "{{ .app.metadata.labels.env }}",
+              "revision": "{{ .app.status.sync.revision }}",
+              "namespace": "{{ .app.metadata.namespace }}",
+              "project": "{{ .app.spec.project }}",
+              "images": "{{ .app.status.summary.images }}",
+              "healthstatus": "{{ .app.status.health.status }}",
+              "phase": "{{ .app.status.operationstate.phase }}"
+            }
     template.app-deployed: |
       message: |
         {{if eq .serviceType "slack"}}:white_check_mark:{{end}} Application {{.app.metadata.name}} is now running new version of deployments manifests.
+      webhook:
+        main:
+          method: POST
+          body: |
+            {
+              "action": "app-deployed",
+              "name": "{{ .app.metadata.name }}",
+              "syncstatus": "{{ .app.status.sync.status }}",
+              "environment": "{{ .app.metadata.labels.env }}",
+              "revision": "{{ .app.status.sync.revision }}",
+              "namespace": "{{ .app.metadata.namespace }}",
+              "project": "{{ .app.spec.project }}",
+              "images": "{{ .app.status.summary.images }}",
+              "healthstatus": "{{ .app.status.health.status }}",
+              "phase": "{{ .app.status.operationstate.phase }}"
+            }
       slack:
         attachments: |
           [{
@@ -47,6 +97,22 @@ notifications:
       message: |
         {{if eq .serviceType "slack"}}:exclamation:{{end}} Application {{.app.metadata.name}} has degraded.
         Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}.
+      webhook:
+        main:
+          method: POST
+          body: |
+            {
+              "action": "app-health-degraded",
+              "name": "{{ .app.metadata.name }}",
+              "syncstatus": "{{ .app.status.sync.status }}",
+              "environment": "{{ .app.metadata.labels.env }}",
+              "revision": "{{ .app.status.sync.revision }}",
+              "namespace": "{{ .app.metadata.namespace }}",
+              "project": "{{ .app.spec.project }}",
+              "images": "{{ .app.status.summary.images }}",
+              "healthstatus": "{{ .app.status.health.status }}",
+              "phase": "{{ .app.status.operationstate.phase }}"
+            }
       slack:
         attachments: |-
           [{
@@ -79,6 +145,22 @@ notifications:
       message: |
         {{if eq .serviceType "slack"}}:exclamation:{{end}}  The sync operation of application {{.app.metadata.name}} has failed at {{.app.status.operationState.finishedAt}} with the following error: {{.app.status.operationState.message}}
         Sync operation details are available at: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}?operation=true .
+      webhook:
+        main:
+          method: POST
+          body: |
+            {
+              "action": "app-sync-failed",
+              "name": "{{ .app.metadata.name }}",
+              "syncstatus": "{{ .app.status.sync.status }}",
+              "environment": "{{ .app.metadata.labels.env }}",
+              "revision": "{{ .app.status.sync.revision }}",
+              "namespace": "{{ .app.metadata.namespace }}",
+              "project": "{{ .app.spec.project }}",
+              "images": "{{ .app.status.summary.images }}",
+              "healthstatus": "{{ .app.status.health.status }}",
+              "phase": "{{ .app.status.operationstate.phase }}"
+            }
       slack:
         attachments: |-
           [{
@@ -111,6 +193,22 @@ notifications:
       message: |
         The sync operation of application {{.app.metadata.name}} has started at {{.app.status.operationState.startedAt}}.
         Sync operation details are available at: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}?operation=true .
+      webhook:
+        main:
+          method: POST
+          body: |
+            {
+              "action": "app-sync-running",
+              "name": "{{ .app.metadata.name }}",
+              "syncstatus": "{{ .app.status.sync.status }}",
+              "environment": "{{ .app.metadata.labels.env }}",
+              "revision": "{{ .app.status.sync.revision }}",
+              "namespace": "{{ .app.metadata.namespace }}",
+              "project": "{{ .app.spec.project }}",
+              "images": "{{ .app.status.summary.images }}",
+              "healthstatus": "{{ .app.status.health.status }}",
+              "phase": "{{ .app.status.operationstate.phase }}"
+            }
       slack:
         attachments: |-
           [{
@@ -148,6 +246,22 @@ notifications:
             * {{$c.message}}
         {{end}}
         {{end}}
+      webhook:
+        main:
+          method: POST
+          body: |
+            {
+              "action": "app-sync-status-unknown",
+              "name": "{{ .app.metadata.name }}",
+              "syncstatus": "{{ .app.status.sync.status }}",
+              "environment": "{{ .app.metadata.labels.env }}",
+              "revision": "{{ .app.status.sync.revision }}",
+              "namespace": "{{ .app.metadata.namespace }}",
+              "project": "{{ .app.spec.project }}",
+              "images": "{{ .app.status.summary.images }}",
+              "healthstatus": "{{ .app.status.health.status }}",
+              "phase": "{{ .app.status.operationstate.phase }}"
+            }
       slack:
         attachments: |-
           [{
@@ -180,6 +294,22 @@ notifications:
       message: |
         {{if eq .serviceType "slack"}}:white_check_mark:{{end}} Application {{.app.metadata.name}} has been successfully synced at {{.app.status.operationState.finishedAt}}.
         Sync operation details are available at: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}?operation=true .
+      webhook:
+        main:
+          method: POST
+          body: |
+            {
+              "action": "app-sync-succeeded",
+              "name": "{{ .app.metadata.name }}",
+              "syncstatus": "{{ .app.status.sync.status }}",
+              "environment": "{{ .app.metadata.labels.env }}",
+              "revision": "{{ .app.status.sync.revision }}",
+              "namespace": "{{ .app.metadata.namespace }}",
+              "project": "{{ .app.spec.project }}",
+              "images": "{{ .app.status.summary.images }}",
+              "healthstatus": "{{ .app.status.health.status }}",
+              "phase": "{{ .app.status.operationstate.phase }}"
+            }
       slack:
         attachments: |-
           [{
@@ -208,9 +338,6 @@ notifications:
             {{end}}
             ]
           }]
-    template.app-deleted: |
-      message: Application {{.app.metadata.name}} has been deleted.
-
   triggers:
      trigger.on-deployed: |
        - description: Application is synced and healthy. Triggered once per commit.

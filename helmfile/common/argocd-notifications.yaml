@@ -39,7 +39,7 @@ notifications:
               "project": "{{ .app.spec.project }}",
               "images": "{{ .app.status.summary.images }}",
               "healthstatus": "{{ .app.status.health.status }}",
-              "phase": "{{ .app.status.operationstate.phase }}"
+              "phase": "{{ .app.status.operationState.phase }}"
             }
     template.app-deployed: |
       message: |
@@ -58,7 +58,7 @@ notifications:
               "project": "{{ .app.spec.project }}",
               "images": "{{ .app.status.summary.images }}",
               "healthstatus": "{{ .app.status.health.status }}",
-              "phase": "{{ .app.status.operationstate.phase }}"
+              "phase": "{{ .app.status.operationState.phase }}"
             }
       slack:
         attachments: |
@@ -111,7 +111,7 @@ notifications:
               "project": "{{ .app.spec.project }}",
               "images": "{{ .app.status.summary.images }}",
               "healthstatus": "{{ .app.status.health.status }}",
-              "phase": "{{ .app.status.operationstate.phase }}"
+              "phase": "{{ .app.status.operationState.phase }}"
             }
       slack:
         attachments: |-
@@ -159,7 +159,7 @@ notifications:
               "project": "{{ .app.spec.project }}",
               "images": "{{ .app.status.summary.images }}",
               "healthstatus": "{{ .app.status.health.status }}",
-              "phase": "{{ .app.status.operationstate.phase }}"
+              "phase": "{{ .app.status.operationState.phase }}"
             }
       slack:
         attachments: |-
@@ -207,7 +207,7 @@ notifications:
               "project": "{{ .app.spec.project }}",
               "images": "{{ .app.status.summary.images }}",
               "healthstatus": "{{ .app.status.health.status }}",
-              "phase": "{{ .app.status.operationstate.phase }}"
+              "phase": "{{ .app.status.operationState.phase }}"
             }
       slack:
         attachments: |-
@@ -260,7 +260,7 @@ notifications:
               "project": "{{ .app.spec.project }}",
               "images": "{{ .app.status.summary.images }}",
               "healthstatus": "{{ .app.status.health.status }}",
-              "phase": "{{ .app.status.operationstate.phase }}"
+              "phase": "{{ .app.status.operationState.phase }}"
             }
       slack:
         attachments: |-
@@ -308,7 +308,7 @@ notifications:
               "project": "{{ .app.spec.project }}",
               "images": "{{ .app.status.summary.images }}",
               "healthstatus": "{{ .app.status.health.status }}",
-              "phase": "{{ .app.status.operationstate.phase }}"
+              "phase": "{{ .app.status.operationState.phase }}"
             }
       slack:
         attachments: |-

@@ -11,6 +11,11 @@ metadata:
   labels:
     env: {{ $.Values.environment }}
   annotations:
+    {{- if .workflowId }}
+    ci.github.com/workflow-id: "{{ .workflowId }}"
+    {{- else if $.Values.workflowId }}
+    ci.github.com/workflow-id: "{{ $.Values.workflowId }}"
+    {{- end }}
     argocd-image-updater.argoproj.io/git-branch: main
     argocd-image-updater.argoproj.io/write-back-method: git
     {{- if .appImageOverride }}

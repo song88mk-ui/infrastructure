@@ -4,6 +4,7 @@ environment: {{ .Environment.Name }}
 namespace: platform
 project: platform
 appPrefix: platform
+workflowId: "203388073"
 
 accountID: "{{ .Values.accountID }}"
 awsRegion: "{{ .Values.awsRegion }}"
@@ -11,6 +12,7 @@ awsRegion: "{{ .Values.awsRegion }}"
 apps:
   - name: auth-api
     chart: platform-app
+    workflowId: "204794669"
   - name: job-forexeur
     chart: platform-app
   - name: settlement-service
@@ -41,9 +43,10 @@ apps:
     chart: platform-app
   - name: web-config
     chart: platform-app
+    workflowId: "214255220"
   - name: web-assets
     chart: platform-app
+    workflowId: "214366460"
   - name: web
     chart: platform-app
-  #- name: web-mockup
-    #chart: platform-app
+    workflowId: "214285389"

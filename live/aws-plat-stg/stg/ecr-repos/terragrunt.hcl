@@ -48,6 +48,7 @@ inputs = {
     "oev2-job-keepalive"      = {}
     "oev2-job-settlement"     = {}
     "oev2-job-cleanup"        = {}
+    "oev2-job-livestream"     = {}
     # platform apps (old platform)
     "platform-platform-api"             = {}
     "platform-betforwarder-service"     = {}

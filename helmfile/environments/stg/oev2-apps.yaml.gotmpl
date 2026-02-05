@@ -65,6 +65,8 @@ apps:
       - {{ .Environment.Name }}-10.yaml
   - name: job-settlement
     chart: platform-app
+  - name: job-cleanup
+    chart: platform-app
 
   # apps for stg only
   - name: uof-client-g02

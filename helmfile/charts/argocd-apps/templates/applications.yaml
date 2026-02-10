@@ -19,7 +19,7 @@ metadata:
     argocd-image-updater.argoproj.io/git-branch: main
     argocd-image-updater.argoproj.io/write-back-method: git
     {{- if .appImageOverride }}
-    argocd-image-updater.argoproj.io/write-back-target: "helmvalues:/argocd-image-updater/{{ .appImageOverride }}/{{ $.Values.environment }}.yaml"
+    argocd-image-updater.argoproj.io/write-back-target: "helmvalues:/argocd-image-updater/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml"
     argocd-image-updater.argoproj.io/image-list: "appimage={{ $.Values.accountID }}.dkr.ecr.{{ $.Values.awsRegion }}.amazonaws.com/{{ .appImageOverride }}"
     {{- else }}
     argocd-image-updater.argoproj.io/write-back-target: "helmvalues:/argocd-image-updater/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml"

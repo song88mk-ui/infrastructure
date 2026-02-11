@@ -80,7 +80,6 @@ inputs = {
     "platform-auth-api"                 = {}
     # web layouts
     "platform-web-mockup" = {}
-    "platform-web-config" = {}
     "platform-web-assets" = {}
     "platform-web"        = {}
     # web utils

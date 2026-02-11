@@ -83,6 +83,8 @@ inputs = {
     "platform-web-config" = {}
     "platform-web-assets" = {}
     "platform-web"        = {}
+    # web utils
+    "platform-webprops-api" = {}
     # odds feed
     "of-betting-api"          = {}
     "of-client-api"           = {}

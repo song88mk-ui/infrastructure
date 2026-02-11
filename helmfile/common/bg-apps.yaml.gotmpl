@@ -16,39 +16,39 @@ apps:
     workflowId: "207569036"
     valueFilesOverride:
     - ../../apps/bg-engine-sportsbook/{{ .Environment.Name }}.yaml
-    - ../../argocd-image-updater/bg-engine-sportsbook/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/bet-genius-apps/bet-genius-apps-bg-engine-sportsbook/{{ .Environment.Name }}.yaml
   - name: bet-genius-apps-bg-feed-receiver-api
     chart: betgenius-app
     appImageOverride: bg-feed-receiver-api
     workflowId: "207569037"
     valueFilesOverride:
     - ../../apps/bg-feed-receiver-api/{{ .Environment.Name }}.yaml
-    - ../../argocd-image-updater/bg-feed-receiver-api/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/bet-genius-apps/bet-genius-apps-bg-feed-receiver-api/{{ .Environment.Name }}.yaml
   - name: bet-genius-apps-bg-rabbitmq-api
     chart: betgenius-app
     appImageOverride: bg-rabbitmq-api
     workflowId: "207569038"
     valueFilesOverride:
     - ../../apps/bg-rabbitmq-api/{{ .Environment.Name }}.yaml
-    - ../../argocd-image-updater/bg-rabbitmq-api/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/bet-genius-apps/bet-genius-apps-bg-rabbitmq-api/{{ .Environment.Name }}.yaml
   - name: bet-genius-apps-bg-receiver-service
     chart: betgenius-app
     appImageOverride: bg-receiver-service
     workflowId: "207569039"
     valueFilesOverride:
     - ../../apps/bg-receiver-service/{{ .Environment.Name }}.yaml
-    - ../../argocd-image-updater/bg-receiver-service/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/bet-genius-apps/bet-genius-apps-bg-receiver-service/{{ .Environment.Name }}.yaml
   - name: bet-genius-apps-bg-feedlogger-service
     chart: betgenius-app
     appImageOverride: bg-feedlogger-service
     workflowId: "207741954"
     valueFilesOverride:
     - ../../apps/bg-feedlogger-service/{{ .Environment.Name }}.yaml
-    - ../../argocd-image-updater/bg-feedlogger-service/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/bet-genius-apps/bet-genius-apps-bg-feedlogger-service/{{ .Environment.Name }}.yaml
   - name: bet-genius-apps-bg-heartbeat-listener
     chart: betgenius-app
     appImageOverride: bg-heartbeat-listener
     workflowId: "207735885"
     valueFilesOverride:
     - ../../apps/bg-heartbeat-listener/{{ .Environment.Name }}.yaml
-    - ../../argocd-image-updater/bg-heartbeat-listener/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/bet-genius-apps/bet-genius-apps-bg-heartbeat-listener/{{ .Environment.Name }}.yaml

@@ -75,9 +75,9 @@ inputs = {
       remote_network_key = "stg"
       access_groups      = ["developers", "devops"]
     }
-    dev_mssql = {
-      name               = "MSSQL (DEV)"
-      address            = "b-e244ede6-0d6a-4c12-be31-90e96fa9126b.mq.ap-south-1.on.aws"
+    dev_documentdb = {
+      name               = "DocumentDB (DEV)"
+      address            = "dev-mongodb-cluster.cluster-cnm0wa2ik1qp.ap-south-1.docdb.amazonaws.com"
       remote_network_key = "dev"
       access_groups      = ["developers", "devops"]
     }

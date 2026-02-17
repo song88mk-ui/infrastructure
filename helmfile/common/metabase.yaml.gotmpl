@@ -1,0 +1,15 @@
+database:
+  type: h2
+  persistence:
+    enabled: true
+    size: 10Gi
+
+password:
+  complexity: strong
+  length: 16
+
+ingress:
+  enabled: true
+  className: alb
+  hosts:
+    - metabase.{{ .Environment.Name }}.song88.com

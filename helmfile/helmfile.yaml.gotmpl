@@ -42,6 +42,8 @@ repositories:
   url: https://charts.bitnami.com/bitnami
 - name: eks
   url: https://aws.github.io/eks-charts
+- name: metabase
+  url: https://pmint93.github.io/helm-charts
 
 helmDefaults:
   verify: false
@@ -305,3 +307,10 @@ releases:
     version: 1.0.0
     values:
       - environments/{{ .Environment.Name }}/db-proxy.yaml.gotmpl
+
+  - name: metabase
+    namespace: metabase
+    chart: metabase/metabase
+    version: 2.24.1
+    values:
+      - common/metabase.yaml.gotmpl

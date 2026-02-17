@@ -75,9 +75,21 @@ inputs = {
       remote_network_key = "stg"
       access_groups      = ["developers", "devops"]
     }
+    stg_endpoints = {
+      name               = "Stage Environment"
+      address            = "*.stg.song88.com"
+      remote_network_key = "stg"
+      access_groups      = ["developers", "devops"]
+    }
     dev_documentdb = {
       name               = "DocumentDB (DEV)"
       address            = "dev-mongodb-cluster.cluster-cnm0wa2ik1qp.ap-south-1.docdb.amazonaws.com"
+      remote_network_key = "dev"
+      access_groups      = ["developers", "devops"]
+    }
+    dev_endpoints = {
+      name               = "Dev Environment"
+      address            = "*.dev.song88.com"
       remote_network_key = "dev"
       access_groups      = ["developers", "devops"]
     }

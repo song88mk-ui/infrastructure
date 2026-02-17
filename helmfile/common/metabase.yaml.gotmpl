@@ -13,3 +13,12 @@ ingress:
   className: alb
   hosts:
     - metabase.{{ .Environment.Name }}.song88.com
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: {{ .Environment.Name }}-eks-alb
+    alb.ingress.kubernetes.io/group.name: apps
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-Res-2021-06
+    alb.ingress.kubernetes.io/healthcheck-path: /api/health
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.wildcardCertificate }}

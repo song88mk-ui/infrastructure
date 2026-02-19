@@ -18,3 +18,6 @@ rbac:
     name: cluster-autoscaler-sa
 
 awsRegion: {{ .Values.awsRegion }}
+
+customArgs:
+  - "--balance-similar-node-groups=true"

@@ -42,4 +42,8 @@ pkgs.mkShell {
       '';
     })
   ];
+
+  shellHook = ''
+    export LC_ALL=en_US.utf-8
+  '';
 }

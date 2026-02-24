@@ -1,0 +1,19 @@
+---
+all:
+  hosts:
+    mongodb:
+      ansible_host: 10.59.100.160
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_user: ubuntu
+      aws_env: prd
+      aws_region: ap-east-1
+
+      # The device names are taken from terraform.
+      volumes:
+        - device: /dev/sdk
+          mount_point: /var/lib/mongodb
+
+  vars:
+    ansible_user: ubuntu
+    aws_env: prd
+    aws_region: ap-east-1

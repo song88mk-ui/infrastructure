@@ -93,5 +93,11 @@ inputs = {
       remote_network_key = "dev"
       access_groups      = ["developers", "devops"]
     }
+    prd_network = {
+      name               = "PROD Network"
+      address            = "10.59.0.0/16"
+      remote_network_key = "prd"
+      access_groups      = ["developers", "devops"]
+    }
   }
 }

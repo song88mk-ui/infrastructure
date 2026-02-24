@@ -1,0 +1,13 @@
+---
+collections:
+  - name: ansible.posix
+    version: 1.5.4
+  - name: community.general
+    version: 9.2.0
+  - name: prometheus.prometheus
+    version: 0.27.6
+roles:
+- src: https://github.com/ansible-collections/community.mongodb
+  scm: git
+  version: 69f3a7aefe35b2a30d9da5a30fcef33def46f677
+  name: community.mongodb

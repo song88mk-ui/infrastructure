@@ -1,0 +1,34 @@
+---
+- name: Setup MongoDB
+  hosts: mongodb
+  become: yes
+  vars:
+    node_exporter_version: "1.10.2"
+    node_exporter_web_listen_address: "0.0.0.0:9092"
+
+  roles:
+    - name: community.mongodb.mongodb_linux
+    - name: community.mongodb.mongodb_repository
+      vars:
+        mongodb_version: "8.0"
+    - name: community.mongodb.mongodb_install
+    - name: community.mongodb.mongodb_mongod
+      vars:
+        authorization: false
+        db_path: /var/lib/mongodb
+    - name: prometheus.prometheus.node_exporter
+      tags:
+        - monitoring
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+  # NOTE: We have to run the following to bootstrap the replicaset after creation.
+  # rs.initiate({
+  #   _id: "rs0",
+  #   members: [{ _id: 0, host: "<HOST_IP>:27017" }]
+  # })
+  # Verify that it worked.
+  # rs.status()

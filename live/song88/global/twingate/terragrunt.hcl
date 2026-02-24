@@ -51,12 +51,6 @@ inputs = {
       remote_network_key = "prd"
       access_groups      = ["developers", "devops"]
     }
-    prod_documentdb = {
-      name               = "DocumentDB (PROD)"
-      address            = "prd-mongodb-instance-1.cdqkiuumgexn.ap-east-1.docdb.amazonaws.com"
-      remote_network_key = "prd"
-      access_groups      = ["developers", "devops"]
-    }
     stg_mssql = {
       name               = "MSSQL (STG)"
       address            = "stg-song88-mssql-server.cz8wmg0s28pd.ap-south-1.rds.amazonaws.com"

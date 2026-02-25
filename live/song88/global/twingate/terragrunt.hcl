@@ -64,8 +64,8 @@ inputs = {
       access_groups      = ["developers", "devops"]
     }
     stg_documentdb = {
-      name               = "DocumentDB (STG)"
-      address            = "stg-mongodb-instance-1.cz8wmg0s28pd.ap-south-1.docdb.amazonaws.com"
+      name               = "MongoDB (STG)"
+      address            = "10.49.100.55"
       remote_network_key = "stg"
       access_groups      = ["developers", "devops"]
     }
@@ -76,8 +76,8 @@ inputs = {
       access_groups      = ["developers", "devops"]
     }
     dev_documentdb = {
-      name               = "DocumentDB (DEV)"
-      address            = "dev-mongodb-cluster.cluster-cnm0wa2ik1qp.ap-south-1.docdb.amazonaws.com"
+      name               = "MongoDB (DEV)"
+      address            = "10.29.100.172"
       remote_network_key = "dev"
       access_groups      = ["developers", "devops"]
     }
@@ -85,6 +85,18 @@ inputs = {
       name               = "Dev Environment"
       address            = "*.dev.song88.com"
       remote_network_key = "dev"
+      access_groups      = ["developers", "devops"]
+    }
+    dev_network = {
+      name               = "Dev Network"
+      address            = "10.29.0.0/16"
+      remote_network_key = "dev"
+      access_groups      = ["developers", "devops"]
+    }
+    stg_network = {
+      name               = "Stage Network"
+      address            = "10.49.0.0/16"
+      remote_network_key = "stg"
       access_groups      = ["developers", "devops"]
     }
     prd_network = {

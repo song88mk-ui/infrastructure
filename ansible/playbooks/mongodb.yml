@@ -14,21 +14,31 @@
     - name: community.mongodb.mongodb_install
     - name: community.mongodb.mongodb_mongod
       vars:
-        authorization: false
+        authorization: true
+        mongodb_admin_user: admin
+        mongodb_admin_pwd: "{{ lookup('aws_ssm', mongodb_admin_password, region=aws_region) }}"
+        mongodb_logrotate_enabled: true
         db_path: /var/lib/mongodb
     - name: prometheus.prometheus.node_exporter
       tags:
         - monitoring
 
-  tasks:
-    - name: Update apt cache
-      apt:
-        update_cache: yes
+  pre_tasks:
+  - name: Install utilities
+    apt:
+      update_cache: true
+      pkg:
+        - python3-pip
+        - python3-pymongo
 
-  # NOTE: We have to run the following to bootstrap the replicaset after creation.
-  # rs.initiate({
-  #   _id: "rs0",
-  #   members: [{ _id: 0, host: "<HOST_IP>:27017" }]
-  # })
-  # Verify that it worked.
-  # rs.status()
+  tasks:
+    - name: Initialise MongoDB Replicaset rs0
+      community.mongodb.mongodb_replicaset:
+        login_host: localhost
+        replica_set: "rs0"
+        members:
+          - host: "{{ ansible_host }}"
+        validate: false
+      register: repl
+      tags:
+        - replicaset

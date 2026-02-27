@@ -22,6 +22,14 @@
     - name: prometheus.prometheus.node_exporter
       tags:
         - monitoring
+    - name: prometheus.prometheus.mongodb_exporter
+      vars:
+        mongodb_exporter_web_listen_address: "0.0.0.0:9216"
+        mongodb_exporter_version: "0.49.0"
+        mongodb_exporter_discovering_mode: true
+        mongodb_exporter_collectors: "all"
+      tags:
+        - monitoring
 
   pre_tasks:
   - name: Install utilities

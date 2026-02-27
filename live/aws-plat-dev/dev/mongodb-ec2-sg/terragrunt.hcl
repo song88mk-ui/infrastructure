@@ -35,6 +35,13 @@ inputs = {
       cidr_blocks = dependency.vpc.outputs.vpc_cidr_block
     },
     {
+      from_port   = 9216
+      to_port     = 9216
+      protocol    = "tcp"
+      description = "MongoDB exporter"
+      cidr_blocks = dependency.vpc.outputs.vpc_cidr_block
+    },
+    {
       from_port   = 22
       to_port     = 22
       protocol    = "tcp"

@@ -105,5 +105,11 @@ inputs = {
       remote_network_key = "prd"
       access_groups      = ["developers", "devops"]
     }
+    "product-int.qtplatform.com" = {
+      name               = "product-int.qtplatform.com"
+      address            = "product-int.qtplatform.com"
+      remote_network_key = "stg"
+      access_groups      = ["developers", "devops"]
+    }
   }
 }

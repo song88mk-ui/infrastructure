@@ -169,6 +169,18 @@ terragrunt apply
 
 You can go over the [examples][terragrunt_live] repo for Terragrunt for more information.
 
+## Twingate IPs
+
+Below are the twingate connectors and their IPs. Those IPs will appear as the egress IPS be used when
+certain endpoints, are routed through twingate. Usually they will need to be whitelisted by third
+parties in case we're using twingate to access them.
+
+- DEV: `13.204.106.185`
+- STG: `3.7.178.117`
+- PRD: `95.40.172.189`
+
+The IPs can also be found in the twingate page: https://song88.twingate.com/connectors?sortBy=state
+
 [direnv]: https://direnv.net
 [nix]: https://nixos.org/
 [terraform]: https://developer.hashicorp.com/terraform

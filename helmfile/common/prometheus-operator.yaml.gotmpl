@@ -103,6 +103,8 @@ grafana:
       reporting_enabled: false
     security:
       disable_gravatar: true
+    auth:
+      oauth_allow_insecure_email_lookup: true # Allows to merge accounts from different OAuth providers
 
 prometheusOperator:
   kubeletService:

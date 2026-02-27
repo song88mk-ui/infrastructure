@@ -25,22 +25,19 @@ grafana:
       alb.ingress.kubernetes.io/group.name: eks-apps
 
   grafana.ini:
-    auth.github:
-      name: Github
+    auth.google:
+      name: Google
       enabled: true
       allow_sign_up: true
+      auto_login: false
+      client_id: "ref+awsssm://prd/song88/google/client-id?region=ap-east-1"
+      client_secret: "ref+awsssm://prd/song88/google/client-secret?region=ap-east-1"
+      scopes: openid email profile
+      role_attribute_path: contains('["ksideris@song88.com","erivera@song88.com","michel@song88.com"]', email) && 'Admin' || 'Editor'
       role_attribute_strict: true
-      client_id: "ref+awsssm://prd/song88/grafana/client-id?region=ap-east-1"
-      client_secret: "ref+awsssm://prd/song88/grafana/client-secret?region=ap-east-1"
-      scopes: "user:email,read:org"
-      role_attribute_path: >-
-        contains(groups[*], '@FlyingCockatoo/devops') && 'Admin' ||
-        contains(groups[*], '@FlyingCockatoo/backend') && 'Editor' ||
-        contains(groups[*], '@FlyingCockatoo/frontend') && 'Editor' ||
-        contains(groups[*], '@FlyingCockatoo/qa') && 'Editor'
-      auto_assign_org_role: Viewer
-      allowed_organizations:
-      - "FlyingCockatoo"
+      skip_org_role_sync: true
+      allowed_domains: song88.com
+      hosted_domain: song88.com
 
 alertmanager:
   # We don't care about redundancy on a non-prod environment.

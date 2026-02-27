@@ -108,7 +108,7 @@ inputs = {
     "product-int.qtplatform.com" = {
       name               = "product-int.qtplatform.com"
       address            = "product-int.qtplatform.com"
-      remote_network_key = "stg"
+      remote_network_key = "prd"
       access_groups      = ["developers", "devops"]
     }
   }

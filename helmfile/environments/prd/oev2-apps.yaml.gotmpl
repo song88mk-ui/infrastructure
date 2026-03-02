@@ -77,6 +77,7 @@ apps:
     valueFiles:
       - {{ .Environment.Name }}-g00.yaml
 
+  # websocket services
   - name: websocket-service-g00
     config: websocket-service
     chart: platform-app
@@ -87,3 +88,13 @@ apps:
     chart: platform-app
     valueFiles:
       - {{ .Environment.Name }}-qte.yaml
+  - name: websocket-service-krj
+    config: websocket-service
+    chart: platform-app
+    valueFiles:
+      - {{ .Environment.Name }}-krj.yaml
+  - name: websocket-service-oge
+    config: websocket-service
+    chart: platform-app
+    valueFiles:
+      - {{ .Environment.Name }}-oge.yaml

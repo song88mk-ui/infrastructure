@@ -92,3 +92,8 @@ apps:
     chart: platform-app
     valueFiles:
       - {{ .Environment.Name }}-krj.yaml
+  - name: websocket-service-oge
+    config: websocket-service
+    chart: platform-app
+    valueFiles:
+      - {{ .Environment.Name }}-oge.yaml

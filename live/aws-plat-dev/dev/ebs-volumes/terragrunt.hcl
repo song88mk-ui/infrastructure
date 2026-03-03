@@ -14,11 +14,22 @@ dependency "mongodb" {
   config_path = "../mongodb-ec2-instance/"
 }
 
+dependency "mongodb_02" {
+  config_path = "../mongodb-02/"
+}
+
 inputs = {
   volumes = {
     "mongodb-data" = {
       instance_id = dependency.mongodb.outputs.id
       device_name = "/dev/sdk"
+      throughput  = 500
+      size        = "50"
+    }
+
+    "mongodb-02-data" = {
+      instance_id = dependency.mongodb_02.outputs.id
+      device_name = "/dev/sdm"
       throughput  = 500
       size        = "50"
     }

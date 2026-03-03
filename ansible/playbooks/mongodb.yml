@@ -17,7 +17,7 @@
         authorization: true
         mongodb_admin_user: admin
         mongodb_admin_pwd: "{{ lookup('aws_ssm', mongodb_admin_password, region=aws_region) }}"
-        mongodb_logrotate_enabled: true
+        mongodb_logrotate_enabled: false
         db_path: /var/lib/mongodb
     - name: prometheus.prometheus.node_exporter
       tags:
@@ -44,9 +44,14 @@
       community.mongodb.mongodb_replicaset:
         login_host: localhost
         replica_set: "rs0"
-        members:
-          - host: "{{ ansible_host }}"
+        members: "{{ groups['mongodb'] }}"
         validate: false
+      when: ansible_hostname == "mongo_01"
       register: repl
-      tags:
-        - replicaset
+
+    - name: Ensure replicaset has reached a converged state
+      community.mongodb.mongodb_status:
+        replica_set: "rs0"
+        poll: 10
+        interval: 10
+      when: repl.changed == True

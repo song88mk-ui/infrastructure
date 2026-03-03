@@ -36,6 +36,8 @@ inputs = {
     size      = 30
   }
 
+  private_ip = "10.49.100.55"
+
   enable_volume_tags = false
 
   subnet_id              = dependency.vpc.outputs.private_subnets[0]

@@ -1,18 +1,46 @@
 ---
 all:
-  hosts:
+  children:
     mongodb:
-      ansible_host: 10.59.100.160
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_user: ubuntu
-      aws_env: prd
-      aws_region: ap-east-1
-      mongodb_admin_password: /prd/mongodb/admin-password
+      hosts:
+        mongo_01:
+          ansible_host: 10.59.100.160
+          ansible_python_interpreter: /usr/bin/python3
+          ansible_user: ubuntu
+          aws_env: prd
+          aws_region: ap-east-1
+          mongodb_admin_password: /prd/mongodb/admin-password
 
-      # The device names are taken from terraform.
-      volumes:
-        - device: /dev/sdk
-          mount_point: /var/lib/mongodb
+          # The device names are taken from terraform.
+          volumes:
+            - device: /dev/sdk
+              mount_point: /var/lib/mongodb
+
+        mongo_02:
+          ansible_host: 10.59.101.160
+          ansible_python_interpreter: /usr/bin/python3
+          ansible_user: ubuntu
+          aws_env: prd
+          aws_region: ap-east-1
+          mongodb_admin_password: /prd/mongodb/admin-password
+
+          # The device names are taken from terraform.
+          volumes:
+            - device: /dev/sdq
+              mount_point: /var/lib/mongodb
+
+        mongo_03:
+          ansible_host: 10.59.100.161
+          ansible_python_interpreter: /usr/bin/python3
+          ansible_user: ubuntu
+          aws_env: prd
+          aws_region: ap-east-1
+          mongodb_admin_password: /prd/mongodb/admin-password
+
+          # The device names are taken from terraform.
+          volumes:
+            - device: /dev/sdm
+              mount_point: /var/lib/mongodb
 
   vars:
     ansible_user: ubuntu

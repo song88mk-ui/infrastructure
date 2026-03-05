@@ -142,6 +142,9 @@ prometheus:
     retentionSize: 20GB
     replicas: 2
 
+    externalLabels:
+      env: {{ .Environment.Name }}
+
     additionalScrapeConfigs: []
 
     storageSpec:

@@ -104,9 +104,15 @@ inputs = {
     },
     {
       action      = "block"
-      description = "Block Backoffice access on externals"
+      description = "Block Backoffice access by default"
       enabled     = true
-      expression  = "(http.host in {\"bo.song88.com\" \"bo.stg.song88.com\" \"bo.dev.song88.com\"} and not ip.src in $ip_aws_nat_gws)"
+      expression  = "http.host in {\"bo.song88.com\" \"bo.stg.song88.com\" \"bo.dev.song88.com\"}"
+    },
+    {
+      action      = "block"
+      description = "Block ArgoCD & Grafana access by default"
+      enabled     = true
+      expression  = "http.host in {\"argocd.prd.song88.com\" \"argocd.stg.song88.com\" \"argocd.dev.song88.com\" \"grafana.prd.song88.com\" \"grafana.stg.song88.com\" \"grafana.dev.song88.com\"}"
     }
   ]
 }

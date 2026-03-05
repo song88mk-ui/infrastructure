@@ -22,53 +22,85 @@ inputs = {
   kind         = "zone"
   phase        = "http_request_firewall_custom"
 
-  rules = [{
-    action      = "skip"
-    description = "Allow all requests to grafana"
-    enabled     = true
-    expression  = "(http.host in {\"grafana.dev.song88.com\"})"
-    logging = {
-      enabled = true
-    }
-    action_parameters = {
-      phases   = ["http_request_firewall_managed", "http_ratelimit", "http_request_sbfm"]
-      products = ["uaBlock", "bic", "securityLevel", "rateLimit", "zoneLockdown", "hot", "waf"]
-      ruleset  = "current"
-    }
-    }, {
-    action      = "skip"
-    description = "Cucumber UA Testing"
-    enabled     = true
-    expression  = "(http.user_agent contains \"Cucumber\")"
-    action_parameters = {
-      phases   = ["http_ratelimit", "http_request_firewall_managed", "http_request_sbfm"]
-      products = ["uaBlock", "bic", "hot", "securityLevel", "rateLimit", "waf", "zoneLockdown"]
-      ruleset  = "current"
-    }
-    logging = {
-      enabled = true
-    }
-    }, {
-    action      = "block"
-    description = "Country Blocking"
-    enabled     = true
-    expression  = "(ip.geoip.country in {\"SG\" \"US\"})"
-    }, {
-    action      = "block"
-    description = "Affiliates X-API-Key Whitelisting"
-    enabled     = true
-    expression  = "(http.host eq \"prod-clientapi.song88.com\" and not any(http.request.headers[\"x-api-key\"][*] contains \"hK3UUgRrTz5rZ5mP\"))"
-    action_parameters = {
-      response = {
-        content      = " "
-        content_type = "text/plain",
-        status_code  = 403,
+  rules = [
+    {
+      action      = "block"
+      description = "Client API IP Whitelist - prd"
+      enabled     = true
+      expression  = "(http.host eq \"client-api.song88.com\" and not ip.src in $platform_client_api_whitelist_prd)"
+    },
+    {
+      action      = "block"
+      description = "Client API IP Whitelist - stg"
+      enabled     = true
+      expression  = "(http.host eq \"client-api.stg.song88.com\" and not ip.src in $platform_client_api_whitelist_stg)"
+    },
+    {
+      action      = "skip"
+      description = "AWS-Nat-Gateways Whitelist"
+      enabled     = true
+      expression  = "(ip.src in $ip_aws_nat_gws)"
+      logging = {
+        enabled = false
       }
+      action_parameters = {
+        phases   = ["http_ratelimit", "http_request_firewall_managed", "http_request_sbfm"]
+        ruleset  = "current"
+      }
+    },
+    {
+      action      = "skip"
+      description = "Allow all requests to grafana"
+      enabled     = true
+      expression  = "(http.host wildcard \"grafana.*.song88.com\")"
+      logging = {
+        enabled = false
+      }
+      action_parameters = {
+        phases   = ["http_request_firewall_managed", "http_ratelimit", "http_request_sbfm"]
+        products = ["uaBlock", "bic", "securityLevel", "rateLimit", "zoneLockdown", "hot", "waf"]
+        ruleset  = "current"
+      }
+    },
+    {
+      action      = "skip"
+      description = "Cucumber UA Testing"
+      enabled     = true
+      expression  = "(http.user_agent contains \"Cucumber\")"
+      action_parameters = {
+        phases   = ["http_ratelimit", "http_request_firewall_managed", "http_request_sbfm"]
+        products = ["uaBlock", "bic", "hot", "securityLevel", "rateLimit", "waf", "zoneLockdown"]
+        ruleset  = "current"
+      }
+      logging = {
+        enabled = false
+      }
+    },
+    {
+      action      = "skip"
+      description = "BG-Integration-Whitelist-Skip"
+      enabled     = true
+      expression  = "(starts_with(http.host, \"bg-feed-receiver-api\") and ip.src in $ip_list_bg_integration_svc)"
+      action_parameters = {
+        phases   = ["http_ratelimit", "http_request_firewall_managed", "http_request_sbfm"]
+        products = ["bic", "zoneLockdown", "uaBlock", "hot", "securityLevel", "rateLimit", "waf"]
+        ruleset  = "current"
+      }
+      logging = {
+        enabled = true
+      }
+    },
+    {
+      action      = "block"
+      description = "BG-Integration-Whitelist-Block"
+      enabled     = true
+      expression  = "(starts_with(http.host, \"bg-feed-receiver-api\") and not ip.src in $ip_list_bg_integration_svc)"
+    },
+    {
+      action      = "block"
+      description = "Country Blocking"
+      enabled     = true
+      expression  = "(ip.geoip.country in {\"SG\" \"US\"})"
     }
-    }, {
-    action      = "block"
-    description = "block unlisted ips for preprod clientplatform api"
-    enabled     = false
-    expression  = "(http.host eq \"preprod-clientplatformapi.song88.com\" and not ip.src in $pp_clientplatapi)"
-  }]
+  ]
 }

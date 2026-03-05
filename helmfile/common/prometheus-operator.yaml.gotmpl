@@ -243,11 +243,6 @@ alertmanager:
         group_wait: 0s
         group_interval: 1m
         repeat_interval: 1m
-      - receiver: pagerduty
-        matchers:
-          - severity = "critical"
-          - env = "{{ .Environment.Name }}"
-        continue: true
       - receiver: slack
         continue: false
       group_wait: 20s

@@ -111,5 +111,11 @@ inputs = {
       remote_network_key = "prd"
       access_groups      = ["developers", "devops"]
     }
+    "bo.song88.com" = {
+      name               = "bo.song88.com"
+      address            = "bo.song88.com"
+      remote_network_key = "prd"
+      access_groups      = ["developers", "devops"]
+    }
   }
 }

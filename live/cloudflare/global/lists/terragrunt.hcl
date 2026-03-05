@@ -18,18 +18,27 @@ inputs = {
   lists = {
     "ip_aws_nat_gws" = {
       name        = "ip_aws_nat_gws",
-      description = "IP addresses from AWS Nat Gateways"
+      description = "IP addresses from Twingate and Network Gateways"
       kind        = "ip"
 
       items = [{
         ip      = "13.203.244.234"
-        comment = "dev"
+        comment = "Network Gateway DEV"
         }, {
         ip      = "13.205.62.43"
-        comment = "stg"
+        comment = "Network Gateway STG"
         }, {
         ip      = "43.198.129.173"
-        comment = "prd"
+        comment = "Network Gateway PRD"
+        }, {
+        ip      = "13.204.106.185"
+        comment = "Twingate connector Dev"
+        }, {
+        ip      = "3.7.178.117"
+        comment = "Twingate connector STG"
+        }, {
+        ip      = "95.40.172.189"
+        comment = "Twingate connector PRD"
       }]
     }
 

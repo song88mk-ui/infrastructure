@@ -37,7 +37,7 @@ inputs = {
     },
     {
       action      = "skip"
-      description = "AWS-Nat-Gateways Whitelist"
+      description = "Allow our own egress IPs (AWS, twingate, etc)"
       enabled     = true
       expression  = "(ip.src in $ip_aws_nat_gws)"
       logging = {
@@ -101,6 +101,12 @@ inputs = {
       description = "Country Blocking"
       enabled     = true
       expression  = "(ip.geoip.country in {\"SG\" \"US\"})"
+    },
+    {
+      action      = "block"
+      description = "Block Backoffice access on externals"
+      enabled     = true
+      expression  = "(http.host in {\"bo.song88.com\" \"bo.stg.song88.com\" \"bo.dev.song88.com\"} and not ip.src in $ip_aws_nat_gws)"
     }
   ]
 }

@@ -11,6 +11,9 @@ slackApiUrl: "ref+awsssm://prd/song88/slack/api-url?region=ap-east-1"
 pagerdutyRoutingKey: "ref+awsssm://prd/song88/pagerduty/routing-key?region=ap-east-1"
 
 argoCD:
+  google:
+    clientID: "ref+awsssm://prd/song88/argocd/google-client-id?region=ap-east-1"
+    clientSecret: "ref+awsssm://prd/song88/argocd/google-client-secret?region=ap-east-1"
   clientID: "ref+awsssm://prd/song88/argocd/client-id?region=ap-east-1"
   clientSecret: "ref+awsssm://prd/song88/argocd/client-secret?region=ap-east-1"
   deployKey: "ref+awsssm://prd/song88/deploy/key?region=ap-east-1"

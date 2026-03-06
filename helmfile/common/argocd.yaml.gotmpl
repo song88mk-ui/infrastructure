@@ -31,24 +31,27 @@ configs:
             clientSecret: {{ .Values.argoCD.clientSecret | fetchSecretValue }}
             orgs:
               - name: FlyingCockatoo
+        - type: oidc
+          id: google
+          name: Google
+          config:
+            issuer: https://accounts.google.com
+            clientID: {{ .Values.argoCD.google.clientID | fetchSecretValue }}
+            clientSecret: {{ .Values.argoCD.google.clientSecret | fetchSecretValue }}
+
 
   rbac:
-    policy.default: "role:readonly"
+    policy.default: "role:app-admin"
     policy.csv: |
-      p, role:org-admin, applications, *, */*, allow
-      p, role:org-admin, projects, *, */*, allow
-      p, role:org-admin, clusters, get, *, allow
-      p, role:org-admin, repositories, *, *, allow
-      p, role:org-admin, logs, get, *, allow
-      p, role:org-admin, exec, create, */*, allow
       p, role:app-admin, applications, get, */*, allow
       p, role:app-admin, applications, sync, */*, allow
       p, role:app-admin, applications, update, */*, allow
       p, role:app-admin, applications, delete/*/Pod/*, *, allow
       p, role:app-admin, logs, get, */*, allow
       p, role:app-admin, exec, create, */*, allow
-      g, FlyingCockatoo:devops, role:org-admin
-      g, FlyingCockatoo:backend, role:app-admin
+      g, ksideris@song88.com, role:admin
+      g, erivera@song88.com, role:admin
+      g, michel@song88.com, role:admin
     scopes: '[groups, email]'
 
 server:

@@ -63,7 +63,7 @@ inputs = {
       remote_network_key = "stg"
       access_groups      = ["developers", "devops"]
     }
-    stg_documentdb = {
+    stg_mongodb = {
       name               = "MongoDB (STG)"
       address            = "10.49.100.55"
       remote_network_key = "stg"
@@ -75,7 +75,7 @@ inputs = {
       remote_network_key = "stg"
       access_groups      = ["developers", "devops"]
     }
-    dev_documentdb = {
+    dev_mongodb = {
       name               = "MongoDB (DEV)"
       address            = "10.29.100.172"
       remote_network_key = "dev"
@@ -102,6 +102,12 @@ inputs = {
     prd_network = {
       name               = "PROD Network"
       address            = "10.59.0.0/16"
+      remote_network_key = "prd"
+      access_groups      = ["developers", "devops"]
+    }
+    prd_mongodb = {
+      name               = "MongoDB (PRD)"
+      address            = "10.59.100.160"
       remote_network_key = "prd"
       access_groups      = ["developers", "devops"]
     }

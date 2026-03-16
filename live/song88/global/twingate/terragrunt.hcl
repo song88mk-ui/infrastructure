@@ -39,6 +39,9 @@ inputs = {
     backoffice = {
       name = "BackOffice"
     }
+    noc = {
+      name = "NOC"
+    }
   }
 
   resources = {
@@ -46,7 +49,7 @@ inputs = {
       name               = "MSSQL (PROD)"
       address            = "prd-song88-mssql-server.cdqkiuumgexn.ap-east-1.rds.amazonaws.com"
       remote_network_key = "prd"
-      access_groups      = ["developers", "devops"]
+      access_groups      = ["developers", "devops", "noc"]
     }
     prod_rabbitmq = {
       name               = "RabbitMQ (PROD)"
@@ -58,7 +61,7 @@ inputs = {
       name               = "MSSQL (STG)"
       address            = "stg-song88-mssql-server.cz8wmg0s28pd.ap-south-1.rds.amazonaws.com"
       remote_network_key = "stg"
-      access_groups      = ["developers", "devops"]
+      access_groups      = ["developers", "devops", "noc"]
     }
     stg_rabbitmq = {
       name               = "RabbitMQ (STG)"
@@ -76,7 +79,7 @@ inputs = {
       name               = "Stage Environment"
       address            = "*.stg.song88.com"
       remote_network_key = "stg"
-      access_groups      = ["developers", "devops", "backoffice"]
+      access_groups      = ["developers", "devops", "backoffice", "noc"]
     }
     dev_mongodb = {
       name               = "MongoDB (DEV)"
@@ -94,7 +97,7 @@ inputs = {
       name               = "Prod Environment"
       address            = "*.prd.song88.com"
       remote_network_key = "prd"
-      access_groups      = ["developers", "devops", "backoffice"]
+      access_groups      = ["developers", "devops", "backoffice", "noc"]
     }
     dev_network = {
       name               = "Dev Network"
@@ -130,7 +133,7 @@ inputs = {
       name               = "bo.song88.com"
       address            = "bo.song88.com"
       remote_network_key = "prd"
-      access_groups      = ["developers", "devops", "backoffice"]
+      access_groups      = ["developers", "devops", "backoffice", "noc"]
     }
   }
 }

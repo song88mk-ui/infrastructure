@@ -104,9 +104,9 @@ inputs = {
     },
     {
       action      = "block"
-      description = "Block Backoffice access by default"
+      description = "Block Backoffice & Metabase access by default"
       enabled     = true
-      expression  = "http.host in {\"bo.song88.com\" \"bo.stg.song88.com\" \"bo.dev.song88.com\"}"
+      expression  = "http.host in {\"bo.song88.com\" \"bo.stg.song88.com\" \"bo.dev.song88.com\" \"metabase.dev.song88.com\" \"metabase.stg.song88.com\" \"metabase.prd.song88.com\" }"
     },
     {
       action      = "block"

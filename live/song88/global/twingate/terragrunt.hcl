@@ -36,6 +36,9 @@ inputs = {
     devops = {
       name = "DevOps"
     }
+    backoffice = {
+      name = "BackOffice"
+    }
   }
 
   resources = {
@@ -73,7 +76,7 @@ inputs = {
       name               = "Stage Environment"
       address            = "*.stg.song88.com"
       remote_network_key = "stg"
-      access_groups      = ["developers", "devops"]
+      access_groups      = ["developers", "devops", "backoffice"]
     }
     dev_mongodb = {
       name               = "MongoDB (DEV)"
@@ -85,7 +88,13 @@ inputs = {
       name               = "Dev Environment"
       address            = "*.dev.song88.com"
       remote_network_key = "dev"
-      access_groups      = ["developers", "devops"]
+      access_groups      = ["developers", "devops", "backoffice"]
+    }
+    prd_endpoints = {
+      name               = "Prod Environment"
+      address            = "*.prd.song88.com"
+      remote_network_key = "prd"
+      access_groups      = ["developers", "devops", "backoffice"]
     }
     dev_network = {
       name               = "Dev Network"
@@ -121,7 +130,7 @@ inputs = {
       name               = "bo.song88.com"
       address            = "bo.song88.com"
       remote_network_key = "prd"
-      access_groups      = ["developers", "devops"]
+      access_groups      = ["developers", "devops", "backoffice"]
     }
   }
 }

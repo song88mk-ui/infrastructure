@@ -129,15 +129,15 @@ inputs = {
       remote_network_key = "prd"
       access_groups      = ["developers", "devops", "noc", "backoffice"]
     }
-    "*.khelrajha99.com " = {
-      name               = "*.khelrajha99.com"
-      address            = "*.khelrajha99.com"
-      remote_network_key = "prd"
-      access_groups      = ["developers", "devops", "noc", "backoffice"]
-    }
     "khelraja.com" = {
       name               = "khelraja.com"
       address            = "khelraja.com"
+      remote_network_key = "prd"
+      access_groups      = ["developers", "devops", "noc", "backoffice"]
+    }
+    "*.khelraja.com" = {
+      name               = "*.khelraja.com"
+      address            = "*.khelraja.com"
       remote_network_key = "prd"
       access_groups      = ["developers", "devops", "noc", "backoffice"]
     }

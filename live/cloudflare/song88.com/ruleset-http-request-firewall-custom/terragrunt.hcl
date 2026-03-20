@@ -44,8 +44,8 @@ inputs = {
         enabled = false
       }
       action_parameters = {
-        phases   = ["http_ratelimit", "http_request_firewall_managed", "http_request_sbfm"]
-        ruleset  = "current"
+        phases  = ["http_ratelimit", "http_request_firewall_managed", "http_request_sbfm"]
+        ruleset = "current"
       }
     },
     {

@@ -147,5 +147,23 @@ inputs = {
       remote_network_key = "prd"
       access_groups      = ["developers", "devops", "backoffice", "noc"]
     }
+    dev_demosite = {
+      name               = "DemoSite-dev"
+      address            = "dev.song88.com"
+      remote_network_key = "dev"
+      access_groups      = ["developers", "devops", "noc"]
+    }
+    stg_demosite = {
+      name               = "DemoSite-stg"
+      address            = "stg.song88.com"
+      remote_network_key = "stg"
+      access_groups      = ["developers", "devops", "noc"]
+    }
+    prd_demosite = {
+      name               = "DemoSite-prd"
+      address            = "song88.com"
+      remote_network_key = "prd"
+      access_groups      = ["developers", "devops", "noc"]
+    }
   }
 }

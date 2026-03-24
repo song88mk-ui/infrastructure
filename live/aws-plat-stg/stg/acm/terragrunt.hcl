@@ -17,7 +17,11 @@ dependency "vpc" {
 }
 
 inputs = {
-  domain_name          = "*.${local.environment}.song88.com"
+  domain_name               = "*.${local.environment}.song88.com"
+  subject_alternative_names = [
+    "${local.environment}.song88.com",
+  ]
+
   validate_certificate = false
 
   tags = merge(local.env_vars.locals.tags, {

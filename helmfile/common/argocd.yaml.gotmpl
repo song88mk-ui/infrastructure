@@ -23,14 +23,6 @@ configs:
 
     dex.config: |
       connectors:
-        - type: github
-          id: github
-          name: GitHub
-          config:
-            clientID: {{ .Values.argoCD.clientID | fetchSecretValue }}
-            clientSecret: {{ .Values.argoCD.clientSecret | fetchSecretValue }}
-            orgs:
-              - name: FlyingCockatoo
         - type: oidc
           id: google
           name: Google

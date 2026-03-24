@@ -17,7 +17,7 @@ dependency "vpc" {
 }
 
 inputs = {
-  domain_name               = "*.song88.com"
+  domain_name = "*.song88.com"
   subject_alternative_names = [
     "song88.com",
   ]

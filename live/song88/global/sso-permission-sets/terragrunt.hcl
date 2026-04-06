@@ -66,6 +66,24 @@ inputs = {
                 "sts:AssumeRole"
             ],
             "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:PutObjectAcl",
+                "s3:GetObject",
+                "s3:GetObjectAcl",
+                "s3:DeleteObject",
+                "s3:ListBucket",
+                "s3:GetBucketLocation"
+            ],
+            "Resource": [
+                "arn:aws:s3:::song88-dev-webprops",
+                "arn:aws:s3:::song88-stg-webprops",
+                "arn:aws:s3:::song88-dev-webprops/*",
+                "arn:aws:s3:::song88-stg-webprops/*"
+            ]
         }
     ]
 }

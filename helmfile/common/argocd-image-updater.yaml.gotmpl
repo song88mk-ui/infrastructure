@@ -31,3 +31,11 @@ extraEnv:
 serviceAccount:
   create: true
   name: "argocd-image-updater"
+
+metrics:
+  enabled: true
+
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: prometheus-operator

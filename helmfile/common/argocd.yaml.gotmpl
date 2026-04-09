@@ -9,6 +9,43 @@ global:
     format: json
     level: info
 
+controller:
+  metrics:
+    enabled: true
+
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: prometheus-operator
+
+server:
+  metrics:
+    enabled: true
+
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: prometheus-operator
+
+applicationSet:
+  metrics:
+    enabled: true
+
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: prometheus-operator
+
+repoServer:
+  metrics:
+    enabled: true
+
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: prometheus-operator
+
+
 priorityClassName: critical-apps
 
 configs:
@@ -20,6 +57,10 @@ configs:
     exec.enabled: true
     admin.enabled: true
     statusbadge.enabled: true
+
+    # Account used by the grafana dashboard to query the app versions.
+    accounts.grafana: apiKey
+    accounts.grafana.enabled: true
 
     dex.config: |
       connectors:
@@ -41,6 +82,10 @@ configs:
       p, role:app-admin, applications, delete/*/Pod/*, *, allow
       p, role:app-admin, logs, get, */*, allow
       p, role:app-admin, exec, create, */*, allow
+      p, role:readonly-grafana, applications, get, */*, allow
+      p, role:readonly-grafana, clusters,     get, */*, allow
+      p, role:readonly-grafana, repositories, get, */*, allow
+      g, grafana, role:readonly-grafana'
       g, ksideris@song88.com, role:admin
       g, erivera@song88.com, role:admin
       g, michel@song88.com, role:admin

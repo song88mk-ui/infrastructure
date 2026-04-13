@@ -308,6 +308,13 @@ releases:
     values:
       - environments/{{ .Environment.Name }}/db-proxy.yaml.gotmpl
 
+  - name: version-manifest
+    namespace: platform
+    chart: charts/version-manifest
+    version: 1.0.0
+    values:
+      - common/version-manifest.yaml.gotmpl
+
   - name: metabase
     namespace: metabase
     chart: metabase/metabase

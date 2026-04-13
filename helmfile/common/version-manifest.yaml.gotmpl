@@ -1,0 +1,6 @@
+secrets:
+  - name: argocd-token
+    data:
+    - key: token
+      remoteKey: /{{ .Environment.Name }}/version-manifest/argocd-token
+      envVariable: ARGOCD_TOKEN

@@ -1,0 +1,25 @@
+replicaCount: 1
+
+image:
+  repository: python
+  tag: "3.12-slim"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+argocd:
+  serverUrl: "http://argocd-server.argocd.svc.cluster.local"
+  insecure: true
+
+secrets: []
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

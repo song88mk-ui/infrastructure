@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "version-manifest.fullname" . }}-app
+  labels:
+    {{- include "version-manifest.labels" . | nindent 4 }}
+data:
+  app.py: |
+    import os
+    import re
+    import requests
+    from flask import Flask, jsonify, Response
+ 
+    ARGOCD_URL = os.environ["ARGOCD_SERVER_URL"].rstrip("/")
+    TOKEN      = os.environ["ARGOCD_TOKEN"].strip()
+    VERIFY_TLS = os.environ.get("ARGOCD_INSECURE", "true").lower() != "true"
+
+    LATEST_VERSION = "26.15"
+ 
+    app = Flask(__name__)
+ 
+    def fetch_apps():
+        resp = requests.get(
+            f"{ARGOCD_URL}/api/v1/applications",
+            headers={"Authorization": f"Bearer {TOKEN}"},
+            verify=VERIFY_TLS,
+            timeout=10,
+        )
+        resp.raise_for_status()
+        return resp.json()
+ 
+    def get_revisions(data):
+        revisions = set()
+        apps = {}
+        for item in data.get("items", []):
+            name = item["metadata"]["name"]
+            name = name.removeprefix("bet-genius-apps-")
+            namespace = item["metadata"]["namespace"]
+            if namespace == "argocd":
+                namespace = "bet-genius"
+            key = f"{namespace}/{name}"
+            images = (
+                item.get("status", {})
+                   .get("summary", {})
+                   .get("images", [])
+            )
+            tags = [re.sub(r"-(stg|prd)$", "", img.split(":")[-1] if ":" in img else None) for img in images]
+            apps[key] = tags[0] if len(tags) == 1 else tags
+            sync   = item.get("status", {}).get("sync", {})
+            revision = sync.get("revision", None)
+            revisions.add(revision)
+
+        revision = revisions.pop()
+
+        return {
+            "version": f"{LATEST_VERSION}-{revision[:7]}",
+            "apps": apps,
+        }
+
+    def format_as_text(data: dict) -> str:
+        apps = data["apps"]
+        version = data.get("version", "unknown")
+     
+        rows = sorted(
+            [(key.split("/", 1)[1], key.split("/", 1)[0], tag) for key, tag in apps.items()],
+            key=lambda r: (r[1], r[0]),  # sort by namespace, then name
+        )
+     
+        col_name = max(len("NAME"), max(len(r[0]) for r in rows))
+        col_ns   = max(len("NAMESPACE"), max(len(r[1]) for r in rows))
+        col_ver  = max(len("VERSION"), max(len(r[2]) for r in rows))
+     
+        sep    = f"  {'─' * col_name}  {'─' * col_ns}  {'─' * col_ver}"
+        header = f"  {'NAME':<{col_name}}  {'NAMESPACE':<{col_ns}}  {'VERSION':<{col_ver}}"
+     
+        lines = [
+            f"Version: {version}",
+            "",
+            header,
+            sep,
+        ]
+        for name, namespace, tag in rows:
+            lines.append(f"  {name:<{col_name}}  {namespace:<{col_ns}}  {tag:<{col_ver}}")
+     
+        return "\n".join(lines)
+
+ 
+    @app.get("/versions")
+    def versions():
+        return Response(format_as_text(get_revisions(fetch_apps())), mimetype="text/plain")
+ 
+    if __name__ == "__main__":
+        port = int(os.environ.get("PORT", 8080))
+        app.run(host="0.0.0.0", port=port)

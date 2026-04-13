@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "version-manifest.fullname" . }}
+  labels:
+    {{- include "version-manifest.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "version-manifest.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "version-manifest.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      initContainers:
+        - name: pip-install
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["pip", "install", "--target", "/deps", "flask", "requests"]
+          volumeMounts:
+            - name: deps
+              mountPath: /deps
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["python", "/app/app.py"]
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          env:
+            - name: ARGOCD_SERVER_URL
+              value: {{ .Values.argocd.serverUrl | quote }}
+            - name: ARGOCD_INSECURE
+              value: {{ .Values.argocd.insecure | quote }}
+            - name: PORT
+              value: {{ .Values.service.targetPort | quote }}
+            - name: PYTHONPATH
+              value: "/deps"
+            {{- range $secret := .Values.secrets }}
+            {{- range $entry := $secret.data }}
+            - name: {{ $entry.envVariable }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret.name }}
+                  key: {{ $entry.key }}
+            {{- end }}
+            {{- end }}
+          volumeMounts:
+            - name: app-code
+              mountPath: /app
+            - name: deps
+              mountPath: /deps
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /versions
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: app-code
+          configMap:
+            name: {{ include "version-manifest.fullname" . }}-app
+        - name: deps
+          emptyDir: {}

@@ -45,7 +45,13 @@ data:
                    .get("images", [])
             )
             tags = [re.sub(r"-(stg|prd)$", "", img.split(":")[-1] if ":" in img else None) for img in images]
-            apps[key] = tags[0] if len(tags) == 1 else tags
+            tag = tags[0] if len(tags) == 1 else tags
+            deployed_at = (
+                item.get("status", {})
+                    .get("operationState", {})
+                    .get("finishedAt", None)
+            )
+            apps[key] = {"version": tag, "deployed_at": deployed_at}
             sync   = item.get("status", {}).get("sync", {})
             revision = sync.get("revision", None)
             revisions.add(revision)
@@ -60,18 +66,27 @@ data:
     def format_as_text(data: dict) -> str:
         apps = data["apps"]
         version = data.get("version", "unknown")
-     
+
+        def fmt_date(iso):
+            if not iso:
+                return "unknown"
+            return iso[:16].replace("T", " ")  # "YYYY-MM-DD HH:MM"
+
         rows = sorted(
-            [(key.split("/", 1)[1], key.split("/", 1)[0], tag) for key, tag in apps.items()],
+            [
+                (key.split("/", 1)[1], key.split("/", 1)[0], v["version"], fmt_date(v["deployed_at"]))
+                for key, v in apps.items()
+            ],
             key=lambda r: (r[1], r[0]),  # sort by namespace, then name
         )
      
-        col_name = max(len("NAME"), max(len(r[0]) for r in rows))
-        col_ns   = max(len("NAMESPACE"), max(len(r[1]) for r in rows))
-        col_ver  = max(len("VERSION"), max(len(r[2]) for r in rows))
+        col_name = max(len("NAME"),        max(len(r[0]) for r in rows))
+        col_ns   = max(len("NAMESPACE"),   max(len(r[1]) for r in rows))
+        col_ver  = max(len("VERSION"),     max(len(r[2]) for r in rows))
+        col_date = max(len("DEPLOYED AT"), max(len(r[3]) for r in rows))
      
-        sep    = f"  {'─' * col_name}  {'─' * col_ns}  {'─' * col_ver}"
-        header = f"  {'NAME':<{col_name}}  {'NAMESPACE':<{col_ns}}  {'VERSION':<{col_ver}}"
+        sep    = f"  {'─' * col_name}  {'─' * col_ns}  {'─' * col_ver}  {'─' * col_date}"
+        header = f"  {'NAME':<{col_name}}  {'NAMESPACE':<{col_ns}}  {'VERSION':<{col_ver}}  {'DEPLOYED AT':<{col_date}}"
      
         lines = [
             f"Version: {version}",
@@ -79,8 +94,8 @@ data:
             header,
             sep,
         ]
-        for name, namespace, tag in rows:
-            lines.append(f"  {name:<{col_name}}  {namespace:<{col_ns}}  {tag:<{col_ver}}")
+        for name, namespace, tag, deployed_at in rows:
+            lines.append(f"  {name:<{col_name}}  {namespace:<{col_ns}}  {tag:<{col_ver}}  {deployed_at:<{col_date}}")
      
         return "\n".join(lines)
 

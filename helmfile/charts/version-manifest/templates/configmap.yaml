@@ -9,15 +9,18 @@ data:
     import os
     import re
     import requests
+    from datetime import date
     from flask import Flask, jsonify, Response
  
     ARGOCD_URL = os.environ["ARGOCD_SERVER_URL"].rstrip("/")
     TOKEN      = os.environ["ARGOCD_TOKEN"].strip()
     VERIFY_TLS = os.environ.get("ARGOCD_INSECURE", "true").lower() != "true"
 
-    LATEST_VERSION = "26.15"
- 
     app = Flask(__name__)
+
+    def get_latest_version() -> str:
+        today = date.today()
+        return f"{today.year % 100}.{today.isocalendar().week:02d}"
  
     def fetch_apps():
         resp = requests.get(
@@ -59,7 +62,7 @@ data:
         revision = revisions.pop()
 
         return {
-            "version": f"{LATEST_VERSION}-{revision[:7]}",
+            "version": f"{get_latest_version()}-{revision[:7]}",
             "apps": apps,
         }
 

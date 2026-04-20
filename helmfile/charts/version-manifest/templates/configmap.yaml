@@ -8,19 +8,78 @@ data:
   app.py: |
     import os
     import re
+    import hashlib
     import requests
-    from datetime import date
+    from datetime import date, datetime
     from flask import Flask, jsonify, Response
- 
+
     ARGOCD_URL = os.environ["ARGOCD_SERVER_URL"].rstrip("/")
     TOKEN      = os.environ["ARGOCD_TOKEN"].strip()
     VERIFY_TLS = os.environ.get("ARGOCD_INSECURE", "true").lower() != "true"
 
+    # Components whose versions are used to compute the release SHA.
+    SELECTED_COMPONENTS = [
+        "bet-genius/bg-engine-sportsbook",
+        "bet-genius/bg-feed-receiver-api",
+        "bet-genius/bg-feedlogger-service",
+        "bet-genius/bg-heartbeat-listener",
+        "bet-genius/bg-rabbitmq-api",
+        "bet-genius/bg-receiver-service",
+        "bet-genius/platform-api-ro",
+        "corp-apps/bo-api",
+        "corp-apps/bo-web",
+        "corp-apps/config-service",
+        "corp-apps/utility-service",
+        "corp-apps/websocket-api",
+        "corp-apps/websocket-service",
+        "oddsengine/adapter-service",
+        "oddsengine/job-cleanup",
+        "oddsengine/job-keepalive",
+        "oddsengine/job-livestream",
+        "oddsengine/job-settlement",
+        "oddsengine/sportsbook-service-00",
+        "oddsengine/sportsbook-service-01",
+        "oddsengine/sportsbook-service-02",
+        "oddsengine/sportsbook-service-03",
+        "oddsengine/sportsbook-service-04",
+        "oddsengine/sportsbook-service-05",
+        "oddsengine/sportsbook-service-06",
+        "oddsengine/sportsbook-service-07",
+        "oddsengine/sportsbook-service-08",
+        "oddsengine/sportsbook-service-09",
+        "oddsengine/sportsbook-service-10",
+        "oddsengine/uof-client-g00",
+        "oddsengine/websocket-service-g00",
+        "oddsengine/websocket-service-krj",
+        "oddsengine/websocket-service-oge",
+        "oddsengine/websocket-service-qte",
+        "platform/auth-api",
+        "platform/betting-api",
+        "platform/cashout-service",
+        "platform/cashoutstake-service",
+        "platform/clientplatform-api",
+        "platform/job-forexeur",
+        "platform/job-resettlement",
+        "platform/operator-api",
+        "platform/operator-service",
+        "platform/placement-service",
+        "platform/platform-api",
+        "platform/provider-service",
+        "platform/rabbitmq-api",
+        "platform/settlement-service",
+        "platform/song88",
+        "platform/sportsbook-api",
+        "platform/wallet-api",
+        "platform/web",
+        "platform/web-assets",
+        "platform/webprops-api",
+        "platform/websocket-api",
+    ]
+
     app = Flask(__name__)
 
-    def get_latest_version() -> str:
-        today = date.today()
-        return f"{today.year % 100}.{today.isocalendar().week:02d}"
+    def get_latest_version(deployed_date) -> str:
+        return f"{deployed_date.year % 100}.{deployed_date.isocalendar().week:02d}"
  
     def fetch_apps():
         resp = requests.get(
@@ -31,6 +90,15 @@ data:
         )
         resp.raise_for_status()
         return resp.json()
+
+    def latest_date(apps):
+        dates = []
+        for k, v in apps.items():
+            if k in SELECTED_COMPONENTS and "corp-apps" not in k:
+                obj = datetime.fromisoformat(v["deployed_at"])
+                dates.append(obj)
+
+        return max(dates)
  
     def get_revisions(data):
         revisions = set()
@@ -60,15 +128,32 @@ data:
             revisions.add(revision)
 
         revision = revisions.pop()
+        last_deployed_date = latest_date(apps)
+
+        print(f"Latest deployment was: {last_deployed_date}")
 
         return {
-            "version": f"{get_latest_version()}-{revision[:7]}",
+            "version": f"{get_latest_version(last_deployed_date)}-{revision[:7]}",
             "apps": apps,
         }
 
+    def compute_components_sha(apps: dict) -> str:
+        parts = []
+        for key in SELECTED_COMPONENTS:
+            entry = apps.get(key, {})
+            version = entry.get("version", "")
+            # version may be a list when multiple images are present
+            if isinstance(version, list):
+                version = ",".join(str(v) for v in version)
+            parts.append(str(version))
+
+        combined = "".join(parts)
+        return hashlib.sha256(combined.encode()).hexdigest()[:12]
+
     def format_as_text(data: dict) -> str:
-        apps = data["apps"]
+        apps    = data["apps"]
         version = data.get("version", "unknown")
+        sha     = compute_components_sha(apps)
 
         def fmt_date(iso):
             if not iso:
@@ -82,31 +167,31 @@ data:
             ],
             key=lambda r: (r[1], r[0]),  # sort by namespace, then name
         )
-     
+
         col_name = max(len("NAME"),        max(len(r[0]) for r in rows))
-        col_ns   = max(len("NAMESPACE"),   max(len(r[1]) for r in rows))
-        col_ver  = max(len("VERSION"),     max(len(r[2]) for r in rows))
+        col_ns   = max(len("NAMESPACE"),   max(len(str(r[1])) for r in rows))
+        col_ver  = max(len("VERSION"),     max(len(str(r[2])) for r in rows))
         col_date = max(len("DEPLOYED AT"), max(len(r[3]) for r in rows))
-     
+
         sep    = f"  {'─' * col_name}  {'─' * col_ns}  {'─' * col_ver}  {'─' * col_date}"
         header = f"  {'NAME':<{col_name}}  {'NAMESPACE':<{col_ns}}  {'VERSION':<{col_ver}}  {'DEPLOYED AT':<{col_date}}"
-     
+
         lines = [
-            f"Version: {version}",
+            f"Version:    {version}-{sha}",
             "",
             header,
             sep,
         ]
         for name, namespace, tag, deployed_at in rows:
-            lines.append(f"  {name:<{col_name}}  {namespace:<{col_ns}}  {tag:<{col_ver}}  {deployed_at:<{col_date}}")
-     
+            lines.append(f"  {name:<{col_name}}  {namespace:<{col_ns}}  {str(tag):<{col_ver}}  {deployed_at:<{col_date}}")
+
         return "\n".join(lines)
 
- 
+
     @app.get("/versions")
     def versions():
         return Response(format_as_text(get_revisions(fetch_apps())), mimetype="text/plain")
- 
+
     if __name__ == "__main__":
         port = int(os.environ.get("PORT", 8080))
         app.run(host="0.0.0.0", port=port)

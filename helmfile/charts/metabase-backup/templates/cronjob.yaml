@@ -1,0 +1,67 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "metabase-backup.name" . }}
+  labels:
+    {{- include "metabase-backup.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.cronjob.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            {{- include "metabase-backup.labels" . | nindent 12 }}
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: {{ .Values.serviceAccount.name }}
+
+          containers:
+            - name: backup
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+              env:
+                - name: S3_BUCKET
+                  value: {{ .Values.aws.bucket }}
+                - name: S3_PREFIX
+                  value: {{ .Values.aws.prefix }}
+
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+
+                  DB_FILE={{ .Values.backup.dbFilePath | quote }}
+                  DATESTAMP=$(date -u +"%Y-%m-%d")
+                  BACKUP_NAME="${DATESTAMP}_$(basename ${DB_FILE})"
+                  S3_TARGET="s3://${S3_BUCKET}/${S3_PREFIX}/${BACKUP_NAME}"
+
+                  echo "[$(date -u)] Starting Metabase H2 backup, ${DB_FILE} → ${S3_TARGET}"
+
+                  if [ ! -f "${DB_FILE}" ]; then
+                    echo "ERROR: database file not found at ${DB_FILE}"
+                    exit 1
+                  fi
+
+                  aws s3 cp "${DB_FILE}" "${S3_TARGET}"
+
+                  echo "[$(date -u)] Backup complete: ${S3_TARGET}"
+
+              volumeMounts:
+                - name: metabase-data
+                  mountPath: /metabase-data
+                  readOnly: true
+                  volumeMounts:                                                                                                                                                                                                                          │
+
+          volumes:
+            - name: metabase-data
+              persistentVolumeClaim:
+                claimName: {{ .Values.pvc.claimName }}
+                readOnly: true

@@ -322,3 +322,9 @@ releases:
     values:
       - common/metabase.yaml.gotmpl
       - environments/{{ .Environment.Name }}/metabase.yaml.gotmpl
+
+  - name: metabase-backup
+    namespace: metabase
+    installed: {{ eq .Environment.Name "prd" }}
+    chart: charts/metabase-backup
+    version: 1.0.0

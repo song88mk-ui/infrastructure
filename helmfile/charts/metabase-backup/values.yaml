@@ -1,0 +1,21 @@
+cronjob:
+  schedule: "0 2 * * *"
+
+serviceAccount:
+  create: true
+  name: metabase-backup-sa
+
+backup:
+  dbFilePath: /metabase-data/metabase.db.mv.db
+
+image:
+  repository: amazon/aws-cli
+  tag: 2.34.34
+  pullPolicy: IfNotPresent
+
+pvc:
+  claimName: metabase-database
+
+aws:
+  bucket: "song88-prd-metabase-h2-backups"
+  prefix: metabase/backups

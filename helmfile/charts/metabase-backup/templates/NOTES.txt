@@ -1,0 +1,23 @@
+Metabase H2 Backup CronJob deployed successfully!
+
+  Release : {{ .Release.Name }}
+  Namespace: {{ .Values.namespace }}
+  Schedule : {{ .Values.cronjob.schedule }} (UTC)
+  PVC      : {{ .Values.pvc.claimName }}
+  DB file  : {{ .Values.backup.dbFilePath }}
+
+{{- if .Values.aws.existingSecret }}
+  Secret   : {{ .Values.aws.existingSecret }} (pre-existing)
+{{- else }}
+  Secret   : {{ include "metabase-backup.name" . }}-secret (chart-managed)
+{{- end }}
+
+To trigger a backup immediately:
+
+  kubectl create job --from=cronjob/{{ include "metabase-backup.name" . }} \
+    metabase-backup-manual -n {{ .Values.namespace }}
+
+To watch the logs:
+
+  kubectl logs -l app.kubernetes.io/name={{ include "metabase-backup.name" . }} \
+    -n {{ .Values.namespace }} --follow

@@ -26,12 +26,6 @@ data:
         "bet-genius/bg-rabbitmq-api",
         "bet-genius/bg-receiver-service",
         "bet-genius/platform-api-ro",
-        "corp-apps/bo-api",
-        "corp-apps/bo-web",
-        "corp-apps/config-service",
-        "corp-apps/utility-service",
-        "corp-apps/websocket-api",
-        "corp-apps/websocket-service",
         "oddsengine/adapter-service",
         "oddsengine/job-cleanup",
         "oddsengine/job-keepalive",
@@ -94,7 +88,7 @@ data:
     def latest_date(apps):
         dates = []
         for k, v in apps.items():
-            if k in SELECTED_COMPONENTS and "corp-apps" not in k:
+            if k in SELECTED_COMPONENTS:
                 obj = datetime.fromisoformat(v["deployed_at"])
                 dates.append(obj)
 

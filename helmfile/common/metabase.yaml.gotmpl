@@ -1,6 +1,6 @@
 image:
-  repository: metabase/metabase
-  tag: v0.60.1.x
+  repository: metabase/metabase-enterprise
+  tag: v1.60.1.x
 
 database:
   type: h2
@@ -11,6 +11,9 @@ database:
 password:
   complexity: strong
   length: 16
+
+strategy:
+  type: Recreate
 
 ingress:
   enabled: true

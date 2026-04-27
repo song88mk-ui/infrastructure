@@ -20,7 +20,7 @@ spec:
         - name: pip-install
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["pip", "install", "--target", "/deps", "flask", "requests"]
+          command: ["pip", "install", "--target", "/deps", "flask", "requests", "python-dateutil"]
           volumeMounts:
             - name: deps
               mountPath: /deps

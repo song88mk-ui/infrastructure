@@ -10,7 +10,8 @@ data:
     import re
     import hashlib
     import requests
-    from datetime import date, datetime
+    from datetime import date, datetime, timezone
+    from dateutil import parser as dateutil_parser
     from flask import Flask, jsonify, Response
 
     ARGOCD_URL = os.environ["ARGOCD_SERVER_URL"].rstrip("/")
@@ -72,8 +73,15 @@ data:
 
     app = Flask(__name__)
 
-    def get_latest_version(deployed_date) -> str:
-        return f"{deployed_date.year % 100}.{deployed_date.isocalendar().week:02d}"
+    def parse_utc(iso: str) -> datetime:
+        dt = dateutil_parser.parse(iso)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+
+    def get_latest_version(deployed_date: datetime) -> str:
+        utc = deployed_date.astimezone(timezone.utc)
+        return f"{utc.year % 100}.{utc.isocalendar().week}"
  
     def fetch_apps():
         resp = requests.get(
@@ -89,9 +97,11 @@ data:
         dates = []
         for k, v in apps.items():
             if k in SELECTED_COMPONENTS:
-                obj = datetime.fromisoformat(v["deployed_at"])
-                dates.append(obj)
-
+                raw = v.get("deployed_at")
+                if raw:
+                    dates.append(parse_utc(raw))
+        if not dates:
+            raise ValueError("No valid deployment dates found for selected components")
         return max(dates)
  
     def get_revisions(data):
@@ -124,7 +134,7 @@ data:
         revision = revisions.pop()
         last_deployed_date = latest_date(apps)
 
-        print(f"Latest deployment was: {last_deployed_date}")
+        app.logger.info(f"Latest deployment was: {last_deployed_date}")
 
         return {
             "version": f"{get_latest_version(last_deployed_date)}-{revision[:7]}",
@@ -149,14 +159,9 @@ data:
         version = data.get("version", "unknown")
         sha     = compute_components_sha(apps)
 
-        def fmt_date(iso):
-            if not iso:
-                return "unknown"
-            return iso[:16].replace("T", " ")  # "YYYY-MM-DD HH:MM"
-
         rows = sorted(
             [
-                (key.split("/", 1)[1], key.split("/", 1)[0], v["version"], fmt_date(v["deployed_at"]))
+                (key.split("/", 1)[1], key.split("/", 1)[0], v["version"], v["deployed_at"])
                 for key, v in apps.items()
             ],
             key=lambda r: (r[1], r[0]),  # sort by namespace, then name

@@ -284,8 +284,6 @@ alertmanager:
         - type: button
           text: 'Silence :no_bell:'
           url: {{ `'{{ template "__alert_silence_link" . }}'` }}
-      webhook_configs:
-      - url: "https://hooks.3704labs.com/alertmanager/song88"
     - name: pagerduty
       pagerduty_configs:
       - routing_key: {{ .Values.pagerdutyRoutingKey | fetchSecretValue | quote }}

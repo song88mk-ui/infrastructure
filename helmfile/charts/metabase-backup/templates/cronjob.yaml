@@ -12,7 +12,7 @@ spec:
 
   jobTemplate:
     spec:
-      backoffLimit: 1
+      backoffLimit: 3
       template:
         metadata:
           labels:
@@ -20,7 +20,18 @@ spec:
         spec:
           restartPolicy: OnFailure
           serviceAccountName: {{ .Values.serviceAccount.name }}
-
+          activeDeadlineSeconds: 90
+          terminationGracePeriodSeconds: 15
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                          - metabase
+                  topologyKey: kubernetes.io/hostname
           containers:
             - name: backup
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

@@ -287,6 +287,9 @@ releases:
           requests:
             cpu: 10m
             memory: 2Gi # Minimum requirement
+      - service:
+          type: NodePort
+          nodePort: 31433
 
   # NOTE: Temporary mongodb instance. To be evaluated if an AWS can be used.
   # TODO: It should be moved to AWS when ready

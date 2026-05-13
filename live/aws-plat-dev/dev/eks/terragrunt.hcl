@@ -74,6 +74,20 @@ inputs = {
 
   authentication_mode = "API"
 
+  node_security_group_additional_rules = {
+    ingress_mssql_nodeport = {
+      description = "Allow internal access to MSSQL NodePort"
+      protocol    = "tcp"
+      from_port   = 31433
+      to_port     = 31433
+      type        = "ingress"
+
+      cidr_blocks = [
+        local.env_vars.locals.vpc_cidr
+      ]
+    }
+  }
+
   access_entries = {
     eks_cluster_creator_role = {
       principal_arn = dependency.cluster_creator_role.outputs.arn

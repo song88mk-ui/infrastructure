@@ -165,5 +165,11 @@ inputs = {
       remote_network_key = "prd"
       access_groups      = ["developers", "devops", "noc"]
     }
+    fast_com = {
+      name               = "fast.com"
+      address            = "fast.com"
+      remote_network_key = "prd"
+      access_groups      = ["developers", "devops", "noc"]
+    }
   }
 }

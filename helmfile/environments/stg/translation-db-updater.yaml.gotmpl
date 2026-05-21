@@ -1,0 +1,11 @@
+secrets:
+  - name: sql-connection-string
+    data:
+    - key: sql-connection-string
+      remoteKey: /{{ .Environment.Name }}/translation-db-updater/db-connection-string
+      envVariable: SQL_CONNECTION_STRING
+  - name: deepl-api-key
+    data:
+    - key: deepl-api-key
+      remoteKey: /{{ .Environment.Name }}/translation-db-updater/deepl-api-key
+      envVariable: DEEPL_API_KEY

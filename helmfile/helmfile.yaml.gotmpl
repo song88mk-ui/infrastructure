@@ -331,3 +331,10 @@ releases:
     installed: {{ eq .Environment.Name "prd" }}
     chart: charts/metabase-backup
     version: 1.0.0
+
+  - name: translation-db-updater
+    namespace: platform
+    chart: charts/translation-db-updater
+    version: 1.0.0
+    values:
+      - environments/{{ .Environment.Name }}/translation-db-updater.yaml.gotmpl

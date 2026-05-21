@@ -1,0 +1,20 @@
+image:
+  repository: python
+  tag: "3.12-slim"
+  pullPolicy: IfNotPresent
+
+cronjob:
+  schedule: "*/10 * * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  restartPolicy: OnFailure
+
+script:
+  name: update.py
+  command: ["python", "/scripts/update.py"]
+
+resources: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

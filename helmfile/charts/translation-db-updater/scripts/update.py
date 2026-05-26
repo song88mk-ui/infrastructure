@@ -35,7 +35,7 @@ SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
 DEEPL_API_KEY = os.environ["DEEPL_API_KEY"]
 DEEPL_API_URL = "https://api.deepl.com"
 
-TABLE_NAME = "SportsbookDynamic_v2"
+TABLE_NAME = "SportsbookDynamic"
 CACHE_TABLE = "TranslationCache"
 
 SOURCE_LANGUAGE_ID = "EN"

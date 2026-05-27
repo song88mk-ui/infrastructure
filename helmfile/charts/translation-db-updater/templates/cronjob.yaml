@@ -27,7 +27,7 @@ spec:
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               command: ["/bin/bash", "-c"]
               args:
-                - pip install --target /deps deepl mssql_python
+                - pip install --target /deps deepl==1.30.0 mssql_python==1.7.1 structlog==25.5.0 tenacity==9.1.4
               volumeMounts:
                 - name: deps
                   mountPath: /deps

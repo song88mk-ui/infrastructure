@@ -29,17 +29,7 @@ log: structlog.BoundLogger = structlog.get_logger()
 # =========================================================
 # CONFIG — all secrets from environment variables
 # =========================================================
-# Set these before running:
-#   export DB_SERVER=...  DB_NAME=...  DB_USER=...  DB_PASS=...  DEEPL_KEY=...
 
-def _require_env(name: str) -> str:
-    value = os.environ.get(name)
-    if not value:
-        raise RuntimeError(
-            f"Required environment variable '{name}' is not set. "
-            "Set SQL_CONNECTION_STRING and DEEPL_KEY before running."
-        )
-    return value
 SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
 # DeepL API
 DEEPL_API_KEY = os.environ["DEEPL_API_KEY"]

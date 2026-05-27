@@ -43,7 +43,7 @@ def _require_env(name: str) -> str:
 SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
 # DeepL API
 DEEPL_API_KEY = os.environ["DEEPL_API_KEY"]
-DEEPL_API_URL = "https://api.deepl.com"
+
 
 TABLE_NAME  = "SportsbookDynamic"
 CACHE_TABLE = "TranslationCache"
@@ -423,6 +423,13 @@ def translate_batch_sync(
     texts       = [t.source_text for t in batch]
     try:
         results = _call_deepl(texts, target_lang)
+        for task, tr in zip(batch, results):
+            log.info(
+                "translation_debug",
+                lang=target_lang,
+                source=task.source_text[:50],
+                translated=repr(tr.text[:50])
+            )
         return [
             TranslationResult(
                 string_id=task.string_id,
@@ -489,7 +496,6 @@ def _bulk_insert(
     log.info("deduped", table=table, before=len(rows), after=len(deduped))
 
     with get_pool().acquire_sync() as conn:
-        with get_pool().acquire_sync() as conn:
             cursor = conn.cursor()
             inserted = 0
 
@@ -548,7 +554,7 @@ def save_cache(rows: list[TranslationResult]) -> None:
             INSERT INTO {CACHE_TABLE}
             (SOURCE_HASH, SOURCE_LANGUAGE, TARGET_LANGUAGE,
              GLOSSARY_VERSION, SOURCE_TEXT, TARGET_TEXT)
-            VALUES (?, ?, ?, ?, ?, CAST(? AS NVARCHAR(MAX)))
+            VALUES (?, ?, ?, ?, ?, ?)
         """,
         dedup_key=lambda r: (r.source_hash, r.source_language,
                               r.target_language, GLOSSARY_VERSION),
@@ -646,6 +652,9 @@ def _chunked(items: list, size: int) -> Iterable[list]:
 # =========================================================
 
 def main() -> None:
+
+    #FIXME
+    exit(0)
     global _pool
     _pool = ConnectionPool(SQL_CONNECTION_STRING, size=MAX_CONCURRENT)
     _pool.init_sync()

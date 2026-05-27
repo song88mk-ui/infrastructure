@@ -642,9 +642,6 @@ def _chunked(items: list, size: int) -> Iterable[list]:
 # =========================================================
 
 def main() -> None:
-
-    #FIXME
-    exit(0)
     global _pool
     _pool = ConnectionPool(SQL_CONNECTION_STRING, size=MAX_CONCURRENT)
     _pool.init_sync()

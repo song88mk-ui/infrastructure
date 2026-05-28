@@ -1,0 +1,152 @@
+-- DROP SCHEMA dbo;
+
+CREATE SCHEMA dbo;
+-- [Translation].dbo.BackofficeStatic definition
+
+-- Drop table
+
+-- DROP TABLE [Translation].dbo.BackofficeStatic;
+
+CREATE TABLE [Translation].dbo.BackofficeStatic (
+	LanguageCode nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	Name nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	Value nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL
+);
+
+
+-- [Translation].dbo.SportsbookDynamic definition
+
+-- Drop table
+
+-- DROP TABLE [Translation].dbo.SportsbookDynamic;
+
+CREATE TABLE [Translation].dbo.SportsbookDynamic (
+	ID bigint IDENTITY(1,1) NOT NULL,
+	String_ID nvarchar(100) COLLATE Latin1_General_CI_AS NOT NULL,
+	SOURCE_LANGUAGE_ID varchar(10) COLLATE Latin1_General_CI_AS NOT NULL,
+	TARGET_LANGUAGE_ID varchar(10) COLLATE Latin1_General_CI_AS NOT NULL,
+	SOURCE_TEXT nvarchar(MAX) COLLATE Latin1_General_CI_AS NOT NULL,
+	TARGET_TEXT nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	SOURCE_HASH AS (CONVERT([varchar](64),hashbytes('SHA2_256',[SOURCE_TEXT]),(2))) PERSISTED,
+	GLOSSARY_VERSION int DEFAULT 1 NOT NULL,
+	CREATED_AT datetime2 DEFAULT getdate() NOT NULL,
+	UPDATED_AT datetime2 NULL,
+	PROCESSED bit DEFAULT 0 NOT NULL,
+	CONSTRAINT PK_SportsbookDynamic_v2 PRIMARY KEY (ID)
+);
+ CREATE NONCLUSTERED INDEX IX_SBD_HASH_LANG ON Translation.dbo.SportsbookDynamic (  SOURCE_HASH ASC  , SOURCE_LANGUAGE_ID ASC  , TARGET_LANGUAGE_ID ASC  , GLOSSARY_VERSION ASC  )  
+	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
+	 ON [PRIMARY ] ;
+ CREATE NONCLUSTERED INDEX IX_SBD_MISSING ON Translation.dbo.SportsbookDynamic (  TARGET_LANGUAGE_ID ASC  )  
+	 INCLUDE ( TARGET_TEXT ) 
+	 WHERE  ([TARGET_TEXT] IS NULL)
+	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
+	 ON [PRIMARY ] ;
+ CREATE NONCLUSTERED INDEX IX_SBD_STRING_LANG ON Translation.dbo.SportsbookDynamic (  String_ID ASC  , TARGET_LANGUAGE_ID ASC  )  
+	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
+	 ON [PRIMARY ] ;
+ CREATE UNIQUE NONCLUSTERED INDEX UX_SBD_STRING_LANG ON Translation.dbo.SportsbookDynamic (  String_ID ASC  , TARGET_LANGUAGE_ID ASC  )  
+	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
+	 ON [PRIMARY ] ;
+
+
+-- [Translation].dbo.SportsbookDynamic_DROPME definition
+
+-- Drop table
+
+-- DROP TABLE [Translation].dbo.SportsbookDynamic_DROPME;
+
+CREATE TABLE [Translation].dbo.SportsbookDynamic_DROPME (
+	String_ID nvarchar(100) COLLATE Latin1_General_CI_AS NOT NULL,
+	VALUE_EN nvarchar(MAX) COLLATE Latin1_General_CI_AS NOT NULL,
+	VALUE_ZH nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	VALUE_ID nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	[VALUE_PT-BR] nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	VALUE_DE nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	VALUE_ES nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	VALUE_FI nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	VALUE_FR nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	VALUE_JA nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	VALUE_KO nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	VALUE_NL nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	VALUE_PT nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	VALUE_TH nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	VALUE_TR nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	VALUE_VI nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	SOURCE_HASH AS (CONVERT([varchar](64),hashbytes('SHA2_256',[Value_EN]),(2))) PERSISTED,
+	Value_PT_BR nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	CONSTRAINT PK_Translation PRIMARY KEY (String_ID)
+);
+ CREATE NONCLUSTERED INDEX IX_SOURCE_HASH_MAIN ON Translation.dbo.SportsbookDynamic_DROPME (  SOURCE_HASH ASC  )  
+	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
+	 ON [PRIMARY ] ;
+
+
+-- [Translation].dbo.SportsbookStatic definition
+
+-- Drop table
+
+-- DROP TABLE [Translation].dbo.SportsbookStatic;
+
+CREATE TABLE [Translation].dbo.SportsbookStatic (
+	LanguageCode nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	Name nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	Value nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL
+);
+
+
+-- [Translation].dbo.TranslationCache definition
+
+-- Drop table
+
+-- DROP TABLE [Translation].dbo.TranslationCache;
+
+CREATE TABLE [Translation].dbo.TranslationCache (
+	SOURCE_HASH varchar(64) COLLATE Latin1_General_CI_AS NOT NULL,
+	SOURCE_LANGUAGE varchar(10) COLLATE Latin1_General_CI_AS NOT NULL,
+	TARGET_LANGUAGE varchar(10) COLLATE Latin1_General_CI_AS NOT NULL,
+	SOURCE_TEXT nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	TARGET_TEXT nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	CREATED_AT datetime2 DEFAULT getdate() NULL,
+	GLOSSARY_VERSION int NULL,
+	UPDATED_AT datetime2 NULL,
+	CONSTRAINT PK_TranslationCache PRIMARY KEY (SOURCE_HASH,SOURCE_LANGUAGE,TARGET_LANGUAGE)
+);
+ CREATE NONCLUSTERED INDEX IX_TranslationCache_HASH_LANG ON Translation.dbo.TranslationCache (  SOURCE_HASH ASC  , SOURCE_LANGUAGE ASC  , TARGET_LANGUAGE ASC  )  
+	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
+	 ON [PRIMARY ] ;
+
+
+-- [Translation].dbo.SportsbookDynamic definition
+
+-- Drop table
+
+-- DROP TABLE [Translation].dbo.SportsbookDynamic;
+
+CREATE TABLE [Translation].dbo.SportsbookDynamic (
+	ID bigint IDENTITY(1,1) NOT NULL,
+	String_ID nvarchar(100) COLLATE Latin1_General_CI_AS NOT NULL,
+	SOURCE_LANGUAGE_ID varchar(10) COLLATE Latin1_General_CI_AS NOT NULL,
+	TARGET_LANGUAGE_ID varchar(10) COLLATE Latin1_General_CI_AS NOT NULL,
+	SOURCE_TEXT nvarchar(MAX) COLLATE Latin1_General_CI_AS NOT NULL,
+	TARGET_TEXT nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	SOURCE_HASH AS (CONVERT([varchar](64),hashbytes('SHA2_256',[SOURCE_TEXT]),(2))) PERSISTED,
+	GLOSSARY_VERSION int DEFAULT 1 NOT NULL,
+	CREATED_AT datetime2 DEFAULT getdate() NOT NULL,
+	UPDATED_AT datetime2 NULL,
+	PROCESSED bit DEFAULT 0 NOT NULL
+);
+ CREATE NONCLUSTERED INDEX IX_SBD_HASH_LANG ON Translation.dbo.SportsbookDynamic (  SOURCE_HASH ASC  , SOURCE_LANGUAGE_ID ASC  , TARGET_LANGUAGE_ID ASC  , GLOSSARY_VERSION ASC  )  
+	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
+	 ON [PRIMARY ] ;
+ CREATE NONCLUSTERED INDEX IX_SBD_MISSING ON Translation.dbo.SportsbookDynamic (  TARGET_LANGUAGE_ID ASC  )  
+	 INCLUDE ( TARGET_TEXT ) 
+	 WHERE  ([TARGET_TEXT] IS NULL)
+	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
+	 ON [PRIMARY ] ;
+ CREATE NONCLUSTERED INDEX IX_SBD_STRING_LANG ON Translation.dbo.SportsbookDynamic (  String_ID ASC  , TARGET_LANGUAGE_ID ASC  )  
+	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
+	 ON [PRIMARY ] ;
+ CREATE UNIQUE NONCLUSTERED INDEX UX_SBD_STRING_LANG ON Translation.dbo.SportsbookDynamic (  String_ID ASC  , TARGET_LANGUAGE_ID ASC  )  
+	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
+	 ON [PRIMARY ] ;

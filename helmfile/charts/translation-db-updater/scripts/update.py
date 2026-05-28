@@ -12,6 +12,7 @@ from typing import AsyncGenerator, Generator, Iterable
 import deepl
 import structlog
 from mssql_python import connect, Connection
+import pyodbc
 from tenacity import retry, stop_after_attempt, wait_exponential_jitter
 
 # =========================================================
@@ -34,21 +35,23 @@ SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
 # DeepL API
 DEEPL_API_KEY = os.environ["DEEPL_API_KEY"]
 
+DEEPL_API_URL = "https://api.deepl.com"
+
 
 TABLE_NAME  = "SportsbookDynamic"
 CACHE_TABLE = "TranslationCache"
 
 SOURCE_LANGUAGE_ID = "EN"
 #TARGET_LANGUAGES   = ["KO", "IN", "ZH", "TH", "JA", "ES", "PT-BR", "PT-PT"]
-TARGET_LANGUAGES   = ["ZH", "FR", "JA"]
+TARGET_LANGUAGES   = ["ZH"]#, "FR", "JA"]
 GLOSSARY_VERSION   = "1"
 
-FETCH_LIMIT          = 500
+FETCH_LIMIT          = 1000
 CACHE_RETENTION_DAYS = 30
-MAX_CONCURRENT       = 5
-MAX_BATCH_ITEMS      = 150
-MAX_BATCH_CHARS      = 7_000
-CHUNK_SIZE           = 3_000
+MAX_CONCURRENT       = 10
+MAX_BATCH_ITEMS      = 300
+MAX_BATCH_CHARS      = 15_000
+CHUNK_SIZE           = 350
 PURGE_CHUNK_SIZE     = 5_000
 
 SPORTSBOOK_CONTEXT = """
@@ -474,8 +477,8 @@ def _bulk_insert(
     rows: list[TranslationResult],
     table: str,
     sql: str,
-    dedup_key,        # callable(TranslationResult) -> hashable
-    row_builder,      # callable(TranslationResult) -> tuple
+    dedup_key,
+    row_builder,
     duplicate_marker: str,
 ) -> None:
     if not rows:
@@ -486,72 +489,53 @@ def _bulk_insert(
     log.info("deduped", table=table, before=len(rows), after=len(deduped))
 
     with get_pool().acquire_sync() as conn:
-            cursor = conn.cursor()
-            inserted = 0
+        cursor = conn.cursor()
+        inserted = 0
 
-            for chunk in _chunked(deduped, CHUNK_SIZE):
+        for chunk in _chunked(deduped, CHUNK_SIZE):
+            data = [row_builder(r) for r in chunk]
 
-                # Build row data and force Python Unicode strings
-                data = [
-                    tuple(
-                        str(v) if isinstance(v, str) else v
-                        for v in row_builder(r)
-                    )
-                    for r in chunk
-                ]
+            # Build  VALUES (?,?,?),(?,?,?),(?,?,?)  — one execute, no executemany
+            placeholders = ",".join(
+                f"({','.join(['?'] * len(data[0]))})"
+                for _ in data
+            )
+            flat_params = [v for row in data for v in row]
 
-                # Hint driver to bind text as Unicode
-                try:
-                    cursor.setinputsizes(
-                        [(str, 0, 0)] * len(data[0])
-                    )
-                except Exception:
-                    # Not all drivers support this
-                    pass
+            try:
+                cursor.execute(sql + placeholders, flat_params)
+                conn.commit()
+                inserted += len(chunk)
+            except Exception as exc:
+                exc_text = str(exc).lower()
+                log.debug("insert_exception", table=table, exc=str(exc)[:200])
 
-                try:
-                    cursor.executemany(sql, data)
-                    conn.commit()
+                if duplicate_marker in exc_text:
+                    log.warning("duplicate_ignored", table=table)
+                    conn.rollback()
+                else:
+                    conn.rollback()
+                    raise
 
-                    inserted += len(chunk)
-
-                except Exception as exc:
-                    exc_text = str(exc).lower()
-
-                    log.debug(
-                        "insert_exception",
-                        table=table,
-                        exc=str(exc)[:200]
-                    )
-
-                    if duplicate_marker in exc_text:
-                        log.warning(
-                            "duplicate_ignored",
-                            table=table
-                        )
-                        conn.rollback()
-                    else:
-                        conn.rollback()
-                        raise
     log.info("insert_done", table=table, inserted=inserted)
-
 
 def save_cache(rows: list[TranslationResult]) -> None:
     _bulk_insert(
         rows,
         table=CACHE_TABLE,
         sql=f"""
-            INSERT INTO {CACHE_TABLE}
-            (SOURCE_HASH, SOURCE_LANGUAGE, TARGET_LANGUAGE,
-             GLOSSARY_VERSION, SOURCE_TEXT, TARGET_TEXT)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """,
+                   INSERT INTO {CACHE_TABLE}
+                   (SOURCE_HASH, SOURCE_LANGUAGE, TARGET_LANGUAGE,
+                    GLOSSARY_VERSION, SOURCE_TEXT, TARGET_TEXT)
+                   VALUES
+               """,
         dedup_key=lambda r: (r.source_hash, r.source_language,
-                              r.target_language, GLOSSARY_VERSION),
+                             r.target_language, GLOSSARY_VERSION),
         row_builder=lambda r: (r.source_hash, r.source_language,
-                                r.target_language, GLOSSARY_VERSION,
-                                r.source_text, r.target_text),
+                               r.target_language, GLOSSARY_VERSION,
+                               r.source_text, r.target_text),
         duplicate_marker="primary key constraint",
+        #            hash      src_lang   tgt_lang   version  src_text    tgt_text
     )
 
 
@@ -560,28 +544,16 @@ def insert_main(rows: list[TranslationResult]) -> None:
         rows,
         table=TABLE_NAME,
         sql=f"""
-                INSERT INTO {TABLE_NAME}
-                (
-                    String_ID,
-                    SOURCE_LANGUAGE_ID,
-                    TARGET_LANGUAGE_ID,
-                    SOURCE_TEXT,
-                    TARGET_TEXT
-                )
-                VALUES (?, ?, ?, ?, ?)
-            """,
-        dedup_key=lambda r: (
-            r.string_id,
-            r.target_language
-        ),
-        row_builder=lambda r: (
-            r.string_id,
-            r.source_language,
-            r.target_language,
-            str(r.source_text),
-            str(r.target_text)
-        ),
+               INSERT INTO {TABLE_NAME}
+               (String_ID, SOURCE_LANGUAGE_ID, TARGET_LANGUAGE_ID,
+                SOURCE_TEXT, TARGET_TEXT)
+               VALUES
+           """,
+        dedup_key=lambda r: (r.string_id, r.target_language),
+        row_builder=lambda r: (r.string_id, r.source_language,
+                               r.target_language, r.source_text, r.target_text),
         duplicate_marker="duplicate key",
+        #            string_id   src_lang    tgt_lang    src_text   tgt_text
     )
 
 

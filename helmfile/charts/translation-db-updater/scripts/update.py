@@ -13,7 +13,6 @@ from typing import AsyncGenerator, Generator, Iterable
 import deepl
 import structlog
 from mssql_python import connect, Connection
-import pyodbc
 from tenacity import retry, stop_after_attempt, wait_exponential_jitter
 
 # =========================================================

@@ -13,7 +13,6 @@ from typing import AsyncGenerator, Generator, Iterable
 import deepl
 import structlog
 from mssql_python import connect, Connection
-import pyodbc
 from tenacity import retry, stop_after_attempt, wait_exponential_jitter
 
 # =========================================================
@@ -32,29 +31,37 @@ log: structlog.BoundLogger = structlog.get_logger()
 # CONFIG — all secrets from environment variables
 # =========================================================
 
-SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
+# SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
 # DeepL API
-DEEPL_API_KEY = os.environ["DEEPL_API_KEY"]
+# DEEPL_API_KEY = os.environ["DEEPL_API_KEY"]
+
+SERVER = 'stg-song88-mssql-server.cz8wmg0s28pd.ap-south-1.rds.amazonaws.com,1433'
+DATABASE = 'Translation'
+USERNAME = 'admin'
+PASSWORD = 'e[tpfMbj6C43d1eVwnjzJz~ZeK:W'
+SQL_CONNECTION_STRING = f"Server={SERVER};Database={DATABASE};UID={USERNAME};PWD={PASSWORD}; Encrypt=yes; TrustServerCertificate=yes;"
+
+DEEPL_API_KEY = "6dcfed95-8faa-4044-b08b-114650acf16c:fx"
 
 DEEPL_API_URL = "https://api.deepl.com"
 
-
-TABLE_NAME  = "SportsbookDynamic"
+TABLE_NAME = "SportsbookDynamic"
 CACHE_TABLE = "TranslationCache"
+STATIC_TABLE = "SportsbookStatic"
 
 SOURCE_LANGUAGE_ID = "EN"
-#TARGET_LANGUAGES   = ["KO", "IN", "ZH", "TH", "JA", "ES", "PT-BR", "PT-PT"]
-TARGET_LANGUAGES   = ["ZH"]#, "FR", "JA"]
-GLOSSARY_VERSION   = "1"
+# TARGET_LANGUAGES   = ["KO", "IN", "ZH", "TH", "JA", "ES", "PT-BR", "PT-PT"]
+TARGET_LANGUAGES = ["ZH"]  # , "FR", "JA"]
+GLOSSARY_VERSION = "1"
 
-FETCH_LIMIT                 = 1000
-CACHE_RETENTION_DAYS        = 30
-TRANSLATION_RETENTION_DAYS  = 30   # purge translated rows older than this
-MAX_CONCURRENT              = 10
-MAX_BATCH_ITEMS      = 300
-MAX_BATCH_CHARS      = 15_000
-CHUNK_SIZE           = 350
-PURGE_CHUNK_SIZE     = 5_000
+FETCH_LIMIT = 1000
+CACHE_RETENTION_DAYS = 30
+TRANSLATION_RETENTION_DAYS = 30  # purge translated rows older than this
+MAX_CONCURRENT = 10
+MAX_BATCH_ITEMS = 300
+MAX_BATCH_CHARS = 15_000
+CHUNK_SIZE = 350
+PURGE_CHUNK_SIZE = 5_000
 
 SPORTSBOOK_CONTEXT = """
 This content belongs to an online sportsbook and sports betting platform.
@@ -65,20 +72,21 @@ promotions, and user interface labels.
 Use terminology commonly used by betting websites.
 """
 
+
 # =========================================================
 # TYPED DATA CLASSES
 # =========================================================
 
 @dataclass(frozen=True, slots=True)
 class SourceRow:
-    string_id:   str
+    string_id: str
     source_hash: str
     source_text: str
 
 
 @dataclass(frozen=True, slots=True)
 class TranslationTask:
-    string_id:   str
+    string_id: str
     source_hash: str
     source_text: str
     target_lang: str
@@ -86,12 +94,12 @@ class TranslationTask:
 
 @dataclass(frozen=True, slots=True)
 class TranslationResult:
-    string_id:       str
-    source_hash:     str
+    string_id: str
+    source_hash: str
     source_language: str
     target_language: str
-    source_text:     str
-    target_text:     str
+    source_text: str
+    target_text: str
 
 
 # =========================================================
@@ -103,8 +111,8 @@ class TranslationResult:
 
 class ConnectionPool:
     def __init__(self, dsn: str, size: int = 5) -> None:
-        self._dsn   = dsn
-        self._size  = size
+        self._dsn = dsn
+        self._size = size
         self._queue: asyncio.Queue[Connection] | None = None  # set in init_async()
 
     def init_sync(self) -> None:
@@ -157,7 +165,7 @@ def get_pool() -> ConnectionPool:
 # =========================================================
 
 translator = deepl.Translator(DEEPL_API_KEY, server_url=DEEPL_API_URL)
-executor   = ThreadPoolExecutor(max_workers=MAX_CONCURRENT)
+executor = ThreadPoolExecutor(max_workers=MAX_CONCURRENT)
 
 
 # =========================================================
@@ -318,7 +326,7 @@ def fetch_existing_pairs(string_ids: list[str]) -> set[tuple[str, str]]:
 # =========================================================
 
 def build_tasks(sources: list[SourceRow]) -> list[TranslationTask]:
-    seen:  set[tuple[str, str]]  = set()
+    seen: set[tuple[str, str]] = set()
     tasks: list[TranslationTask] = []
     for s in sources:
         for lang in TARGET_LANGUAGES:
@@ -337,10 +345,10 @@ def build_tasks(sources: list[SourceRow]) -> list[TranslationTask]:
 def filter_tasks(tasks: list[TranslationTask]) -> list[TranslationTask]:
     log.info("loading_cache_keys")
     source_hashes = list({t.source_hash for t in tasks})
-    cache_set     = fetch_cache_keys(source_hashes)
+    cache_set = fetch_cache_keys(source_hashes)
     log.info("cache_loaded", count=len(cache_set))
 
-    string_ids     = list({t.string_id for t in tasks})
+    string_ids = list({t.string_id for t in tasks})
     existing_pairs = fetch_existing_pairs(string_ids)
     log.info("existing_loaded", count=len(existing_pairs))
 
@@ -363,7 +371,7 @@ def filter_tasks(tasks: list[TranslationTask]) -> list[TranslationTask]:
 
 
 def group_by_language(
-    tasks: list[TranslationTask],
+        tasks: list[TranslationTask],
 ) -> dict[str, list[TranslationTask]]:
     grouped: dict[str, list[TranslationTask]] = defaultdict(list)
     for t in tasks:
@@ -372,10 +380,10 @@ def group_by_language(
 
 
 def build_batches(
-    tasks: list[TranslationTask],
+        tasks: list[TranslationTask],
 ) -> list[list[TranslationTask]]:
     batches: list[list[TranslationTask]] = []
-    batch:   list[TranslationTask]       = []
+    batch: list[TranslationTask] = []
     size = 0
     for t in tasks:
         tlen = len(t.source_text)
@@ -390,6 +398,104 @@ def build_batches(
 
 
 # =========================================================
+# GLOSSARY MANAGEMENT
+# =========================================================
+
+# In-process cache: target_lang -> deepl.GlossaryInfo (or None if no entries).
+# Populated once per run by ensure_glossary(); re-used for every batch.
+_glossary_cache: dict[str, deepl.GlossaryInfo | None] = {}
+
+
+def fetch_glossary_entries(target_lang: str) -> dict[str, str]:
+    """
+    Read glossary entries for *target_lang* from SportsbookStatic.
+
+    Table layout
+    ------------
+    LanguageCode  — the target language code, e.g. "ZH", "FR", "JA"
+    Name          — the original English string (source)
+    Value         — the expected translation (target)
+
+    Returns a {source_term: translated_term} dict ready to pass to DeepL.
+    Rows where either column is NULL or blank are silently skipped.
+    """
+    with get_pool().acquire_sync() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"""
+            SELECT Name, Value
+            FROM   {STATIC_TABLE}
+            WHERE  LanguageCode = ?
+              AND  Name  IS NOT NULL AND LTRIM(RTRIM(Name))  <> ''
+              AND  Value IS NOT NULL AND LTRIM(RTRIM(Value)) <> ''
+            """,
+            target_lang,
+        )
+        entries = {
+            str(row[0]).strip(): str(row[1]).strip()
+            for row in cursor.fetchall()
+        }
+    log.info(
+        "glossary_entries_loaded",
+        target_lang=target_lang,
+        entry_count=len(entries),
+    )
+    return entries
+
+
+def ensure_glossary(target_lang: str) -> deepl.GlossaryInfo | None:
+    """
+    Return a DeepL GlossaryInfo for *target_lang*, creating it if needed.
+
+    The result is cached in _glossary_cache so we only hit the API once per
+    target language per run.  Returns None when SportsbookStatic has no entries
+    for the language (translation proceeds without a glossary in that case).
+
+    Any pre-existing DeepL glossary whose name matches is deleted first so the
+    run always uses the freshest SportsbookStatic data.
+    """
+    if target_lang in _glossary_cache:
+        return _glossary_cache[target_lang]
+
+    entries = fetch_glossary_entries(target_lang)
+    if not entries:
+        log.warning("glossary_empty", target_lang=target_lang)
+        _glossary_cache[target_lang] = None
+        return None
+
+    glossary_name = f"sportsbook_{SOURCE_LANGUAGE_ID}_{target_lang}_v{GLOSSARY_VERSION}"
+
+    # Delete any stale glossary with the same name so we always start fresh.
+    try:
+        existing = translator.list_glossaries()
+        for g in existing:
+            if g.name == glossary_name:
+                translator.delete_glossary(g)
+                log.info("glossary_deleted_stale", name=glossary_name)
+    except Exception as exc:
+        log.warning("glossary_list_failed", error=str(exc))
+
+    # DeepL requires the source language without a regional suffix (e.g. "EN",
+    # not "EN-US") and some target langs need the region variant ("PT-BR").
+    # source_lang is always SOURCE_LANGUAGE_ID which is plain "EN".
+    glossary = translator.create_glossary(
+        name=glossary_name,
+        source_lang=SOURCE_LANGUAGE_ID,
+        target_lang=target_lang,
+        entries=entries,
+    )
+    log.info(
+        "glossary_created",
+        name=glossary_name,
+        target_lang=target_lang,
+        entry_count=len(entries),
+        glossary_id=glossary.glossary_id,
+    )
+    _glossary_cache[target_lang] = glossary
+    return glossary
+
+
+# =========================================================
 # TRANSLATION
 # =========================================================
 
@@ -399,23 +505,25 @@ def build_batches(
     reraise=True,
 )
 def _call_deepl(
-    texts: list[str],
-    target_lang: str,
+        texts: list[str],
+        target_lang: str,
 ) -> list[deepl.TextResult]:
+    glossary = ensure_glossary(target_lang)
     results = translator.translate_text(
         texts,
         source_lang=SOURCE_LANGUAGE_ID,
         target_lang=target_lang,
         context=SPORTSBOOK_CONTEXT,
+        glossary=glossary,  # None → DeepL ignores the parameter
     )
     return results if isinstance(results, list) else [results]
 
 
 def translate_batch_sync(
-    batch: list[TranslationTask],
+        batch: list[TranslationTask],
 ) -> list[TranslationResult]:
     target_lang = batch[0].target_lang
-    texts       = [t.source_text for t in batch]
+    texts = [t.source_text for t in batch]
     try:
         results = _call_deepl(texts, target_lang)
         for task, tr in zip(batch, results):
@@ -442,7 +550,7 @@ def translate_batch_sync(
 
 
 async def translate_batch(
-    batch: list[TranslationTask],
+        batch: list[TranslationTask],
 ) -> list[TranslationResult]:
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(executor, translate_batch_sync, batch)
@@ -453,7 +561,7 @@ async def translate_batch(
 # =========================================================
 
 async def process_all_languages(
-    grouped: dict[str, list[TranslationTask]],
+        grouped: dict[str, list[TranslationTask]],
 ) -> list[TranslationResult]:
     sem = asyncio.Semaphore(MAX_CONCURRENT)
 
@@ -476,17 +584,17 @@ async def process_all_languages(
 # =========================================================
 
 def _bulk_insert(
-    rows: list[TranslationResult],
-    table: str,
-    sql: str,
-    dedup_key,
-    row_builder,
-    duplicate_marker: str,
+        rows: list[TranslationResult],
+        table: str,
+        sql: str,
+        dedup_key,
+        row_builder,
+        duplicate_marker: str,
 ) -> None:
     if not rows:
         return
 
-    unique  = {dedup_key(r): r for r in rows}
+    unique = {dedup_key(r): r for r in rows}
     deduped = list(unique.values())
     log.info("deduped", table=table, before=len(rows), after=len(deduped))
 
@@ -520,6 +628,7 @@ def _bulk_insert(
                     raise
 
     log.info("insert_done", table=table, inserted=inserted)
+
 
 def save_cache(rows: list[TranslationResult]) -> None:
     _bulk_insert(
@@ -650,7 +759,7 @@ def purge_old_translations(retention_days: int = TRANSLATION_RETENTION_DAYS) -> 
 
 def _chunked(items: list, size: int) -> Iterable[list]:
     for i in range(0, len(items), size):
-        yield items[i : i + size]
+        yield items[i: i + size]
 
 
 # =========================================================
@@ -661,6 +770,10 @@ def main() -> None:
     global _pool
     _pool = ConnectionPool(SQL_CONNECTION_STRING, size=MAX_CONCURRENT)
     _pool.init_sync()
+
+    # Clear in-process glossary cache so a fresh run always re-reads
+    # SportsbookStatic and rebuilds the DeepL glossaries.
+    _glossary_cache.clear()
 
     cycle = 0
 
@@ -681,9 +794,9 @@ def main() -> None:
         log.info("cycle_start", cycle=cycle)
 
         # FETCH — no cursor needed; PROCESSED flag drives pagination
-        t0      = time.perf_counter()
+        t0 = time.perf_counter()
         sources = fetch_sources()
-        log.info("fetched", count=len(sources), elapsed=f"{time.perf_counter()-t0:.2f}s")
+        log.info("fetched", count=len(sources), elapsed=f"{time.perf_counter() - t0:.2f}s")
 
         if not sources:
             log.info("all_done")
@@ -703,14 +816,14 @@ def main() -> None:
 
         grouped = group_by_language(tasks)
 
-        t0         = time.perf_counter()
+        t0 = time.perf_counter()
         try:
             translated = asyncio.run(process_all_languages(grouped))
         except Exception as exc:
             log.error("deepl_fatal", error=str(exc), cycle=cycle)
             sys.exit(1)
-        elapsed    = time.perf_counter() - t0
-        rate       = len(translated) / elapsed if elapsed > 0 else 0
+        elapsed = time.perf_counter() - t0
+        rate = len(translated) / elapsed if elapsed > 0 else 0
         log.info(
             "translated",
             count=len(translated),

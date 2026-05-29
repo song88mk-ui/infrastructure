@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import sys
 import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -46,9 +47,10 @@ SOURCE_LANGUAGE_ID = "EN"
 TARGET_LANGUAGES   = ["ZH"]#, "FR", "JA"]
 GLOSSARY_VERSION   = "1"
 
-FETCH_LIMIT          = 1000
-CACHE_RETENTION_DAYS = 30
-MAX_CONCURRENT       = 10
+FETCH_LIMIT                 = 1000
+CACHE_RETENTION_DAYS        = 30
+TRANSLATION_RETENTION_DAYS  = 30   # purge translated rows older than this
+MAX_CONCURRENT              = 10
 MAX_BATCH_ITEMS      = 300
 MAX_BATCH_CHARS      = 15_000
 CHUNK_SIZE           = 350
@@ -436,7 +438,7 @@ def translate_batch_sync(
         ]
     except Exception as exc:
         log.error("deepl_failed", lang=target_lang, error=str(exc))
-        return []
+        raise
 
 
 async def translate_batch(
@@ -600,6 +602,48 @@ def purge_old_cache(retention_days: int = CACHE_RETENTION_DAYS) -> int:
     return total_deleted
 
 
+def purge_old_translations(retention_days: int = TRANSLATION_RETENTION_DAYS) -> int:
+    """
+    Delete translated rows from SportsbookDynamic that have not been touched
+    in more than retention_days.
+
+    Uses COALESCE(UPDATED_AT, CREATED_AT) so a row that was translated once
+    and never updated is still eligible for purge once it ages out.
+
+    Only non-source rows are removed (TARGET_LANGUAGE_ID != SOURCE_LANGUAGE_ID),
+    so the original EN source rows are never deleted by this routine.
+
+    Runs in batches of PURGE_CHUNK_SIZE to avoid table-lock escalation.
+    Returns the total number of rows deleted.
+    """
+    total_deleted = 0
+
+    with get_pool().acquire_sync() as conn:
+        cursor = conn.cursor()
+        sql = f"""
+            DELETE TOP ({PURGE_CHUNK_SIZE})
+            FROM {TABLE_NAME}
+            WHERE TARGET_LANGUAGE_ID <> SOURCE_LANGUAGE_ID
+              AND COALESCE(UPDATED_AT, CREATED_AT) < DATEADD(DAY, -?, GETUTCDATE())
+        """
+        while True:
+            cursor.execute(sql, retention_days)
+            deleted = cursor.rowcount
+            conn.commit()
+            if deleted == 0:
+                break
+            total_deleted += deleted
+            log.info("translation_purge_batch", deleted=deleted, total_so_far=total_deleted)
+
+    log.info(
+        "translation_purge_done",
+        table=TABLE_NAME,
+        retention_days=retention_days,
+        total_deleted=total_deleted,
+    )
+    return total_deleted
+
+
 # =========================================================
 # UTILITIES
 # =========================================================
@@ -629,6 +673,9 @@ def main() -> None:
     log.info("cache_purge_start", retention_days=CACHE_RETENTION_DAYS)
     purge_old_cache()
 
+    log.info("translation_purge_start", retention_days=TRANSLATION_RETENTION_DAYS)
+    purge_old_translations()
+
     while True:
         cycle += 1
         log.info("cycle_start", cycle=cycle)
@@ -657,7 +704,11 @@ def main() -> None:
         grouped = group_by_language(tasks)
 
         t0         = time.perf_counter()
-        translated = asyncio.run(process_all_languages(grouped))
+        try:
+            translated = asyncio.run(process_all_languages(grouped))
+        except Exception as exc:
+            log.error("deepl_fatal", error=str(exc), cycle=cycle)
+            sys.exit(1)
         elapsed    = time.perf_counter() - t0
         rate       = len(translated) / elapsed if elapsed > 0 else 0
         log.info(

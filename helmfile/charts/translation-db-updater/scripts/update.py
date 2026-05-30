@@ -15,9 +15,6 @@ import structlog
 from mssql_python import connect, Connection
 from tenacity import retry, stop_after_attempt, wait_exponential_jitter
 
-# =========================================================
-# LOGGING
-# =========================================================
 structlog.configure(
     processors=[
         structlog.processors.TimeStamper(fmt="iso"),
@@ -27,24 +24,12 @@ structlog.configure(
 )
 log: structlog.BoundLogger = structlog.get_logger()
 
-# =========================================================
-# CONFIG — all secrets from environment variables
-# =========================================================
-
-# SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
-# DeepL API
-# DEEPL_API_KEY = os.environ["DEEPL_API_KEY"]
-
-SERVER = 'stg-song88-mssql-server.cz8wmg0s28pd.ap-south-1.rds.amazonaws.com,1433'
-DATABASE = 'Translation'
-USERNAME = 'admin'
-PASSWORD = 'e[tpfMbj6C43d1eVwnjzJz~ZeK:W'
-SQL_CONNECTION_STRING = f"Server={SERVER};Database={DATABASE};UID={USERNAME};PWD={PASSWORD}; Encrypt=yes; TrustServerCertificate=yes;"
-
-DEEPL_API_KEY = "6dcfed95-8faa-4044-b08b-114650acf16c:fx"
-
+# DeepL configuration
 DEEPL_API_URL = "https://api.deepl.com"
+DEEPL_API_KEY = os.environ["DEEPL_API_KEY"]
 
+# SQL server configuration
+SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
 TABLE_NAME = "SportsbookDynamic"
 CACHE_TABLE = "TranslationCache"
 STATIC_TABLE = "SportsbookStatic"
@@ -77,6 +62,7 @@ Use terminology commonly used by betting websites.
 # TYPED DATA CLASSES
 # =========================================================
 
+
 @dataclass(frozen=True, slots=True)
 class SourceRow:
     string_id: str
@@ -108,6 +94,7 @@ class TranslationResult:
 # mssql_python doesn't ship a pool, so we build one over asyncio.Queue.
 # acquire() is an asynccontextmanager so callers can await the borrow
 # safely inside async code without risk of QueueEmpty under concurrency.
+
 
 class ConnectionPool:
     def __init__(self, dsn: str, size: int = 5) -> None:
@@ -171,6 +158,7 @@ executor = ThreadPoolExecutor(max_workers=MAX_CONCURRENT)
 # =========================================================
 # DB HELPERS
 # =========================================================
+
 
 def fetch_sources() -> list[SourceRow]:
     """
@@ -325,6 +313,7 @@ def fetch_existing_pairs(string_ids: list[str]) -> set[tuple[str, str]]:
 # TASK PIPELINE
 # =========================================================
 
+
 def build_tasks(sources: list[SourceRow]) -> list[TranslationTask]:
     seen: set[tuple[str, str]] = set()
     tasks: list[TranslationTask] = []
@@ -333,12 +322,14 @@ def build_tasks(sources: list[SourceRow]) -> list[TranslationTask]:
             key = (s.string_id, lang)
             if key not in seen:
                 seen.add(key)
-                tasks.append(TranslationTask(
-                    string_id=s.string_id,
-                    source_hash=s.source_hash,
-                    source_text=s.source_text,
-                    target_lang=lang,
-                ))
+                tasks.append(
+                    TranslationTask(
+                        string_id=s.string_id,
+                        source_hash=s.source_hash,
+                        source_text=s.source_text,
+                        target_lang=lang,
+                    )
+                )
     return tasks
 
 
@@ -371,7 +362,7 @@ def filter_tasks(tasks: list[TranslationTask]) -> list[TranslationTask]:
 
 
 def group_by_language(
-        tasks: list[TranslationTask],
+    tasks: list[TranslationTask],
 ) -> dict[str, list[TranslationTask]]:
     grouped: dict[str, list[TranslationTask]] = defaultdict(list)
     for t in tasks:
@@ -380,7 +371,7 @@ def group_by_language(
 
 
 def build_batches(
-        tasks: list[TranslationTask],
+    tasks: list[TranslationTask],
 ) -> list[list[TranslationTask]]:
     batches: list[list[TranslationTask]] = []
     batch: list[TranslationTask] = []
@@ -432,8 +423,7 @@ def fetch_glossary_entries(target_lang: str) -> dict[str, str]:
             target_lang,
         )
         entries = {
-            str(row[0]).strip(): str(row[1]).strip()
-            for row in cursor.fetchall()
+            str(row[0]).strip(): str(row[1]).strip() for row in cursor.fetchall()
         }
     log.info(
         "glossary_entries_loaded",
@@ -499,14 +489,15 @@ def ensure_glossary(target_lang: str) -> deepl.GlossaryInfo | None:
 # TRANSLATION
 # =========================================================
 
+
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential_jitter(initial=1, max=8),
     reraise=True,
 )
 def _call_deepl(
-        texts: list[str],
-        target_lang: str,
+    texts: list[str],
+    target_lang: str,
 ) -> list[deepl.TextResult]:
     glossary = ensure_glossary(target_lang)
     results = translator.translate_text(
@@ -520,7 +511,7 @@ def _call_deepl(
 
 
 def translate_batch_sync(
-        batch: list[TranslationTask],
+    batch: list[TranslationTask],
 ) -> list[TranslationResult]:
     target_lang = batch[0].target_lang
     texts = [t.source_text for t in batch]
@@ -531,7 +522,7 @@ def translate_batch_sync(
                 "translation_debug",
                 lang=target_lang,
                 source=task.source_text[:50],
-                translated=repr(tr.text[:50])
+                translated=repr(tr.text[:50]),
             )
         return [
             TranslationResult(
@@ -550,7 +541,7 @@ def translate_batch_sync(
 
 
 async def translate_batch(
-        batch: list[TranslationTask],
+    batch: list[TranslationTask],
 ) -> list[TranslationResult]:
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(executor, translate_batch_sync, batch)
@@ -560,8 +551,9 @@ async def translate_batch(
 # ASYNC ORCHESTRATION
 # =========================================================
 
+
 async def process_all_languages(
-        grouped: dict[str, list[TranslationTask]],
+    grouped: dict[str, list[TranslationTask]],
 ) -> list[TranslationResult]:
     sem = asyncio.Semaphore(MAX_CONCURRENT)
 
@@ -583,13 +575,14 @@ async def process_all_languages(
 # BULK INSERT (shared helper)
 # =========================================================
 
+
 def _bulk_insert(
-        rows: list[TranslationResult],
-        table: str,
-        sql: str,
-        dedup_key,
-        row_builder,
-        duplicate_marker: str,
+    rows: list[TranslationResult],
+    table: str,
+    sql: str,
+    dedup_key,
+    row_builder,
+    duplicate_marker: str,
 ) -> None:
     if not rows:
         return
@@ -606,10 +599,7 @@ def _bulk_insert(
             data = [row_builder(r) for r in chunk]
 
             # Build  VALUES (?,?,?),(?,?,?),(?,?,?)  — one execute, no executemany
-            placeholders = ",".join(
-                f"({','.join(['?'] * len(data[0]))})"
-                for _ in data
-            )
+            placeholders = ",".join(f"({','.join(['?'] * len(data[0]))})" for _ in data)
             flat_params = [v for row in data for v in row]
 
             try:
@@ -640,11 +630,20 @@ def save_cache(rows: list[TranslationResult]) -> None:
                     GLOSSARY_VERSION, SOURCE_TEXT, TARGET_TEXT)
                    VALUES
                """,
-        dedup_key=lambda r: (r.source_hash, r.source_language,
-                             r.target_language, GLOSSARY_VERSION),
-        row_builder=lambda r: (r.source_hash, r.source_language,
-                               r.target_language, GLOSSARY_VERSION,
-                               r.source_text, r.target_text),
+        dedup_key=lambda r: (
+            r.source_hash,
+            r.source_language,
+            r.target_language,
+            GLOSSARY_VERSION,
+        ),
+        row_builder=lambda r: (
+            r.source_hash,
+            r.source_language,
+            r.target_language,
+            GLOSSARY_VERSION,
+            r.source_text,
+            r.target_text,
+        ),
         duplicate_marker="primary key constraint",
         #            hash      src_lang   tgt_lang   version  src_text    tgt_text
     )
@@ -661,8 +660,13 @@ def insert_main(rows: list[TranslationResult]) -> None:
                VALUES
            """,
         dedup_key=lambda r: (r.string_id, r.target_language),
-        row_builder=lambda r: (r.string_id, r.source_language,
-                               r.target_language, r.source_text, r.target_text),
+        row_builder=lambda r: (
+            r.string_id,
+            r.source_language,
+            r.target_language,
+            r.source_text,
+            r.target_text,
+        ),
         duplicate_marker="duplicate key",
         #            string_id   src_lang    tgt_lang    src_text   tgt_text
     )
@@ -671,6 +675,7 @@ def insert_main(rows: list[TranslationResult]) -> None:
 # =========================================================
 # CACHE PURGE
 # =========================================================
+
 
 def purge_old_cache(retention_days: int = CACHE_RETENTION_DAYS) -> int:
     """
@@ -742,7 +747,9 @@ def purge_old_translations(retention_days: int = TRANSLATION_RETENTION_DAYS) -> 
             if deleted == 0:
                 break
             total_deleted += deleted
-            log.info("translation_purge_batch", deleted=deleted, total_so_far=total_deleted)
+            log.info(
+                "translation_purge_batch", deleted=deleted, total_so_far=total_deleted
+            )
 
     log.info(
         "translation_purge_done",
@@ -757,14 +764,16 @@ def purge_old_translations(retention_days: int = TRANSLATION_RETENTION_DAYS) -> 
 # UTILITIES
 # =========================================================
 
+
 def _chunked(items: list, size: int) -> Iterable[list]:
     for i in range(0, len(items), size):
-        yield items[i: i + size]
+        yield items[i : i + size]
 
 
 # =========================================================
 # MAIN LOOP
 # =========================================================
+
 
 def main() -> None:
     global _pool
@@ -780,7 +789,9 @@ def main() -> None:
     # Reset PROCESSED flag for any row missing a translation in a current target
     # language.  Safe to run every startup: filter_tasks() ensures already-
     # translated (string_id, lang) pairs are skipped, so nothing is re-translated.
-    log.info("checking_for_missing_language_translations", target_languages=TARGET_LANGUAGES)
+    log.info(
+        "checking_for_missing_language_translations", target_languages=TARGET_LANGUAGES
+    )
     reset_for_missing_languages()
 
     log.info("cache_purge_start", retention_days=CACHE_RETENTION_DAYS)
@@ -796,7 +807,9 @@ def main() -> None:
         # FETCH — no cursor needed; PROCESSED flag drives pagination
         t0 = time.perf_counter()
         sources = fetch_sources()
-        log.info("fetched", count=len(sources), elapsed=f"{time.perf_counter() - t0:.2f}s")
+        log.info(
+            "fetched", count=len(sources), elapsed=f"{time.perf_counter() - t0:.2f}s"
+        )
 
         if not sources:
             log.info("all_done")

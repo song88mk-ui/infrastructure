@@ -1,10 +1,10 @@
 image:
   repository: python
-  tag: "3.12-slim"
+  tag: "3.13-slim"
   pullPolicy: IfNotPresent
 
 cronjob:
-  schedule: "*/10 * * * *"
+  schedule: "0 * * * *" # Every hour
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
   restartPolicy: OnFailure

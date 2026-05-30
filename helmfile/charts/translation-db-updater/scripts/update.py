@@ -12,7 +12,7 @@ from typing import AsyncGenerator, Generator, Iterable
 
 import deepl
 import structlog
-from mssql_python import connect, Connection
+import mssql_python as mssql
 from tenacity import retry, stop_after_attempt, wait_exponential_jitter
 
 structlog.configure(
@@ -89,65 +89,6 @@ class TranslationResult:
 
 
 # =========================================================
-# CONNECTION POOL
-# =========================================================
-# mssql_python doesn't ship a pool, so we build one over asyncio.Queue.
-# acquire() is an asynccontextmanager so callers can await the borrow
-# safely inside async code without risk of QueueEmpty under concurrency.
-
-
-class ConnectionPool:
-    def __init__(self, dsn: str, size: int = 5) -> None:
-        self._dsn = dsn
-        self._size = size
-        self._queue: asyncio.Queue[Connection] | None = None  # set in init_async()
-
-    def init_sync(self) -> None:
-        """
-        Open all connections synchronously.
-        Must be called from within a running event loop so asyncio.Queue works,
-        OR before any async code runs (the Queue is created lazily in acquire()).
-        Called once from main() before the loop starts.
-        """
-        self._queue = asyncio.Queue(maxsize=self._size)
-        for _ in range(self._size):
-            self._queue.put_nowait(connect(self._dsn))
-
-    @asynccontextmanager
-    async def acquire(self) -> AsyncGenerator[Connection, None]:
-        """Async-safe borrow: awaits if all connections are busy."""
-        assert self._queue is not None, "Pool not initialised — call init_sync() first"
-        conn = await self._queue.get()
-        try:
-            yield conn
-        finally:
-            await self._queue.put(conn)
-
-    @contextmanager
-    def acquire_sync(self) -> Generator[Connection, None, None]:
-        """
-        Synchronous borrow for non-async callers (fetch_sources, mark_processed,
-        _bulk_insert, purge_old_cache).  Uses get_nowait() which raises QueueEmpty
-        if the pool is exhausted — acceptable because these callers run outside
-        the async event loop.
-        """
-        assert self._queue is not None, "Pool not initialised — call init_sync() first"
-        conn = self._queue.get_nowait()
-        try:
-            yield conn
-        finally:
-            self._queue.put_nowait(conn)
-
-
-_pool: ConnectionPool | None = None  # initialised in main()
-
-
-def get_pool() -> ConnectionPool:
-    assert _pool is not None, "Pool not initialised"
-    return _pool
-
-
-# =========================================================
 # DEEPL CLIENT + EXECUTOR
 # =========================================================
 
@@ -160,37 +101,36 @@ executor = ThreadPoolExecutor(max_workers=MAX_CONCURRENT)
 # =========================================================
 
 
-def fetch_sources() -> list[SourceRow]:
+def fetch_sources(conn) -> list[SourceRow]:
     """
     Fetch the next batch of unprocessed English source rows.
     Relies on the PROCESSED = 0 flag — no ordering by String_ID needed,
     so random/non-sequential IDs are handled correctly.
     """
-    with get_pool().acquire_sync() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            f"""
-            SELECT TOP ({FETCH_LIMIT})
-                String_ID, SOURCE_HASH, SOURCE_TEXT
-            FROM {TABLE_NAME}
-            WHERE SOURCE_LANGUAGE_ID = ?
-              AND PROCESSED = 0
-              AND SOURCE_TEXT IS NOT NULL
-              AND LTRIM(RTRIM(SOURCE_TEXT)) <> ''
-            """,
-            SOURCE_LANGUAGE_ID,
+    cursor = conn.cursor()
+    cursor.execute(
+        f"""
+        SELECT TOP ({FETCH_LIMIT})
+            String_ID, SOURCE_HASH, SOURCE_TEXT
+        FROM {TABLE_NAME}
+        WHERE SOURCE_LANGUAGE_ID = ?
+          AND PROCESSED = 0
+          AND SOURCE_TEXT IS NOT NULL
+          AND LTRIM(RTRIM(SOURCE_TEXT)) <> ''
+        """,
+        SOURCE_LANGUAGE_ID,
+    )
+    return [
+        SourceRow(
+            string_id=r[0],
+            source_hash=r[1],
+            source_text=str(r[2]).strip(),
         )
-        return [
-            SourceRow(
-                string_id=r[0],
-                source_hash=r[1],
-                source_text=str(r[2]).strip(),
-            )
-            for r in cursor.fetchall()
-        ]
+        for r in cursor.fetchall()
+    ]
 
 
-def mark_processed(string_ids: list[str]) -> None:
+def mark_processed(conn, string_ids: list[str]) -> None:
     """
     Mark source rows as processed so they are excluded from future fetches.
     Called after translations have been saved successfully so a crash before
@@ -200,27 +140,26 @@ def mark_processed(string_ids: list[str]) -> None:
     if not string_ids:
         return
 
-    with get_pool().acquire_sync() as conn:
-        cursor = conn.cursor()
-        for chunk in _chunked(string_ids, 2_000):
-            placeholders = ",".join(["?"] * len(chunk))
-            cursor.execute(
-                f"""
-                UPDATE {TABLE_NAME}
-                SET PROCESSED = 1
-                WHERE String_ID IN ({placeholders})
-                """,
-                *chunk,
-            )
-        conn.commit()
+    cursor = conn.cursor()
+    for chunk in _chunked(string_ids, 2_000):
+        placeholders = ",".join(["?"] * len(chunk))
+        cursor.execute(
+            f"""
+            UPDATE {TABLE_NAME}
+            SET PROCESSED = 1
+            WHERE String_ID IN ({placeholders})
+            """,
+            *chunk,
+        )
+    conn.commit()
 
     log.info("marked_processed", count=len(string_ids))
 
 
-def reset_for_missing_languages() -> int:
+def reset_for_missing_languages(conn) -> int:
     """
-    At startup, reset PROCESSED = 0 for any source row that is missing a
-    translation for at least one of the current TARGET_LANGUAGES.
+    At startup, set PROCESSED = 0 for any source row that is missing a
+    translation for at least one of the given TARGET_LANGUAGES.
 
     This is the fix for the "new language not translated" bug: previously,
     rows were marked PROCESSED = 1 after being translated for whatever languages
@@ -236,77 +175,76 @@ def reset_for_missing_languages() -> int:
     The lang values are formatted directly into SQL because TARGET_LANGUAGES is a
     controlled config constant, not user input.
     """
+    # FIXME: We should not have to do this. Each language addition should not affect the others
     if not TARGET_LANGUAGES:
         return 0
 
     # Build   (VALUES ('ZH'), ('FR'), ('JA'))  for use as a derived table.
     lang_values = ", ".join(f"('{lang}')" for lang in TARGET_LANGUAGES)
 
-    with get_pool().acquire_sync() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            f"""
-            UPDATE {TABLE_NAME}
-            SET    PROCESSED = 0
-            WHERE  SOURCE_LANGUAGE_ID = ?
-              AND  PROCESSED = 1
-              AND  EXISTS (
-                       -- there is at least one target language for which this
-                       -- String_ID has no translation row yet
-                       SELECT 1
-                       FROM   (VALUES {lang_values}) AS langs(lang)
-                       WHERE  NOT EXISTS (
-                                  SELECT 1
-                                  FROM   {TABLE_NAME} t
-                                  WHERE  t.String_ID          = {TABLE_NAME}.String_ID
-                                    AND  t.TARGET_LANGUAGE_ID = langs.lang
-                              )
-                   )
-            """,
-            SOURCE_LANGUAGE_ID,
-        )
-        count = cursor.rowcount
-        conn.commit()
+    cursor = conn.cursor()
+    cursor.execute(
+        f"""
+        UPDATE {TABLE_NAME}
+        SET    PROCESSED = 0
+        WHERE  SOURCE_LANGUAGE_ID = ?
+          AND  PROCESSED = 1
+          AND  EXISTS (
+                   -- there is at least one target language for which this
+                   -- String_ID has no translation row yet
+                   SELECT 1
+                   FROM   (VALUES {lang_values}) AS langs(lang)
+                   WHERE  NOT EXISTS (
+                              SELECT 1
+                              FROM   {TABLE_NAME} t
+                              WHERE  t.String_ID          = {TABLE_NAME}.String_ID
+                                AND  t.TARGET_LANGUAGE_ID = langs.lang
+                          )
+               )
+        """,
+        SOURCE_LANGUAGE_ID,
+    )
+    count = cursor.rowcount
+    conn.commit()
 
     log.info(
-        "reset_for_missing_languages",
+        "reset for missing languages",
         reset_count=count,
         target_languages=TARGET_LANGUAGES,
     )
+
     return count
 
 
-def fetch_cache_keys(source_hashes: list[str]) -> set[tuple[str, str]]:
+def fetch_cache_keys(conn, source_hashes: list[str]) -> set[tuple[str, str]]:
     placeholders = ",".join(["?"] * len(source_hashes))
-    with get_pool().acquire_sync() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            f"""
-            SELECT SOURCE_HASH, TARGET_LANGUAGE
-            FROM {CACHE_TABLE}
-            WHERE SOURCE_HASH IN ({placeholders})
-              AND GLOSSARY_VERSION = ?
-            """,
-            *source_hashes,
-            GLOSSARY_VERSION,
-        )
-        return {(r[0], r[1]) for r in cursor.fetchall()}
+    cursor = conn.cursor()
+    cursor.execute(
+        f"""
+        SELECT SOURCE_HASH, TARGET_LANGUAGE
+        FROM {CACHE_TABLE}
+        WHERE SOURCE_HASH IN ({placeholders})
+          AND GLOSSARY_VERSION = ?
+        """,
+        *source_hashes,
+        GLOSSARY_VERSION,
+    )
+    return {(r[0], r[1]) for r in cursor.fetchall()}
 
 
-def fetch_existing_pairs(string_ids: list[str]) -> set[tuple[str, str]]:
+def fetch_existing_pairs(conn, string_ids: list[str]) -> set[tuple[str, str]]:
     placeholders = ",".join(["?"] * len(string_ids))
-    with get_pool().acquire_sync() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            f"""
-            SELECT String_ID, TARGET_LANGUAGE_ID
-            FROM {TABLE_NAME}
-            WHERE String_ID IN ({placeholders})
-              AND TARGET_LANGUAGE_ID IS NOT NULL
-            """,
-            *string_ids,
-        )
-        return {(r[0], r[1]) for r in cursor.fetchall()}
+    cursor = conn.cursor()
+    cursor.execute(
+        f"""
+        SELECT String_ID, TARGET_LANGUAGE_ID
+        FROM {TABLE_NAME}
+        WHERE String_ID IN ({placeholders})
+          AND TARGET_LANGUAGE_ID IS NOT NULL
+        """,
+        *string_ids,
+    )
+    return {(r[0], r[1]) for r in cursor.fetchall()}
 
 
 # =========================================================
@@ -333,14 +271,14 @@ def build_tasks(sources: list[SourceRow]) -> list[TranslationTask]:
     return tasks
 
 
-def filter_tasks(tasks: list[TranslationTask]) -> list[TranslationTask]:
-    log.info("loading_cache_keys")
+def filter_tasks(conn, tasks: list[TranslationTask]) -> list[TranslationTask]:
+    log.info("loading cache keys")
     source_hashes = list({t.source_hash for t in tasks})
-    cache_set = fetch_cache_keys(source_hashes)
+    cache_set = fetch_cache_keys(conn, source_hashes)
     log.info("cache_loaded", count=len(cache_set))
 
     string_ids = list({t.string_id for t in tasks})
-    existing_pairs = fetch_existing_pairs(string_ids)
+    existing_pairs = fetch_existing_pairs(conn, string_ids)
     log.info("existing_loaded", count=len(existing_pairs))
 
     filtered, skipped_cache, skipped_existing = [], 0, 0
@@ -397,7 +335,7 @@ def build_batches(
 _glossary_cache: dict[str, deepl.GlossaryInfo | None] = {}
 
 
-def fetch_glossary_entries(target_lang: str) -> dict[str, str]:
+def fetch_glossary_entries(conn, target_lang: str) -> dict[str, str]:
     """
     Read glossary entries for *target_lang* from SportsbookStatic.
 
@@ -410,21 +348,18 @@ def fetch_glossary_entries(target_lang: str) -> dict[str, str]:
     Returns a {source_term: translated_term} dict ready to pass to DeepL.
     Rows where either column is NULL or blank are silently skipped.
     """
-    with get_pool().acquire_sync() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            f"""
-            SELECT Name, Value
-            FROM   {STATIC_TABLE}
-            WHERE  LanguageCode = ?
-              AND  Name  IS NOT NULL AND LTRIM(RTRIM(Name))  <> ''
-              AND  Value IS NOT NULL AND LTRIM(RTRIM(Value)) <> ''
-            """,
-            target_lang,
-        )
-        entries = {
-            str(row[0]).strip(): str(row[1]).strip() for row in cursor.fetchall()
-        }
+    cursor = conn.cursor()
+    cursor.execute(
+        f"""
+        SELECT Name, Value
+        FROM   {STATIC_TABLE}
+        WHERE  LanguageCode = ?
+          AND  Name  IS NOT NULL AND LTRIM(RTRIM(Name))  <> ''
+          AND  Value IS NOT NULL AND LTRIM(RTRIM(Value)) <> ''
+        """,
+        target_lang,
+    )
+    entries = {str(row[0]).strip(): str(row[1]).strip() for row in cursor.fetchall()}
     log.info(
         "glossary_entries_loaded",
         target_lang=target_lang,
@@ -433,7 +368,7 @@ def fetch_glossary_entries(target_lang: str) -> dict[str, str]:
     return entries
 
 
-def ensure_glossary(target_lang: str) -> deepl.GlossaryInfo | None:
+def ensure_glossary(conn, target_lang: str) -> deepl.GlossaryInfo | None:
     """
     Return a DeepL GlossaryInfo for *target_lang*, creating it if needed.
 
@@ -447,7 +382,7 @@ def ensure_glossary(target_lang: str) -> deepl.GlossaryInfo | None:
     if target_lang in _glossary_cache:
         return _glossary_cache[target_lang]
 
-    entries = fetch_glossary_entries(target_lang)
+    entries = fetch_glossary_entries(conn, target_lang)
     if not entries:
         log.warning("glossary_empty", target_lang=target_lang)
         _glossary_cache[target_lang] = None
@@ -496,10 +431,11 @@ def ensure_glossary(target_lang: str) -> deepl.GlossaryInfo | None:
     reraise=True,
 )
 def _call_deepl(
+    conn,
     texts: list[str],
     target_lang: str,
 ) -> list[deepl.TextResult]:
-    glossary = ensure_glossary(target_lang)
+    glossary = ensure_glossary(conn, target_lang)
     results = translator.translate_text(
         texts,
         source_lang=SOURCE_LANGUAGE_ID,
@@ -511,12 +447,13 @@ def _call_deepl(
 
 
 def translate_batch_sync(
+    conn,
     batch: list[TranslationTask],
 ) -> list[TranslationResult]:
     target_lang = batch[0].target_lang
     texts = [t.source_text for t in batch]
     try:
-        results = _call_deepl(texts, target_lang)
+        results = _call_deepl(conn, texts, target_lang)
         for task, tr in zip(batch, results):
             log.info(
                 "translation_debug",
@@ -541,10 +478,11 @@ def translate_batch_sync(
 
 
 async def translate_batch(
+    conn,
     batch: list[TranslationTask],
 ) -> list[TranslationResult]:
     loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(executor, translate_batch_sync, batch)
+    return await loop.run_in_executor(executor, translate_batch_sync, conn, batch)
 
 
 # =========================================================
@@ -553,19 +491,20 @@ async def translate_batch(
 
 
 async def process_all_languages(
+    conn,
     grouped: dict[str, list[TranslationTask]],
 ) -> list[TranslationResult]:
     sem = asyncio.Semaphore(MAX_CONCURRENT)
 
-    async def run_batch(batch: list[TranslationTask]) -> list[TranslationResult]:
+    async def run_batch(conn, batch: list[TranslationTask]) -> list[TranslationResult]:
         async with sem:
-            return await translate_batch(batch)
+            return await translate_batch(conn, batch)
 
     all_coros = []
     for lang, lang_tasks in grouped.items():
         batches = build_batches(lang_tasks)
         log.info("language_queued", lang=lang, batches=len(batches))
-        all_coros.extend(run_batch(b) for b in batches)
+        all_coros.extend(run_batch(conn, b) for b in batches)
 
     results_nested = await asyncio.gather(*all_coros)
     return [r for group in results_nested for r in group]
@@ -577,6 +516,7 @@ async def process_all_languages(
 
 
 def _bulk_insert(
+    conn,
     rows: list[TranslationResult],
     table: str,
     sql: str,
@@ -591,37 +531,37 @@ def _bulk_insert(
     deduped = list(unique.values())
     log.info("deduped", table=table, before=len(rows), after=len(deduped))
 
-    with get_pool().acquire_sync() as conn:
-        cursor = conn.cursor()
-        inserted = 0
+    cursor = conn.cursor()
+    inserted = 0
 
-        for chunk in _chunked(deduped, CHUNK_SIZE):
-            data = [row_builder(r) for r in chunk]
+    for chunk in _chunked(deduped, CHUNK_SIZE):
+        data = [row_builder(r) for r in chunk]
 
-            # Build  VALUES (?,?,?),(?,?,?),(?,?,?)  — one execute, no executemany
-            placeholders = ",".join(f"({','.join(['?'] * len(data[0]))})" for _ in data)
-            flat_params = [v for row in data for v in row]
+        # Build  VALUES (?,?,?),(?,?,?),(?,?,?)  — one execute, no executemany
+        placeholders = ",".join(f"({','.join(['?'] * len(data[0]))})" for _ in data)
+        flat_params = [v for row in data for v in row]
 
-            try:
-                cursor.execute(sql + placeholders, flat_params)
-                conn.commit()
-                inserted += len(chunk)
-            except Exception as exc:
-                exc_text = str(exc).lower()
-                log.debug("insert_exception", table=table, exc=str(exc)[:200])
+        try:
+            cursor.execute(sql + placeholders, flat_params)
+            conn.commit()
+            inserted += len(chunk)
+        except Exception as exc:
+            exc_text = str(exc).lower()
+            log.debug("insert_exception", table=table, exc=str(exc)[:200])
 
-                if duplicate_marker in exc_text:
-                    log.warning("duplicate_ignored", table=table)
-                    conn.rollback()
-                else:
-                    conn.rollback()
-                    raise
+            if duplicate_marker in exc_text:
+                log.warning("duplicate_ignored", table=table)
+                conn.rollback()
+            else:
+                conn.rollback()
+                raise
 
     log.info("insert_done", table=table, inserted=inserted)
 
 
-def save_cache(rows: list[TranslationResult]) -> None:
+def save_cache(conn, rows: list[TranslationResult]) -> None:
     _bulk_insert(
+        conn,
         rows,
         table=CACHE_TABLE,
         sql=f"""
@@ -649,8 +589,9 @@ def save_cache(rows: list[TranslationResult]) -> None:
     )
 
 
-def insert_main(rows: list[TranslationResult]) -> None:
+def insert_main(conn, rows: list[TranslationResult]) -> None:
     _bulk_insert(
+        conn,
         rows,
         table=TABLE_NAME,
         sql=f"""
@@ -677,7 +618,7 @@ def insert_main(rows: list[TranslationResult]) -> None:
 # =========================================================
 
 
-def purge_old_cache(retention_days: int = CACHE_RETENTION_DAYS) -> int:
+def purge_old_cache(conn, retention_days: int = CACHE_RETENTION_DAYS) -> int:
     """
     Delete TranslationCache rows where:
       - UPDATED_AT is older than retention_days  (UPDATED_AT, not CREATED_AT —
@@ -689,25 +630,24 @@ def purge_old_cache(retention_days: int = CACHE_RETENTION_DAYS) -> int:
     """
     total_deleted = 0
 
-    with get_pool().acquire_sync() as conn:
-        cursor = conn.cursor()
-        sql = f"""
-            DELETE TOP ({PURGE_CHUNK_SIZE})
-            FROM {CACHE_TABLE}
-            WHERE UPDATED_AT < DATEADD(DAY, -?, GETUTCDATE())
-              AND GLOSSARY_VERSION = ?
-        """
-        while True:
-            cursor.execute(sql, retention_days, GLOSSARY_VERSION)
-            deleted = cursor.rowcount
-            conn.commit()
-            if deleted == 0:
-                break
-            total_deleted += deleted
-            log.info("cache_purge_batch", deleted=deleted, total_so_far=total_deleted)
+    cursor = conn.cursor()
+    sql = f"""
+        DELETE TOP ({PURGE_CHUNK_SIZE})
+        FROM {CACHE_TABLE}
+        WHERE UPDATED_AT < DATEADD(DAY, -?, GETUTCDATE())
+          AND GLOSSARY_VERSION = ?
+    """
+    while True:
+        cursor.execute(sql, retention_days, GLOSSARY_VERSION)
+        deleted = cursor.rowcount
+        conn.commit()
+        if deleted == 0:
+            break
+        total_deleted += deleted
+        log.info("cache_purge_batch", deleted=deleted, total_so_far=total_deleted)
 
     log.info(
-        "cache_purge_done",
+        "cache purge done",
         table=CACHE_TABLE,
         retention_days=retention_days,
         glossary_version=GLOSSARY_VERSION,
@@ -716,7 +656,9 @@ def purge_old_cache(retention_days: int = CACHE_RETENTION_DAYS) -> int:
     return total_deleted
 
 
-def purge_old_translations(retention_days: int = TRANSLATION_RETENTION_DAYS) -> int:
+def purge_old_translations(
+    conn, retention_days: int = TRANSLATION_RETENTION_DAYS
+) -> int:
     """
     Delete translated rows from SportsbookDynamic that have not been touched
     in more than retention_days.
@@ -732,27 +674,24 @@ def purge_old_translations(retention_days: int = TRANSLATION_RETENTION_DAYS) -> 
     """
     total_deleted = 0
 
-    with get_pool().acquire_sync() as conn:
-        cursor = conn.cursor()
-        sql = f"""
-            DELETE TOP ({PURGE_CHUNK_SIZE})
-            FROM {TABLE_NAME}
-            WHERE TARGET_LANGUAGE_ID <> SOURCE_LANGUAGE_ID
-              AND COALESCE(UPDATED_AT, CREATED_AT) < DATEADD(DAY, -?, GETUTCDATE())
-        """
-        while True:
-            cursor.execute(sql, retention_days)
-            deleted = cursor.rowcount
-            conn.commit()
-            if deleted == 0:
-                break
-            total_deleted += deleted
-            log.info(
-                "translation_purge_batch", deleted=deleted, total_so_far=total_deleted
-            )
+    cursor = conn.cursor()
+    sql = f"""
+        DELETE TOP ({PURGE_CHUNK_SIZE})
+        FROM {TABLE_NAME}
+        WHERE TARGET_LANGUAGE_ID <> SOURCE_LANGUAGE_ID
+          AND COALESCE(UPDATED_AT, CREATED_AT) < DATEADD(DAY, -?, GETUTCDATE())
+    """
+    while True:
+        cursor.execute(sql, retention_days)
+        deleted = cursor.rowcount
+        conn.commit()
+        if deleted == 0:
+            break
+        total_deleted += deleted
+        log.info("translation purge batch", deleted=deleted, total_so_far=total_deleted)
 
     log.info(
-        "translation_purge_done",
+        "translation purge done",
         table=TABLE_NAME,
         retention_days=retention_days,
         total_deleted=total_deleted,
@@ -770,60 +709,49 @@ def _chunked(items: list, size: int) -> Iterable[list]:
         yield items[i : i + size]
 
 
-# =========================================================
-# MAIN LOOP
-# =========================================================
-
-
 def main() -> None:
-    global _pool
-    _pool = ConnectionPool(SQL_CONNECTION_STRING, size=MAX_CONCURRENT)
-    _pool.init_sync()
+    sql_conn = mssql.connect(SQL_CONNECTION_STRING)
 
     # Clear in-process glossary cache so a fresh run always re-reads
     # SportsbookStatic and rebuilds the DeepL glossaries.
     _glossary_cache.clear()
 
-    cycle = 0
-
-    # Reset PROCESSED flag for any row missing a translation in a current target
-    # language.  Safe to run every startup: filter_tasks() ensures already-
-    # translated (string_id, lang) pairs are skipped, so nothing is re-translated.
     log.info(
-        "checking_for_missing_language_translations", target_languages=TARGET_LANGUAGES
+        "checking for missing language translations", target_languages=TARGET_LANGUAGES
     )
-    reset_for_missing_languages()
+    reset_for_missing_languages(sql_conn)
 
-    log.info("cache_purge_start", retention_days=CACHE_RETENTION_DAYS)
-    purge_old_cache()
+    log.info("starting cache purge", retention_days=CACHE_RETENTION_DAYS)
+    purge_old_cache(sql_conn)
 
-    log.info("translation_purge_start", retention_days=TRANSLATION_RETENTION_DAYS)
-    purge_old_translations()
+    log.info("starting translation purge", retention_days=TRANSLATION_RETENTION_DAYS)
+    purge_old_translations(sql_conn)
 
+    cycle = 0
     while True:
+        log.info("start cycle", cycle=cycle)
         cycle += 1
-        log.info("cycle_start", cycle=cycle)
 
-        # FETCH — no cursor needed; PROCESSED flag drives pagination
         t0 = time.perf_counter()
-        sources = fetch_sources()
+        sources = fetch_sources(sql_conn)
         log.info(
-            "fetched", count=len(sources), elapsed=f"{time.perf_counter() - t0:.2f}s"
+            "fetched sources",
+            count=len(sources),
+            elapsed=f"{time.perf_counter() - t0:.2f}s",
         )
 
         if not sources:
-            log.info("all_done")
-            break
+            log.info("noting to translate, exiting")
+            sys.exit()
 
-        # PIPELINE
         tasks = build_tasks(sources)
-        log.info("tasks_built", count=len(tasks))
+        log.info("tasks built", count=len(tasks))
 
-        tasks = filter_tasks(tasks)
+        tasks = filter_tasks(sql_conn, tasks)
         if not tasks:
             # Nothing new to translate, but still mark the rows processed
             # so they are not fetched again next cycle.
-            mark_processed([s.string_id for s in sources])
+            mark_processed(sql_conn, [s.string_id for s in sources])
             log.info("nothing_to_translate")
             continue
 
@@ -831,7 +759,7 @@ def main() -> None:
 
         t0 = time.perf_counter()
         try:
-            translated = asyncio.run(process_all_languages(grouped))
+            translated = asyncio.run(process_all_languages(sql_conn, grouped))
         except Exception as exc:
             log.error("deepl_fatal", error=str(exc), cycle=cycle)
             sys.exit(1)
@@ -847,10 +775,10 @@ def main() -> None:
         # Save results BEFORE marking processed.
         # If the process crashes here, rows remain PROCESSED = 0 and will be
         # retried next run — harmless re-translation rather than data loss.
-        save_cache(translated)
-        insert_main(translated)
+        save_cache(sql_conn, translated)
+        insert_main(sql_conn, translated)
 
-        mark_processed([s.string_id for s in sources])
+        mark_processed(sql_conn, [s.string_id for s in sources])
 
         log.info("cycle_done", cycle=cycle, translations=len(translated))
         time.sleep(0.5)

@@ -710,6 +710,7 @@ def _chunked(items: list, size: int) -> Iterable[list]:
 
 
 def main() -> None:
+    mssql.pooling(max_size=20, idle_timeout=100)
     sql_conn = mssql.connect(SQL_CONNECTION_STRING)
 
     # Clear in-process glossary cache so a fresh run always re-reads

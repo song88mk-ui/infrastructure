@@ -4,7 +4,7 @@ image:
   pullPolicy: IfNotPresent
 
 cronjob:
-  schedule: "0 * * * *" # Every hour
+  schedule: "*/30 * * * *" # Every hour
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
   restartPolicy: OnFailure

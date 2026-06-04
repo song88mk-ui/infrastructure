@@ -24,6 +24,7 @@ structlog.configure(
 )
 log: structlog.BoundLogger = structlog.get_logger()
 
+
 # DeepL configuration
 DEEPL_API_URL = "https://api.deepl.com"
 DEEPL_API_KEY = os.environ["DEEPL_API_KEY"]
@@ -113,11 +114,13 @@ def fetch_sources(conn) -> list[SourceRow]:
         SELECT TOP ({FETCH_LIMIT})
             String_ID, SOURCE_HASH, SOURCE_TEXT
         FROM {TABLE_NAME}
-        WHERE SOURCE_LANGUAGE_ID = ?
+        WHERE SOURCE_LANGUAGE_ID  = ?
+          AND TARGET_LANGUAGE_ID  = ?   -- only EN→EN source rows, not EN→ZH etc.
           AND PROCESSED = 0
           AND SOURCE_TEXT IS NOT NULL
           AND LTRIM(RTRIM(SOURCE_TEXT)) <> ''
         """,
+        SOURCE_LANGUAGE_ID,
         SOURCE_LANGUAGE_ID,
     )
     return [
@@ -271,7 +274,13 @@ def build_tasks(sources: list[SourceRow]) -> list[TranslationTask]:
     return tasks
 
 
-def filter_tasks(conn, tasks: list[TranslationTask]) -> list[TranslationTask]:
+def filter_tasks(
+    conn, tasks: list[TranslationTask]
+) -> tuple[list[TranslationTask], list[TranslationTask]]:
+    """
+    Returns (tasks_needing_deepl, tasks_already_in_cache).
+    Cache-hit tasks must still be written to SportsbookDynamic via resolve_from_cache.
+    """
     log.info("loading cache keys")
     source_hashes = list({t.source_hash for t in tasks})
     cache_set = fetch_cache_keys(conn, source_hashes)
@@ -281,10 +290,10 @@ def filter_tasks(conn, tasks: list[TranslationTask]) -> list[TranslationTask]:
     existing_pairs = fetch_existing_pairs(conn, string_ids)
     log.info("existing_loaded", count=len(existing_pairs))
 
-    filtered, skipped_cache, skipped_existing = [], 0, 0
+    filtered, cache_hit_tasks, skipped_existing = [], [], 0
     for t in tasks:
         if (t.source_hash, t.target_lang) in cache_set:
-            skipped_cache += 1
+            cache_hit_tasks.append(t)         # <-- keep, not drop
         elif (t.string_id, t.target_lang) in existing_pairs:
             skipped_existing += 1
         else:
@@ -292,12 +301,63 @@ def filter_tasks(conn, tasks: list[TranslationTask]) -> list[TranslationTask]:
 
     log.info(
         "filter_done",
-        skipped_cache=skipped_cache,
+        skipped_cache=len(cache_hit_tasks),
         skipped_existing=skipped_existing,
         remaining=len(filtered),
     )
-    return filtered
+    return filtered, cache_hit_tasks
 
+
+def resolve_from_cache(
+    conn, tasks: list[TranslationTask]
+) -> list[TranslationResult]:
+    """
+    For tasks whose translation is already in TranslationCache but missing
+    from SportsbookDynamic (e.g. purged), fetch and return as TranslationResult
+    so they can be re-inserted via insert_main.
+    """
+    if not tasks:
+        return []
+
+    hashes = list({t.source_hash for t in tasks})
+    placeholders = ",".join(["?"] * len(hashes))
+    cursor = conn.cursor()
+    cursor.execute(
+        f"""
+        SELECT SOURCE_HASH, TARGET_LANGUAGE, SOURCE_TEXT, TARGET_TEXT
+        FROM {CACHE_TABLE}
+        WHERE SOURCE_HASH IN ({placeholders})
+          AND GLOSSARY_VERSION = ?
+          AND TARGET_TEXT IS NOT NULL
+        """,
+        *hashes,
+        GLOSSARY_VERSION,
+    )
+    cache_map = {(r[0], r[1]): (r[2], r[3]) for r in cursor.fetchall()}
+
+    results = []
+    for t in tasks:
+        entry = cache_map.get((t.source_hash, t.target_lang))
+        if entry:
+            results.append(
+                TranslationResult(
+                    string_id=t.string_id,
+                    source_hash=t.source_hash,
+                    source_language=SOURCE_LANGUAGE_ID,
+                    target_language=t.target_lang,
+                    source_text=entry[0],
+                    target_text=entry[1],
+                )
+            )
+        else:
+            # Cache entry disappeared between filter_tasks and now — log and skip.
+            # reset_for_missing_languages will re-queue it on next startup.
+            log.warning(
+                "cache_entry_missing",
+                string_id=t.string_id,
+                target_lang=t.target_lang,
+            )
+    return results
 
 def group_by_language(
     tasks: list[TranslationTask],
@@ -632,10 +692,10 @@ def purge_old_cache(conn, retention_days: int = CACHE_RETENTION_DAYS) -> int:
 
     cursor = conn.cursor()
     sql = f"""
-        DELETE TOP ({PURGE_CHUNK_SIZE})
-        FROM {CACHE_TABLE}
-        WHERE UPDATED_AT < DATEADD(DAY, -?, GETUTCDATE())
-          AND GLOSSARY_VERSION = ?
+            DELETE TOP ({PURGE_CHUNK_SIZE})
+            FROM {CACHE_TABLE}
+            WHERE COALESCE(UPDATED_AT, CREATED_AT) < DATEADD(DAY, -?, GETUTCDATE())
+            AND GLOSSARY_VERSION = ?
     """
     while True:
         cursor.execute(sql, retention_days, GLOSSARY_VERSION)
@@ -720,13 +780,15 @@ def main() -> None:
     log.info(
         "checking for missing language translations", target_languages=TARGET_LANGUAGES
     )
-    reset_for_missing_languages(sql_conn)
-
     log.info("starting cache purge", retention_days=CACHE_RETENTION_DAYS)
     purge_old_cache(sql_conn)
 
     log.info("starting translation purge", retention_days=TRANSLATION_RETENTION_DAYS)
     purge_old_translations(sql_conn)
+
+    # Now reset after purge, so strings just purged are immediately re-queued
+    log.info("checking for missing language translations", target_languages=TARGET_LANGUAGES)
+    reset_for_missing_languages(sql_conn)
 
     cycle = 0
     while True:
@@ -748,10 +810,15 @@ def main() -> None:
         tasks = build_tasks(sources)
         log.info("tasks built", count=len(tasks))
 
-        tasks = filter_tasks(sql_conn, tasks)
+        tasks, cache_hit_tasks = filter_tasks(sql_conn, tasks)  # now returns a tuple
+
+        # Restore cached translations that are missing from the main table
+        from_cache = resolve_from_cache(sql_conn, cache_hit_tasks)
+        if from_cache:
+            insert_main(sql_conn, from_cache)
+            log.info("restored_from_cache", count=len(from_cache))
+
         if not tasks:
-            # Nothing new to translate, but still mark the rows processed
-            # so they are not fetched again next cycle.
             mark_processed(sql_conn, [s.string_id for s in sources])
             log.info("nothing_to_translate")
             continue

@@ -804,7 +804,7 @@ def main() -> None:
         )
 
         if not sources:
-            log.info("noting to translate, exiting")
+            log.info("nothing to translate, exiting")
             sys.exit()
 
         tasks = build_tasks(sources)

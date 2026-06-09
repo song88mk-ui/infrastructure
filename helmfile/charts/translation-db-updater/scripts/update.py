@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager, contextmanager
 from dataclasses import dataclass
 from typing import AsyncGenerator, Generator, Iterable
 
+import requests
 import deepl
 import structlog
 import mssql_python as mssql
@@ -31,9 +32,38 @@ DEEPL_API_KEY = os.environ["DEEPL_API_KEY"]
 
 # SQL server configuration
 SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
+
+
+
+#FIXME  -> STG  CACHE_PRELOAD_API_KEY="9a8ad73dd129bf49754242e44988b3e7e39f0a05"
+CACHE_PRELOAD_API_KEY: str | None = os.environ.get("CACHE_PRELOAD_API_KEY")
+
 TABLE_NAME = "SportsbookDynamic"
 CACHE_TABLE = "TranslationCache"
 STATIC_TABLE = "SportsbookStatic"
+
+# Cache preload endpoint — set CACHE_PRELOAD_URL in the environment to enable.
+# If the variable is absent the preload step is silently skipped.
+
+#FIXME CACHE_PRELOAD_URL = "https://bo-api.stg.song88.com/api/config/cachepreload"
+CACHE_PRELOAD_URL: str | None = os.environ.get("CACHE_PRELOAD_URL")
+
+# Maps DeepL language codes → numeric languageCode expected by /cachepreload.
+LANGUAGE_CODE_MAP: dict[str, int] = {
+    "EN":    1,
+    "TH":    2,
+    "KO":    5,
+    "ZH":    6,
+    "VI":    8,
+    "ID":    9,
+    "JA":   11,
+    "TR":   13,
+    "PT":   16,
+    "PT-PT":16,
+    "ES":   18,
+    "PT-BR":19,
+    "BR":   19,
+}
 
 SOURCE_LANGUAGE_ID = "EN"
 # TARGET_LANGUAGES   = ["KO", "IN", "ZH", "TH", "JA", "ES", "PT-BR", "PT-PT"]
@@ -760,6 +790,75 @@ def purge_old_translations(
 
 
 # =========================================================
+# CACHE PRELOAD
+# =========================================================
+def trigger_cache_preload(results: list[TranslationResult]) -> None:
+    """
+    Notify the cache preload endpoint for every language that received
+    new translations, so downstream caches are refreshed immediately.
+
+    Groups inserted results by target language and fires one POST per
+    language.  Failures are logged but do not interrupt the main pipeline.
+    Silently no-ops when CACHE_PRELOAD_URL or CACHE_PRELOAD_API_KEY is not configured.
+    """
+    if not results or not CACHE_PRELOAD_URL or not CACHE_PRELOAD_API_KEY:
+        return
+
+    headers = {
+        "Content-Type": "application/json",
+        "X-Api-Key": CACHE_PRELOAD_API_KEY,
+    }
+
+    # Group string_ids by target language
+    by_lang: dict[str, list[str]] = defaultdict(list)
+    for r in results:
+        by_lang[r.target_language].append(r.string_id)
+
+    for lang, string_ids in by_lang.items():
+        lang_code = LANGUAGE_CODE_MAP.get(lang)
+        if lang_code is None:
+            log.warning("cache_preload_unknown_lang", lang=lang)
+            continue
+
+        payload = {
+            "cacheType": 7,
+            "cacheKeys": string_ids,
+            "languageCode": lang_code,
+        }
+        log.debug(
+            "cache_preload_sending",
+            lang=lang,
+            lang_code=lang_code,
+            key_count=len(string_ids),
+            sample_keys=string_ids[:5],
+        )
+        try:
+            resp = requests.post(CACHE_PRELOAD_URL, json=payload, headers=headers, timeout=10)
+            if not resp.ok:
+                log.error(
+                    "cache_preload_failed",
+                    lang=lang,
+                    key_count=len(string_ids),
+                    status=resp.status_code,
+                    response_body=resp.text[:1000],
+                )
+                continue
+            log.info(
+                "cache_preload_triggered",
+                lang=lang,
+                key_count=len(string_ids),
+                status=resp.status_code,
+            )
+        except requests.RequestException as exc:
+            log.error(
+                "cache_preload_failed",
+                lang=lang,
+                key_count=len(string_ids),
+                error=str(exc),
+            )
+
+
+# =========================================================
 # UTILITIES
 # =========================================================
 
@@ -816,6 +915,7 @@ def main() -> None:
         from_cache = resolve_from_cache(sql_conn, cache_hit_tasks)
         if from_cache:
             insert_main(sql_conn, from_cache)
+            trigger_cache_preload(from_cache)
             log.info("restored_from_cache", count=len(from_cache))
 
         if not tasks:
@@ -845,6 +945,7 @@ def main() -> None:
         # retried next run — harmless re-translation rather than data loss.
         save_cache(sql_conn, translated)
         insert_main(sql_conn, translated)
+        trigger_cache_preload(translated)
 
         mark_processed(sql_conn, [s.string_id for s in sources])
 

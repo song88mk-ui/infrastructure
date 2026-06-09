@@ -1,3 +1,4 @@
+
 secrets:
   - name: sql-connection-string
     data:
@@ -9,3 +10,11 @@ secrets:
     - key: deepl-api-key
       remoteKey: /{{ .Environment.Name }}/translation-db-updater/deepl-api-key
       envVariable: DEEPL_API_KEY
+  - name: cache-preload-api-key
+    data:
+    - key: cache-preload-api-key
+      remoteKey: /{{ .Environment.Name }}/translation-db-updater/cache-preload-api-key
+      envVariable: CACHE_PRELOAD_API_KEY
+
+env:
+  CACHE_PRELOAD_URL: "https://bo-api.{{ .Environment.Name }}.song88.com/api/config/cachepreload"

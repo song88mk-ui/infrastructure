@@ -35,7 +35,6 @@ SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
 
 
 
-#FIXME  -> STG  CACHE_PRELOAD_API_KEY="9a8ad73dd129bf49754242e44988b3e7e39f0a05"
 CACHE_PRELOAD_API_KEY: str | None = os.environ.get("CACHE_PRELOAD_API_KEY")
 
 TABLE_NAME = "SportsbookDynamic"
@@ -45,7 +44,6 @@ STATIC_TABLE = "SportsbookStatic"
 # Cache preload endpoint — set CACHE_PRELOAD_URL in the environment to enable.
 # If the variable is absent the preload step is silently skipped.
 
-#FIXME CACHE_PRELOAD_URL = "https://bo-api.stg.song88.com/api/config/cachepreload"
 CACHE_PRELOAD_URL: str | None = os.environ.get("CACHE_PRELOAD_URL")
 
 # Maps DeepL language codes → numeric languageCode expected by /cachepreload.

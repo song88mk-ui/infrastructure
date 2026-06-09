@@ -95,6 +95,11 @@ apps:
     chart: platform-app
     valueFiles:
       - {{ .Environment.Name }}-krj.yaml
+  - name: websocket-service-gsa
+    config: websocket-service
+    chart: platform-app
+    valueFiles:
+      - {{ .Environment.Name }}-gsa.yaml
   - name: websocket-service-oge
     config: websocket-service
     chart: platform-app

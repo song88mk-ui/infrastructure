@@ -171,5 +171,11 @@ inputs = {
       remote_network_key = "prd"
       access_groups      = ["developers", "devops", "noc"]
     }
+    all5555_com = {
+      name               = "*.all5555.com"
+      address            = "*.all5555.com"
+      remote_network_key = "prd"
+      access_groups      = ["developers", "devops", "noc"]
+    }
   }
 }

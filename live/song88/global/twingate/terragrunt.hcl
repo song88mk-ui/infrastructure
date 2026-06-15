@@ -177,5 +177,17 @@ inputs = {
       remote_network_key = "prd"
       access_groups      = ["developers", "devops", "noc"]
     }
+    jmj22222_com = {
+      name               = "*.jmj22222.com"
+      address            = "*.jmj22222.com"
+      remote_network_key = "prd"
+      access_groups      = ["developers", "devops", "noc"]
+    }
+    jmj19876_com = {
+      name               = "*.jmj19876.com"
+      address            = "*.jmj19876.com"
+      remote_network_key = "prd"
+      access_groups      = ["developers", "devops", "noc"]
+    }
   }
 }

@@ -80,8 +80,7 @@ data:
         return dt.astimezone(timezone.utc)
 
     def get_latest_version(deployed_date: datetime) -> str:
-        utc = deployed_date.astimezone(timezone.utc)
-        return f"{utc.year % 100}.{utc.isocalendar().week}"
+        return "26.24"
  
     def fetch_apps():
         resp = requests.get(

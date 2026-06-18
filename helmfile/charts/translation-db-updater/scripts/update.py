@@ -76,6 +76,7 @@ MAX_BATCH_ITEMS = 300
 MAX_BATCH_CHARS = 15_000
 CHUNK_SIZE = 350
 PURGE_CHUNK_SIZE = 5_000
+SQL_MAX_PARAMS = 2_000  # SQL Server's real ceiling is 2,100; keep margin below it
 
 SPORTSBOOK_CONTEXT = """
 This content belongs to an online sportsbook and sports betting platform.
@@ -619,10 +620,27 @@ def _bulk_insert(
     deduped = list(unique.values())
     log.info("deduped", table=table, before=len(rows), after=len(deduped))
 
+    # CHUNK_SIZE is a row-count constant shared across callers with different
+    # column counts (insert_main: 5 cols, save_cache: 6 cols). A flat row
+    # count doesn't translate to a flat parameter count, so we derive the
+    # actual chunk size from params-per-row to stay under SQL Server's
+    # hard 2,100-parameter ceiling regardless of how many columns this
+    # particular call writes. SQL_MAX_PARAMS leaves headroom below the
+    # real 2100 limit in case the driver reserves any slots internally.
+    params_per_row = len(row_builder(deduped[0]))
+    safe_chunk_size = max(1, SQL_MAX_PARAMS // params_per_row)
+    chunk_size = min(CHUNK_SIZE, safe_chunk_size)
+    log.debug(
+        "chunk_size_computed",
+        table=table,
+        params_per_row=params_per_row,
+        chunk_size=chunk_size,
+    )
+
     cursor = conn.cursor()
     inserted = 0
 
-    for chunk in _chunked(deduped, CHUNK_SIZE):
+    for chunk in _chunked(deduped, chunk_size):
         data = [row_builder(r) for r in chunk]
 
         # Build  VALUES (?,?,?),(?,?,?),(?,?,?)  — one execute, no executemany

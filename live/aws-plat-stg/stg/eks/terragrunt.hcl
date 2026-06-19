@@ -50,8 +50,8 @@ inputs = {
       instance_types = ["t3a.2xlarge"]
       ami_type       = "AL2023_x86_64_STANDARD"
 
-      min_size = 3
-      max_size = 7
+      min_size = 4
+      max_size = 8
 
       # This value is ignored after the initial creation
       # https://github.com/bryantbiggs/eks-desired-size-hack

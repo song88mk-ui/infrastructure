@@ -33,6 +33,18 @@ DEEPL_API_KEY = os.environ["DEEPL_API_KEY"]
 # SQL server configuration
 SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
 
+# Deployment environment ("STG" or "PRD").
+# DeepL glossaries are scoped to the API *account*, not to the environment, so
+# the environment must be baked into the glossary name. Otherwise STG and PRD
+# share a single glossary and each run deletes + recreates the other's
+# (see ensure_glossary), causing one environment to translate against the
+# wrong glossary entries.
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "").strip().upper()
+if ENVIRONMENT not in {"STG", "PRD"}:
+    raise SystemExit(
+        f"ENVIRONMENT must be set to 'STG' or 'PRD' (got {ENVIRONMENT!r})"
+    )
+
 
 
 CACHE_PRELOAD_API_KEY: str | None = os.environ.get("CACHE_PRELOAD_API_KEY")
@@ -477,7 +489,9 @@ def ensure_glossary(conn, target_lang: str) -> deepl.GlossaryInfo | None:
         _glossary_cache[target_lang] = None
         return None
 
-    glossary_name = f"sportsbook_{SOURCE_LANGUAGE_ID}_{target_lang}_v{GLOSSARY_VERSION}"
+    glossary_name = (
+        f"sportsbook_{ENVIRONMENT}_{SOURCE_LANGUAGE_ID}_{target_lang}_v{GLOSSARY_VERSION}"
+    )
 
     # Delete any stale glossary with the same name so we always start fresh.
     try:

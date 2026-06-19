@@ -54,34 +54,6 @@ CREATE TABLE [Translation].dbo.SportsbookDynamic (
 
 -- Drop table
 
--- DROP TABLE [Translation].dbo.SportsbookDynamic_DROPME;
-
-CREATE TABLE [Translation].dbo.SportsbookDynamic_DROPME (
-	String_ID nvarchar(100) COLLATE Latin1_General_CI_AS NOT NULL,
-	VALUE_EN nvarchar(MAX) COLLATE Latin1_General_CI_AS NOT NULL,
-	VALUE_ZH nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	VALUE_ID nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	[VALUE_PT-BR] nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	VALUE_DE nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	VALUE_ES nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	VALUE_FI nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	VALUE_FR nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	VALUE_JA nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	VALUE_KO nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	VALUE_NL nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	VALUE_PT nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	VALUE_TH nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	VALUE_TR nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	VALUE_VI nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	SOURCE_HASH AS (CONVERT([varchar](64),hashbytes('SHA2_256',[Value_EN]),(2))) PERSISTED,
-	Value_PT_BR nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	CONSTRAINT PK_Translation PRIMARY KEY (String_ID)
-);
- CREATE NONCLUSTERED INDEX IX_SOURCE_HASH_MAIN ON Translation.dbo.SportsbookDynamic_DROPME (  SOURCE_HASH ASC  )  
-	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
-	 ON [PRIMARY ] ;
-
-
 -- [Translation].dbo.SportsbookStatic definition
 
 -- Drop table

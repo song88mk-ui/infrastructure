@@ -135,13 +135,8 @@ def load(path: str, lang: str, append: bool, dry_run: bool) -> None:
             print(f"    ... and {len(rows) - 10} more")
         return
 
-    SERVER = 'stg-song88-mssql-server.cz8wmg0s28pd.ap-south-1.rds.amazonaws.com,1433'
-    DATABASE = 'Translation'
-    USERNAME = 'admin'
-    PASSWORD = 'e[tpfMbj6C43d1eVwnjzJz~ZeK:W'
-    SQL_CONNECTION_STRING = f"Server={SERVER};Database={DATABASE};UID={USERNAME};PWD={PASSWORD}; Encrypt=yes; TrustServerCertificate=yes;"
 
-    conn_str = SQL_CONNECTION_STRING
+    conn_str = os.environ.get("SQL_CONNECTION_STRING")
     if not conn_str:
         raise SystemExit("SQL_CONNECTION_STRING is not set.")
 

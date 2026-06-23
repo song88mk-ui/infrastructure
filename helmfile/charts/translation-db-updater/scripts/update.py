@@ -158,7 +158,6 @@ def fetch_sources(conn) -> list[SourceRow]:
         WHERE SOURCE_LANGUAGE_ID  = ?
           AND TARGET_LANGUAGE_ID  = ?   -- only EN→EN source rows, not EN→ZH etc.
           AND PROCESSED = 0
-          AND SOURCE_TEXT IS NOT NULL
           AND LTRIM(RTRIM(SOURCE_TEXT)) <> ''
         """,
         SOURCE_LANGUAGE_ID,

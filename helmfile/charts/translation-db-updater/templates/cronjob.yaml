@@ -19,7 +19,6 @@ spec:
             {{- include "translation-db-updater.labels" . | nindent 12 }}
         spec:
           restartPolicy: {{ .Values.cronjob.restartPolicy }}
-          activeDeadlineSeconds: 2000
           terminationGracePeriodSeconds: 15
           initContainers:
             - name: pip-install

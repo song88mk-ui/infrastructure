@@ -57,6 +57,10 @@ spec:
         - ../../apps/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $vf }}
         {{- end}}
         {{- end}}
+      {{- if .rawValuesContents }}
+      values: |
+        {{- toYaml .rawValuesContents | nindent 8 }}
+      {{- end }}
 
   project: {{ $.Values.project }}
   syncPolicy:

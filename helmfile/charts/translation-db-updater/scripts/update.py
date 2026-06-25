@@ -158,7 +158,6 @@ def fetch_sources(conn) -> list[SourceRow]:
         WHERE SOURCE_LANGUAGE_ID  = ?
           AND TARGET_LANGUAGE_ID  = ?   -- only EN→EN source rows, not EN→ZH etc.
           AND PROCESSED = 0
-          AND SOURCE_TEXT IS NOT NULL
           AND LTRIM(RTRIM(SOURCE_TEXT)) <> ''
         """,
         SOURCE_LANGUAGE_ID,
@@ -906,9 +905,6 @@ def main() -> None:
     # SportsbookStatic and rebuilds the DeepL glossaries.
     _glossary_cache.clear()
 
-    log.info(
-        "checking for missing language translations", target_languages=TARGET_LANGUAGES
-    )
     log.info("starting cache purge", retention_days=CACHE_RETENTION_DAYS)
     purge_old_cache(sql_conn)
 

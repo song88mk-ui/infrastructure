@@ -12,18 +12,23 @@ These map onto SportsbookStatic as:
     Name          =  SOURCE_TEXT
     Value         =  TARGET_TEXT
 
-By default the script REPLACES all existing rows for the given LanguageCode
-(delete + reload in one transaction) so it is safe to re-run. Use --append to
-add rows without clearing first.
+By default the script UPSERTS: for each row it updates the Value of an existing
+(LanguageCode, Name) entry, or inserts a new one if it does not exist. This is
+safe to re-run and leaves untouched any DB rows that are not in the spreadsheet.
+
+Use --replace to instead delete all existing rows for the given LanguageCode and
+reload from scratch (a full sync, the old default). Use --append to insert rows
+without updating or deleting (this can create duplicate Names).
 
 The target database (STG vs PRD) is selected entirely by SQL_CONNECTION_STRING,
 exactly like update.py — there is nothing environment-specific in this script.
 
 Usage
------
+-----1
     export SQL_CONNECTION_STRING="..."
-    python load_glossary.py ZH-CN_Glossary1.xlsx --lang ZH
+    python load_glossary.py ZH-CN_Glossary1.xlsx --lang ZH              # upsert
     python load_glossary.py ZH-CN_Glossary1.xlsx --lang ZH --dry-run
+    python load_glossary.py ZH-CN_Glossary1.xlsx --lang ZH --replace    # full sync
     python load_glossary.py ZH-CN_Glossary1.xlsx --lang ZH --append
 """
 
@@ -119,7 +124,7 @@ def read_glossary(path: str) -> list[tuple[str, str]]:
     return sorted(by_source.items())
 
 
-def load(path: str, lang: str, append: bool, dry_run: bool) -> None:
+def load(path: str, lang: str, mode: str, dry_run: bool) -> None:
     pairs = read_glossary(path)
     if not pairs:
         print("Nothing to load.")
@@ -128,7 +133,7 @@ def load(path: str, lang: str, append: bool, dry_run: bool) -> None:
     rows = [(lang, name, value) for name, value in pairs]
 
     if dry_run:
-        print(f"DRY RUN — would write {len(rows)} rows for LanguageCode={lang!r}.")
+        print(f"DRY RUN — mode={mode!r}, would write {len(rows)} rows for LanguageCode={lang!r}.")
         for lang_code, name, value in rows[:10]:
             print(f"    {lang_code} | {name!r} -> {value!r}")
         if len(rows) > 10:
@@ -136,7 +141,9 @@ def load(path: str, lang: str, append: bool, dry_run: bool) -> None:
         return
 
 
-    conn_str = os.environ.get("SQL_CONNECTION_STRING")
+    #Set me
+    conn_str =  SQL_CONNECTION_STRING
+
     if not conn_str:
         raise SystemExit("SQL_CONNECTION_STRING is not set.")
 
@@ -145,25 +152,45 @@ def load(path: str, lang: str, append: bool, dry_run: bool) -> None:
     conn = mssql.connect(conn_str)
     cursor = conn.cursor()
     try:
-        if not append:
+        if mode == "replace":
             cursor.execute(
                 f"DELETE FROM {STATIC_TABLE} WHERE LanguageCode = ?", lang
             )
             print(f"  cleared {cursor.rowcount} existing row(s) for {lang!r}")
 
-        inserted = 0
+        processed = 0
         for chunk in _chunked(rows, INSERT_CHUNK_ROWS):
-            placeholders = ",".join(["(?,?,?)"] * len(chunk))
+            values = ",".join(["(?,?,?)"] * len(chunk))
             flat = [v for triple in chunk for v in triple]
-            cursor.execute(
-                f"INSERT INTO {STATIC_TABLE} (LanguageCode, Name, Value) "
-                f"VALUES {placeholders}",
-                flat,
-            )
-            inserted += len(chunk)
+
+            if mode == "upsert":
+                # Match on (LanguageCode, Name); update Value if the term already
+                # exists, otherwise insert it. read_glossary de-duplicates on
+                # source term, so no source row can match a target row twice.
+                sql = (
+                    f"MERGE INTO {STATIC_TABLE} AS tgt "
+                    f"USING (VALUES {values}) AS src (LanguageCode, Name, Value) "
+                    f"ON tgt.LanguageCode = src.LanguageCode "
+                    f"AND tgt.Name = src.Name "
+                    f"WHEN MATCHED THEN "
+                    f"    UPDATE SET tgt.Value = src.Value "
+                    f"WHEN NOT MATCHED THEN "
+                    f"    INSERT (LanguageCode, Name, Value) "
+                    f"    VALUES (src.LanguageCode, src.Name, src.Value);"
+                )
+            else:
+                # replace (after the DELETE above) or append -> plain insert.
+                sql = (
+                    f"INSERT INTO {STATIC_TABLE} (LanguageCode, Name, Value) "
+                    f"VALUES {values}"
+                )
+
+            cursor.execute(sql, flat)
+            processed += len(chunk)
 
         conn.commit()
-        print(f"  inserted {inserted} row(s) for LanguageCode={lang!r}")
+        verb = {"upsert": "upserted", "replace": "reloaded", "append": "appended"}[mode]
+        print(f"  {verb} {processed} row(s) for LanguageCode={lang!r}")
     except Exception:
         conn.rollback()
         print("  rolled back — no changes committed")
@@ -180,10 +207,16 @@ def main() -> None:
         default="ZH",
         help="LanguageCode to store (must match update.py's TARGET_LANGUAGES; default: ZH)",
     )
-    p.add_argument(
+    mode_group = p.add_mutually_exclusive_group()
+    mode_group.add_argument(
+        "--replace",
+        action="store_true",
+        help="Delete all existing rows for this LanguageCode, then reload (full sync)",
+    )
+    mode_group.add_argument(
         "--append",
         action="store_true",
-        help="Append instead of replacing existing rows for this LanguageCode",
+        help="Insert rows without updating or deleting (may create duplicate Names)",
     )
     p.add_argument(
         "--dry-run",
@@ -195,9 +228,10 @@ def main() -> None:
     if not os.path.exists(args.file):
         raise SystemExit(f"File not found: {args.file}")
 
-    print(f"Loading {args.file} as LanguageCode={args.lang!r} "
-          f"({'append' if args.append else 'replace'} mode)")
-    load(args.file, args.lang, args.append, args.dry_run)
+    mode = "replace" if args.replace else "append" if args.append else "upsert"
+
+    print(f"Loading {args.file} as LanguageCode={args.lang!r} ({mode} mode)")
+    load(args.file, args.lang, mode, args.dry_run)
 
 
 if __name__ == "__main__":

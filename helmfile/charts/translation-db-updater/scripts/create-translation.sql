@@ -42,6 +42,11 @@ CREATE TABLE [Translation].dbo.SportsbookDynamic (
 	 WHERE  ([TARGET_TEXT] IS NULL)
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
+ CREATE NONCLUSTERED INDEX IX_SBD_PROCESS_QUEUE ON Translation.dbo.SportsbookDynamic (  SOURCE_LANGUAGE_ID ASC  , TARGET_LANGUAGE_ID ASC  )  
+	 INCLUDE ( SOURCE_HASH , String_ID ) 
+	 WHERE  ([PROCESSED]=(0))
+	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
+	 ON [PRIMARY ] ;
  CREATE NONCLUSTERED INDEX IX_SBD_STRING_LANG ON Translation.dbo.SportsbookDynamic (  String_ID ASC  , TARGET_LANGUAGE_ID ASC  )  
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
@@ -50,10 +55,6 @@ CREATE TABLE [Translation].dbo.SportsbookDynamic (
 	 ON [PRIMARY ] ;
 
 
--- [Translation].dbo.SportsbookDynamic_DROPME definition
-
--- Drop table
-
 -- [Translation].dbo.SportsbookStatic definition
 
 -- Drop table
@@ -61,9 +62,10 @@ CREATE TABLE [Translation].dbo.SportsbookDynamic (
 -- DROP TABLE [Translation].dbo.SportsbookStatic;
 
 CREATE TABLE [Translation].dbo.SportsbookStatic (
-	LanguageCode nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	Name nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
-	Value nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL
+	LanguageCode nvarchar(10) COLLATE Latin1_General_CI_AS NOT NULL,
+	Name nvarchar(200) COLLATE Latin1_General_CI_AS NOT NULL,
+	Value nvarchar(MAX) COLLATE Latin1_General_CI_AS NULL,
+	CONSTRAINT IX_SportsbookStatic UNIQUE (LanguageCode,Name)
 );
 
 

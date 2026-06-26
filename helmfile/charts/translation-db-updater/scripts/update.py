@@ -47,7 +47,7 @@ if ENVIRONMENT not in {"STG", "PRD"}:
 
 
 
-CACHE_PRELOAD_API_KEY: str | None = os.environ.get("CACHE_PRELOAD_API_KEY")
+CACHE_PRELOAD_API_KEY = os.environ.get("CACHE_PRELOAD_API_KEY")
 
 TABLE_NAME = "SportsbookDynamic"
 CACHE_TABLE = "TranslationCache"
@@ -56,7 +56,7 @@ STATIC_TABLE = "SportsbookStatic"
 # Cache preload endpoint — set CACHE_PRELOAD_URL in the environment to enable.
 # If the variable is absent the preload step is silently skipped.
 
-CACHE_PRELOAD_URL: str | None = os.environ.get("CACHE_PRELOAD_URL")
+CACHE_PRELOAD_URL = os.environ.get("CACHE_PRELOAD_URL")
 
 # Maps DeepL language codes → numeric languageCode expected by /cachepreload.
 LANGUAGE_CODE_MAP: dict[str, int] = {
@@ -78,7 +78,7 @@ LANGUAGE_CODE_MAP: dict[str, int] = {
 SOURCE_LANGUAGE_ID = "EN"
 # TARGET_LANGUAGES   = ["KO", "IN", "ZH", "TH", "JA", "ES", "PT-BR", "PT-PT"]
 TARGET_LANGUAGES = ["ZH"]  # , "FR", "JA"]
-GLOSSARY_VERSION = "1"
+GLOSSARY_VERSION = "2"
 
 FETCH_LIMIT = 1000
 CACHE_RETENTION_DAYS = 30
@@ -259,6 +259,63 @@ def reset_for_missing_languages(conn) -> int:
     return count
 
 
+def reset_for_stale_glossary(conn) -> int:
+    """
+    At startup, set PROCESSED = 0 for any source row that has at least one
+    translation produced by an OLDER glossary version than the current
+    GLOSSARY_VERSION, so a glossary bump actually re-translates affected rows.
+
+    Without this, fetch_sources() (PROCESSED = 0 only) never re-fetches an
+    already-translated string after a version bump, so the new glossary is
+    never applied to SportsbookDynamic. The version-aware skip in
+    fetch_existing_pairs() then lets the re-queued rows through to DeepL, and
+    insert_main() rewrites them at the current version.
+
+    Only TARGET_LANGUAGES are considered, so dropped languages don't trigger
+    pointless re-translation. lang values are formatted directly into SQL
+    because TARGET_LANGUAGES is a controlled config constant, not user input.
+    """
+    if not TARGET_LANGUAGES:
+        return 0
+
+    lang_values = ", ".join(f"('{lang}')" for lang in TARGET_LANGUAGES)
+
+    cursor = conn.cursor()
+    cursor.execute(
+        f"""
+        UPDATE src
+        SET    src.PROCESSED = 0
+        FROM   {TABLE_NAME} AS src
+        WHERE  src.SOURCE_LANGUAGE_ID = ?
+          AND  src.TARGET_LANGUAGE_ID = ?   -- the EN→EN source rows only
+          AND  src.PROCESSED = 1
+          AND  EXISTS (
+                   SELECT 1
+                   FROM   (VALUES {lang_values}) AS langs(lang)
+                   JOIN   {TABLE_NAME} t
+                          ON  t.String_ID          = src.String_ID
+                          AND t.TARGET_LANGUAGE_ID = langs.lang
+                   WHERE  t.TARGET_TEXT IS NOT NULL
+                     AND  t.GLOSSARY_VERSION < ?
+               )
+        """,
+        SOURCE_LANGUAGE_ID,
+        SOURCE_LANGUAGE_ID,
+        int(GLOSSARY_VERSION),
+    )
+    count = cursor.rowcount
+    conn.commit()
+
+    log.info(
+        "reset for stale glossary",
+        reset_count=count,
+        glossary_version=int(GLOSSARY_VERSION),
+        target_languages=TARGET_LANGUAGES,
+    )
+
+    return count
+
+
 def fetch_cache_keys(conn, source_hashes: list[str]) -> set[tuple[str, str]]:
     placeholders = ",".join(["?"] * len(source_hashes))
     cursor = conn.cursor()
@@ -283,9 +340,11 @@ def fetch_existing_pairs(conn, string_ids: list[str]) -> set[tuple[str, str]]:
         SELECT String_ID, TARGET_LANGUAGE_ID
         FROM {TABLE_NAME}
         WHERE String_ID IN ({placeholders})
-          AND TARGET_LANGUAGE_ID IS NOT NULL
+          AND TARGET_TEXT IS NOT NULL
+          AND GLOSSARY_VERSION = ?
         """,
         *string_ids,
+        GLOSSARY_VERSION,
     )
     return {(r[0], r[1]) for r in cursor.fetchall()}
 
@@ -613,123 +672,174 @@ async def process_all_languages(
 
 
 # =========================================================
-# BULK INSERT (shared helper)
+# BULK UPSERT (MERGE)
 # =========================================================
 
 
-def _bulk_insert(
-    conn,
-    rows: list[TranslationResult],
-    table: str,
-    sql: str,
-    dedup_key,
-    row_builder,
-    duplicate_marker: str,
-) -> None:
+def save_cache(conn, rows: list[TranslationResult]) -> None:
+    """
+    Upsert translations into TranslationCache, maintaining CREATED_AT / UPDATED_AT.
+
+    Previously this was insert-only: re-translating an existing string hit the
+    primary-key constraint, the chunk was rolled back as a "duplicate", and the
+    row was left untouched. As a result UPDATED_AT never advanced, and CREATED_AT
+    was only ever whatever a column DEFAULT happened to set. That broke
+    purge_old_cache(), which keeps rows by COALESCE(UPDATED_AT, CREATED_AT) on the
+    assumption that a re-translated row gets a fresh UPDATED_AT.
+
+    A MERGE on the cache key (SOURCE_HASH, SOURCE_LANGUAGE, TARGET_LANGUAGE,
+    GLOSSARY_VERSION):
+      - NOT MATCHED  -> INSERT with CREATED_AT = UPDATED_AT = GETUTCDATE()
+      - MATCHED      -> refresh TARGET_TEXT/SOURCE_TEXT and bump UPDATED_AT
+
+    Timestamps use GETUTCDATE() (UTC) to match purge_old_cache's DATEADD/GETUTCDATE
+    comparison. Rows are deduped on the merge key first because MERGE errors if the
+    source set tries to act on the same target row twice.
+    """
     if not rows:
         return
 
-    unique = {dedup_key(r): r for r in rows}
+    # Dedup on the PRIMARY KEY (hash, src, tgt) so the source side of the MERGE
+    # is unique. GLOSSARY_VERSION is NOT part of PK_TranslationCache; it's an
+    # attribute of the row and gets refreshed on MATCH.
+    unique = {
+        (r.source_hash, r.source_language, r.target_language): r
+        for r in rows
+    }
     deduped = list(unique.values())
-    log.info("deduped", table=table, before=len(rows), after=len(deduped))
+    log.info("deduped", table=CACHE_TABLE, before=len(rows), after=len(deduped))
 
-    # CHUNK_SIZE is a row-count constant shared across callers with different
-    # column counts (insert_main: 5 cols, save_cache: 6 cols). A flat row
-    # count doesn't translate to a flat parameter count, so we derive the
-    # actual chunk size from params-per-row to stay under SQL Server's
-    # hard 2,100-parameter ceiling regardless of how many columns this
-    # particular call writes. SQL_MAX_PARAMS leaves headroom below the
-    # real 2100 limit in case the driver reserves any slots internally.
-    params_per_row = len(row_builder(deduped[0]))
+    # 6 params per source row; stay under SQL Server's 2,100-parameter ceiling.
+    params_per_row = 6
     safe_chunk_size = max(1, SQL_MAX_PARAMS // params_per_row)
     chunk_size = min(CHUNK_SIZE, safe_chunk_size)
-    log.debug(
-        "chunk_size_computed",
-        table=table,
-        params_per_row=params_per_row,
-        chunk_size=chunk_size,
-    )
 
     cursor = conn.cursor()
-    inserted = 0
+    upserted = 0
 
     for chunk in _chunked(deduped, chunk_size):
-        data = [row_builder(r) for r in chunk]
-
-        # Build  VALUES (?,?,?),(?,?,?),(?,?,?)  — one execute, no executemany
-        placeholders = ",".join(f"({','.join(['?'] * len(data[0]))})" for _ in data)
-        flat_params = [v for row in data for v in row]
-
+        values = ",".join(["(?,?,?,?,?,?)"] * len(chunk))
+        flat_params = [
+            v
+            for r in chunk
+            for v in (
+                r.source_hash,
+                r.source_language,
+                r.target_language,
+                GLOSSARY_VERSION,
+                r.source_text,
+                r.target_text,
+            )
+        ]
+        sql = f"""
+            MERGE INTO {CACHE_TABLE} AS tgt
+            USING (VALUES {values}) AS src
+                (SOURCE_HASH, SOURCE_LANGUAGE, TARGET_LANGUAGE,
+                 GLOSSARY_VERSION, SOURCE_TEXT, TARGET_TEXT)
+            ON  tgt.SOURCE_HASH      = src.SOURCE_HASH
+            AND tgt.SOURCE_LANGUAGE  = src.SOURCE_LANGUAGE
+            AND tgt.TARGET_LANGUAGE  = src.TARGET_LANGUAGE
+            WHEN MATCHED THEN
+                UPDATE SET
+                    tgt.SOURCE_TEXT      = src.SOURCE_TEXT,
+                    tgt.TARGET_TEXT      = src.TARGET_TEXT,
+                    tgt.GLOSSARY_VERSION = src.GLOSSARY_VERSION,
+                    tgt.UPDATED_AT       = GETUTCDATE()
+            WHEN NOT MATCHED THEN
+                INSERT (SOURCE_HASH, SOURCE_LANGUAGE, TARGET_LANGUAGE,
+                        GLOSSARY_VERSION, SOURCE_TEXT, TARGET_TEXT,
+                        CREATED_AT, UPDATED_AT)
+                VALUES (src.SOURCE_HASH, src.SOURCE_LANGUAGE, src.TARGET_LANGUAGE,
+                        src.GLOSSARY_VERSION, src.SOURCE_TEXT, src.TARGET_TEXT,
+                        GETUTCDATE(), GETUTCDATE());
+        """
         try:
-            cursor.execute(sql + placeholders, flat_params)
+            cursor.execute(sql, flat_params)
             conn.commit()
-            inserted += len(chunk)
+            upserted += len(chunk)
         except Exception as exc:
-            exc_text = str(exc).lower()
-            log.debug("insert_exception", table=table, exc=str(exc)[:200])
+            conn.rollback()
+            log.error("cache_upsert_failed", table=CACHE_TABLE, exc=str(exc)[:200])
+            raise
 
-            if duplicate_marker in exc_text:
-                log.warning("duplicate_ignored", table=table)
-                conn.rollback()
-            else:
-                conn.rollback()
-                raise
-
-    log.info("insert_done", table=table, inserted=inserted)
-
-
-def save_cache(conn, rows: list[TranslationResult]) -> None:
-    _bulk_insert(
-        conn,
-        rows,
-        table=CACHE_TABLE,
-        sql=f"""
-                   INSERT INTO {CACHE_TABLE}
-                   (SOURCE_HASH, SOURCE_LANGUAGE, TARGET_LANGUAGE,
-                    GLOSSARY_VERSION, SOURCE_TEXT, TARGET_TEXT)
-                   VALUES
-               """,
-        dedup_key=lambda r: (
-            r.source_hash,
-            r.source_language,
-            r.target_language,
-            GLOSSARY_VERSION,
-        ),
-        row_builder=lambda r: (
-            r.source_hash,
-            r.source_language,
-            r.target_language,
-            GLOSSARY_VERSION,
-            r.source_text,
-            r.target_text,
-        ),
-        duplicate_marker="primary key constraint",
-        #            hash      src_lang   tgt_lang   version  src_text    tgt_text
-    )
+    log.info("cache_upsert_done", table=CACHE_TABLE, upserted=upserted)
 
 
 def insert_main(conn, rows: list[TranslationResult]) -> None:
-    _bulk_insert(
-        conn,
-        rows,
-        table=TABLE_NAME,
-        sql=f"""
-               INSERT INTO {TABLE_NAME}
-               (String_ID, SOURCE_LANGUAGE_ID, TARGET_LANGUAGE_ID,
-                SOURCE_TEXT, TARGET_TEXT)
-               VALUES
-           """,
-        dedup_key=lambda r: (r.string_id, r.target_language),
-        row_builder=lambda r: (
-            r.string_id,
-            r.source_language,
-            r.target_language,
-            r.source_text,
-            r.target_text,
-        ),
-        duplicate_marker="duplicate key",
-        #            string_id   src_lang    tgt_lang    src_text   tgt_text
-    )
+    """
+    Upsert translated rows into SportsbookDynamic, maintaining CREATED_AT / UPDATED_AT.
+
+    Same fix as save_cache: this was insert-only, so a re-translated (String_ID,
+    TARGET_LANGUAGE_ID) pair hit the unique key, was caught as a "duplicate key",
+    and rolled back without bumping UPDATED_AT. purge_old_translations() keeps rows
+    by COALESCE(UPDATED_AT, CREATED_AT), so stale UPDATED_AT meant a re-translated
+    row could still be purged on its original age.
+
+    MERGE on (String_ID, TARGET_LANGUAGE_ID):
+      - NOT MATCHED -> INSERT with CREATED_AT = UPDATED_AT = GETUTCDATE()
+      - MATCHED     -> refresh SOURCE_TEXT/TARGET_TEXT and bump UPDATED_AT
+    """
+    if not rows:
+        return
+
+    # Dedup on the merge key so the source side of the MERGE is unique.
+    unique = {(r.string_id, r.target_language): r for r in rows}
+    deduped = list(unique.values())
+    log.info("deduped", table=TABLE_NAME, before=len(rows), after=len(deduped))
+
+    # 6 params per source row; stay under SQL Server's 2,100-parameter ceiling.
+    params_per_row = 6
+    safe_chunk_size = max(1, SQL_MAX_PARAMS // params_per_row)
+    chunk_size = min(CHUNK_SIZE, safe_chunk_size)
+
+    cursor = conn.cursor()
+    upserted = 0
+
+    for chunk in _chunked(deduped, chunk_size):
+        values = ",".join(["(?,?,?,?,?,?)"] * len(chunk))
+        flat_params = [
+            v
+            for r in chunk
+            for v in (
+                r.string_id,
+                r.source_language,
+                r.target_language,
+                r.source_text,
+                r.target_text,
+                GLOSSARY_VERSION,
+            )
+        ]
+        sql = f"""
+            MERGE INTO {TABLE_NAME} AS tgt
+            USING (VALUES {values}) AS src
+                (String_ID, SOURCE_LANGUAGE_ID, TARGET_LANGUAGE_ID,
+                 SOURCE_TEXT, TARGET_TEXT, GLOSSARY_VERSION)
+            ON  tgt.String_ID         = src.String_ID
+            AND tgt.TARGET_LANGUAGE_ID = src.TARGET_LANGUAGE_ID
+            WHEN MATCHED THEN
+                UPDATE SET
+                    tgt.SOURCE_TEXT      = src.SOURCE_TEXT,
+                    tgt.TARGET_TEXT      = src.TARGET_TEXT,
+                    tgt.GLOSSARY_VERSION = src.GLOSSARY_VERSION,
+                    tgt.UPDATED_AT       = GETUTCDATE()
+            WHEN NOT MATCHED THEN
+                INSERT (String_ID, SOURCE_LANGUAGE_ID, TARGET_LANGUAGE_ID,
+                        SOURCE_TEXT, TARGET_TEXT, GLOSSARY_VERSION,
+                        CREATED_AT, UPDATED_AT)
+                VALUES (src.String_ID, src.SOURCE_LANGUAGE_ID, src.TARGET_LANGUAGE_ID,
+                        src.SOURCE_TEXT, src.TARGET_TEXT, src.GLOSSARY_VERSION,
+                        GETUTCDATE(), GETUTCDATE());
+        """
+        try:
+            cursor.execute(sql, flat_params)
+            conn.commit()
+            upserted += len(chunk)
+        except Exception as exc:
+            conn.rollback()
+            log.error("main_upsert_failed", table=TABLE_NAME, exc=str(exc)[:200])
+            raise
+
+    log.info("main_upsert_done", table=TABLE_NAME, upserted=upserted)
 
 
 # =========================================================
@@ -914,6 +1024,10 @@ def main() -> None:
     # Now reset after purge, so strings just purged are immediately re-queued
     log.info("checking for missing language translations", target_languages=TARGET_LANGUAGES)
     reset_for_missing_languages(sql_conn)
+
+    # Re-queue rows whose translations predate the current glossary version.
+    log.info("checking for stale glossary translations", glossary_version=int(GLOSSARY_VERSION))
+    reset_for_stale_glossary(sql_conn)
 
     cycle = 0
     while True:

@@ -146,8 +146,17 @@ executor = ThreadPoolExecutor(max_workers=MAX_CONCURRENT)
 def fetch_sources(conn) -> list[SourceRow]:
     """
     Fetch the next batch of unprocessed English source rows.
-    Relies on the PROCESSED = 0 flag — no ordering by String_ID needed,
-    so random/non-sequential IDs are handled correctly.
+
+    Ordered by CREATED_AT so the oldest untranslated strings are processed first
+    (FIFO fairness). String_ID is appended as a tie-breaker to keep the order
+    deterministic when several rows share a CREATED_AT. For this to stay cheap,
+    back it with an index on (PROCESSED, CREATED_AT, String_ID); otherwise the
+    TOP forces a sort of the whole PROCESSED = 0 set on every fetch.
+
+    Note: this does NOT fully resolve the cache-only drain edge. When DeepL is
+    unreachable, DeepL-dependent rows stay PROCESSED = 0 and keep reappearing at
+    the front of this fixed order, so a single run still drains at most one window
+    of cache-restorable rows; the remainder self-heals on the next run.
     """
     cursor = conn.cursor()
     cursor.execute(
@@ -159,6 +168,7 @@ def fetch_sources(conn) -> list[SourceRow]:
           AND TARGET_LANGUAGE_ID  = ?   -- only EN→EN source rows, not EN→ZH etc.
           AND PROCESSED = 0
           AND LTRIM(RTRIM(SOURCE_TEXT)) <> ''
+        ORDER BY CREATED_AT, String_ID
         """,
         SOURCE_LANGUAGE_ID,
         SOURCE_LANGUAGE_ID,
@@ -197,6 +207,22 @@ def mark_processed(conn, string_ids: list[str]) -> None:
     conn.commit()
 
     log.info("marked_processed", count=len(string_ids))
+
+
+def mark_cache_satisfied(conn, sources: list[SourceRow], deepl_tasks: list[TranslationTask]) -> int:
+    """
+    Used in cache-only mode (DeepL unreachable): mark as PROCESSED = 1 only those
+    source rows that have NO remaining DeepL-dependent task — i.e. every target
+    language was either already present or restored from cache this cycle.
+
+    Any source that still needs DeepL is deliberately left at PROCESSED = 0 so it
+    is retried on a later run once DeepL is reachable again. Returns the number of
+    sources marked processed.
+    """
+    deepl_needed = {t.string_id for t in deepl_tasks}
+    cache_only_ids = [s.string_id for s in sources if s.string_id not in deepl_needed]
+    mark_processed(conn, cache_only_ids)
+    return len(cache_only_ids)
 
 
 def reset_for_missing_languages(conn) -> int:
@@ -489,6 +515,21 @@ def build_batches(
 # GLOSSARY MANAGEMENT
 # =========================================================
 
+
+class GlossaryUnavailable(Exception):
+    """
+    Raised when a required DeepL glossary cannot be obtained or used — e.g. the
+    glossary API errors out, quota is exhausted, the language pair is
+    unsupported, or DeepL rejects the glossary at translate time.
+
+    This is deliberately distinct from "the glossary has no entries" (which is
+    fine — we translate without one). It signals the pipeline to fall back to
+    cache-only mode rather than translating with the wrong terminology, since a
+    glossary-less sportsbook translation would be cached and marked processed and
+    never corrected.
+    """
+
+
 # In-process cache: target_lang -> deepl.GlossaryInfo (or None if no entries).
 # Populated once per run by ensure_glossary(); re-used for every batch.
 _glossary_cache: dict[str, deepl.GlossaryInfo | None] = {}
@@ -564,12 +605,18 @@ def ensure_glossary(conn, target_lang: str) -> deepl.GlossaryInfo | None:
     # DeepL requires the source language without a regional suffix (e.g. "EN",
     # not "EN-US") and some target langs need the region variant ("PT-BR").
     # source_lang is always SOURCE_LANGUAGE_ID which is plain "EN".
-    glossary = translator.create_glossary(
-        name=glossary_name,
-        source_lang=SOURCE_LANGUAGE_ID,
-        target_lang=target_lang,
-        entries=entries,
-    )
+    try:
+        glossary = translator.create_glossary(
+            name=glossary_name,
+            source_lang=SOURCE_LANGUAGE_ID,
+            target_lang=target_lang,
+            entries=entries,
+        )
+    except Exception as exc:
+        # Glossary API error, quota, unsupported language pair, etc. Signal
+        # cache-only fallback rather than translating without the glossary.
+        log.error("glossary_create_failed", target_lang=target_lang, name=glossary_name, error=str(exc))
+        raise GlossaryUnavailable(target_lang) from exc
     log.info(
         "glossary_created",
         name=glossary_name,
@@ -597,13 +644,19 @@ def _call_deepl(
     target_lang: str,
 ) -> list[deepl.TextResult]:
     glossary = ensure_glossary(conn, target_lang)
-    results = translator.translate_text(
-        texts,
-        source_lang=SOURCE_LANGUAGE_ID,
-        target_lang=target_lang,
-        context=SPORTSBOOK_CONTEXT,
-        glossary=glossary,  # None → DeepL ignores the parameter
-    )
+    try:
+        results = translator.translate_text(
+            texts,
+            source_lang=SOURCE_LANGUAGE_ID,
+            target_lang=target_lang,
+            context=SPORTSBOOK_CONTEXT,
+            glossary=glossary,  # None → DeepL ignores the parameter
+        )
+    except deepl.GlossaryNotFoundException as exc:
+        # DeepL rejected the glossary (e.g. deleted/expired between create and
+        # use). Treat as glossary-unavailable → cache-only, not a hard failure.
+        log.error("glossary_rejected_at_translate", target_lang=target_lang, error=str(exc))
+        raise GlossaryUnavailable(target_lang) from exc
     return results if isinstance(results, list) else [results]
 
 
@@ -1029,6 +1082,11 @@ def main() -> None:
     log.info("checking for stale glossary translations", glossary_version=int(GLOSSARY_VERSION))
     reset_for_stale_glossary(sql_conn)
 
+    # When DeepL becomes unreachable mid-run we flip this to False and finish
+    # the run in cache-only mode instead of crashing: cached translations are
+    # still restored, new (uncached) strings are simply left for a later run.
+    deepl_available = True
+
     cycle = 0
     while True:
         log.info("start cycle", cycle=cycle)
@@ -1063,11 +1121,53 @@ def main() -> None:
             log.info("nothing_to_translate")
             continue
 
+        # DeepL already known to be down this run: cache restorations above are
+        # applied. Mark ONLY the sources that needed no DeepL (fully satisfied
+        # from cache / already present); every DeepL-dependent row stays at
+        # PROCESSED = 0 so it is retried on the next run.
+        if not deepl_available:
+            marked = mark_cache_satisfied(sql_conn, sources, tasks)
+            log.warning(
+                "deepl_unavailable_cache_only",
+                cycle=cycle,
+                marked_processed=marked,
+                left_unprocessed=len(sources) - marked,
+            )
+            if marked == 0:
+                # Nothing left that cache can satisfy — the remaining backlog is
+                # entirely DeepL-dependent. Stop so we don't re-fetch (and never
+                # clear) the same PROCESSED = 0 rows forever.
+                log.info("cache_only_drained_exiting")
+                sys.exit(0)
+            continue
+
         grouped = group_by_language(tasks)
 
         t0 = time.perf_counter()
         try:
             translated = asyncio.run(process_all_languages(sql_conn, grouped))
+        except (deepl.ConnectionException, GlossaryUnavailable) as exc:
+            # DeepL can't be used this run: either the API is unreachable or a
+            # required glossary couldn't be obtained / was rejected. Don't fall
+            # back to glossary-less translation (wrong sportsbook terminology
+            # would be cached and marked processed); switch to cache-only mode.
+            # Cache restorations earlier this cycle are already committed; mark
+            # only the fully-cache-satisfied sources and keep every DeepL-dependent
+            # row at PROCESSED = 0 for a later run.
+            reason = "glossary_unavailable" if isinstance(exc, GlossaryUnavailable) else "api_unreachable"
+            log.warning("deepl_unavailable_cache_only", reason=reason, error=str(exc), cycle=cycle)
+            deepl_available = False
+            marked = mark_cache_satisfied(sql_conn, sources, tasks)
+            log.warning(
+                "cache_only_marked",
+                cycle=cycle,
+                marked_processed=marked,
+                left_unprocessed=len(sources) - marked,
+            )
+            if marked == 0:
+                log.info("cache_only_drained_exiting")
+                sys.exit(0)
+            continue
         except Exception as exc:
             log.error("deepl_fatal", error=str(exc), cycle=cycle)
             sys.exit(1)

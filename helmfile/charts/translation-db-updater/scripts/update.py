@@ -27,8 +27,13 @@ log: structlog.BoundLogger = structlog.get_logger()
 
 
 # DeepL configuration
-DEEPL_API_URL = "https://api.deepl.com"
-DEEPL_API_KEY = os.environ["DEEPL_API_KEY"]
+# .strip() guards against a trailing newline/space in the K8s secret, which
+# corrupts the auth header into a 403. DEEPL_API_URL is an OPTIONAL override:
+# when unset, deepl.Translator auto-routes by key suffix (":fx" -> Free host
+# api-free.deepl.com, otherwise Pro host api.deepl.com). Pinning the Pro host
+# while using a Free key is what produces "Authorization failure ... Forbidden".
+DEEPL_API_KEY = os.environ["DEEPL_API_KEY"].strip()
+DEEPL_API_URL = os.environ.get("DEEPL_API_URL", "").strip() or None
 
 # SQL server configuration
 SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
@@ -136,6 +141,35 @@ class TranslationResult:
 
 translator = deepl.Translator(DEEPL_API_KEY, server_url=DEEPL_API_URL)
 executor = ThreadPoolExecutor(max_workers=MAX_CONCURRENT)
+
+
+def check_deepl_available() -> bool:
+    """
+    Preflight: is DeepL usable right now? Makes one cheap /usage call so the run
+    knows up front whether it can translate, and ALWAYS emits a clear warning
+    when DeepL is unavailable — even when the workload would otherwise be served
+    entirely from cache and never touch DeepL.
+
+    Returns True if reachable and authorized, False on any DeepL failure
+    (unreachable, forbidden/bad key, quota). On False the run proceeds in
+    cache-only mode instead of attempting (and retrying) translations.
+    """
+    try:
+        usage = translator.get_usage()
+        log.info(
+            "deepl_preflight_ok",
+            character_count=getattr(usage.character, "count", None),
+            character_limit=getattr(usage.character, "limit", None),
+        )
+        return True
+    except deepl.DeepLException as exc:
+        log.warning(
+            "deepl_unavailable",
+            reason=type(exc).__name__,
+            error=str(exc),
+            mode="cache_only",
+        )
+        return False
 
 
 # =========================================================
@@ -1082,10 +1116,14 @@ def main() -> None:
     log.info("checking for stale glossary translations", glossary_version=int(GLOSSARY_VERSION))
     reset_for_stale_glossary(sql_conn)
 
-    # When DeepL becomes unreachable mid-run we flip this to False and finish
-    # the run in cache-only mode instead of crashing: cached translations are
-    # still restored, new (uncached) strings are simply left for a later run.
-    deepl_available = True
+    # Preflight DeepL once, up front. This guarantees a warning is logged when
+    # DeepL is unavailable (even if every string this run could be served from
+    # cache), and lets the whole run skip DeepL cleanly instead of discovering
+    # the failure mid-cycle and burning retries. If it goes down AFTER this
+    # passes, the in-loop handler still falls back to cache-only.
+    deepl_available = check_deepl_available()
+    if not deepl_available:
+        log.warning("deepl_unavailable_running_cache_only")
 
     cycle = 0
     while True:
@@ -1146,15 +1184,20 @@ def main() -> None:
         t0 = time.perf_counter()
         try:
             translated = asyncio.run(process_all_languages(sql_conn, grouped))
-        except (deepl.ConnectionException, GlossaryUnavailable) as exc:
-            # DeepL can't be used this run: either the API is unreachable or a
-            # required glossary couldn't be obtained / was rejected. Don't fall
+        except (deepl.DeepLException, GlossaryUnavailable) as exc:
+            # DeepL can't be used this run, for ANY reason — unreachable, auth
+            # failure (bad/forbidden key), quota/rate limit, or a glossary that
+            # couldn't be obtained or was rejected. Don't crash and don't fall
             # back to glossary-less translation (wrong sportsbook terminology
             # would be cached and marked processed); switch to cache-only mode.
             # Cache restorations earlier this cycle are already committed; mark
             # only the fully-cache-satisfied sources and keep every DeepL-dependent
             # row at PROCESSED = 0 for a later run.
-            reason = "glossary_unavailable" if isinstance(exc, GlossaryUnavailable) else "api_unreachable"
+            #
+            # NOTE: an auth/quota failure means NO new translations are produced
+            # until it's resolved — cache-only keeps the pipeline alive but cannot
+            # translate new strings, so this is logged loudly on purpose.
+            reason = "glossary_unavailable" if isinstance(exc, GlossaryUnavailable) else type(exc).__name__
             log.warning("deepl_unavailable_cache_only", reason=reason, error=str(exc), cycle=cycle)
             deepl_available = False
             marked = mark_cache_satisfied(sql_conn, sources, tasks)

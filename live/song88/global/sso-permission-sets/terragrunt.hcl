@@ -79,9 +79,7 @@ inputs = {
                 "s3:GetBucketLocation"
             ],
             "Resource": [
-                "arn:aws:s3:::song88-dev-webprops",
                 "arn:aws:s3:::song88-stg-webprops",
-                "arn:aws:s3:::song88-dev-webprops/*",
                 "arn:aws:s3:::song88-stg-webprops/*"
             ]
         }

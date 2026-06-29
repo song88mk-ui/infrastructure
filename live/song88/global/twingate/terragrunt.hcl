@@ -15,10 +15,6 @@ inputs = {
   api_token = local.api_token
 
   remote_networks = {
-    dev = {
-      name     = "Dev"
-      location = "AWS"
-    }
     stg = {
       name     = "Stage"
       location = "AWS"
@@ -81,29 +77,11 @@ inputs = {
       remote_network_key = "stg"
       access_groups      = ["developers", "devops", "backoffice", "noc"]
     }
-    dev_mongodb = {
-      name               = "MongoDB (DEV)"
-      address            = "10.29.100.172"
-      remote_network_key = "dev"
-      access_groups      = ["developers", "devops"]
-    }
-    dev_endpoints = {
-      name               = "Dev Environment"
-      address            = "*.dev.song88.com"
-      remote_network_key = "dev"
-      access_groups      = ["developers", "devops", "backoffice"]
-    }
     prd_endpoints = {
       name               = "Prod Environment"
       address            = "*.prd.song88.com"
       remote_network_key = "prd"
       access_groups      = ["developers", "devops", "backoffice", "noc"]
-    }
-    dev_network = {
-      name               = "Dev Network"
-      address            = "10.29.0.0/16"
-      remote_network_key = "dev"
-      access_groups      = ["developers", "devops"]
     }
     stg_network = {
       name               = "Stage Network"
@@ -146,12 +124,6 @@ inputs = {
       address            = "bo.song88.com"
       remote_network_key = "prd"
       access_groups      = ["developers", "devops", "backoffice", "noc"]
-    }
-    dev_demosite = {
-      name               = "DemoSite-dev"
-      address            = "dev.song88.com"
-      remote_network_key = "dev"
-      access_groups      = ["developers", "devops", "noc"]
     }
     stg_demosite = {
       name               = "DemoSite-stg"

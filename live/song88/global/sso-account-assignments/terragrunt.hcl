@@ -9,7 +9,6 @@ terraform {
 locals {
   env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
 
-  plat_dev     = "418541840646"
   plat_stage   = "172065883315"
   plat_prod    = "525375333516"
   core_public  = "458329143434"
@@ -23,20 +22,6 @@ dependency "permission_sets" {
 
 inputs = {
   accounts = [{
-    name       = "plat_dev",
-    account_id = local.plat_dev
-    permission_sets = {
-      AdministratorAccess = [
-        "devops"
-      ]
-      Billing = [
-        "billing"
-      ]
-      EKSPowerUserAccess = [
-        "developers"
-      ]
-    }
-    }, {
     name       = "plat_stage",
     account_id = local.plat_stage
     permission_sets = {

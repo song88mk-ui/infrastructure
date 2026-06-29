@@ -2,10 +2,6 @@
 
 ---
 environments:
-  dev:
-    kubeContext: song88-dev-cluster
-    values:
-    - environments/dev/values.yaml
   stg:
     kubeContext: song88-stg-cluster
     values:
@@ -290,16 +286,6 @@ releases:
       - service:
           type: NodePort
           nodePort: 31433
-
-  # NOTE: Temporary mongodb instance. To be evaluated if an AWS can be used.
-  # TODO: It should be moved to AWS when ready
-  - name: mongodb
-    installed: {{ eq .Environment.Name "dev" }}
-    namespace: bet-genius-apps
-    chart: bitnami/mongodb
-    version: 18.1.1
-    values:
-      - common/mongodb.yaml
 
   # NOTE: Rabbitmq is installed following: https://www.rabbitmq.com/kubernetes/operator/quickstart-operator
   # TODO: It should be moved to AWS when ready

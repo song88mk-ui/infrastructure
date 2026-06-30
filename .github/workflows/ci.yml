@@ -21,12 +21,6 @@ jobs:
     strategy:
       matrix:
         env:
-        - path: "live/aws-plat-dev/dev"
-          region: ap-south-1
-          account_id: 418541840646
-        - path: "live/aws-plat-dev/global"
-          region: ap-south-1
-          account_id: 418541840646
         - path: "live/aws-plat-stg/stg"
           region: ap-south-1
           account_id: 172065883315

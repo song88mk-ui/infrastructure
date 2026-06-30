@@ -71,5 +71,6 @@ POLICY
     "FlyingCockatoo/backoffice-final:*",
     "FlyingCockatoo/internal.s88platform.com:*",
     "FlyingCockatoo/webprops-api:*",
+    "FlyingCockatoo/Platform-Frontend:*",
   ]
 }

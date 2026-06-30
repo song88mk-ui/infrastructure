@@ -12,12 +12,13 @@ locals {
 
 inputs = {
   repositories = {
-    "bg-rabbitmq-api"       = {}
-    "bg-receiver-service"   = {}
-    "bg-feed-receiver-api"  = {}
-    "bg-engine-sportsbook"  = {}
-    "bg-feedlogger-service" = {}
-    "bg-heartbeat-listener" = {}
+    "bg-rabbitmq-api"        = {}
+    "bg-receiver-service"    = {}
+    "bg-feed-receiver-api"   = {}
+    "bg-engine-sportsbook"   = {}
+    "bg-feedlogger-service"  = {}
+    "bg-heartbeat-listener"  = {}
+    "bg-translation-service" = {}
     # old oddsengine (old platform)
     "oe-rabbitmq-api"                = {}
     "oe-adapter-uof"                 = {}
@@ -111,6 +112,7 @@ inputs = {
     "backoffice-websocket-api"     = {}
     # internal documentation
     "corp-apps-internal-docs" = {}
+    "sportsbook-web-af"       = {}
   }
 }
 

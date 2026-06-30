@@ -85,6 +85,7 @@ inputs = {
     "platform-web-assets" = {}
     "platform-web"        = {}
     "platform-song88"     = {}
+    "platform-web-af"  = {}
     # web utils
     "platform-webprops-api" = {}
     # odds feed
@@ -112,7 +113,6 @@ inputs = {
     "backoffice-websocket-api"     = {}
     # internal documentation
     "corp-apps-internal-docs" = {}
-    "sportsbook-web-af"       = {}
   }
 }
 

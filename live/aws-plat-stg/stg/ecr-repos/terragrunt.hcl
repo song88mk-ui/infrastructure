@@ -19,6 +19,7 @@ inputs = {
     "bg-feedlogger-service"  = {}
     "bg-heartbeat-listener"  = {}
     "bg-translation-service" = {}
+    "bg-translation-job"     = {}
     # old oddsengine (old platform)
     "oe-rabbitmq-api"                = {}
     "oe-adapter-uof"                 = {}

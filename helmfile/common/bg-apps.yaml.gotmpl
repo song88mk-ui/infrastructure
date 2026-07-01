@@ -59,3 +59,10 @@ apps:
     valueFilesOverride:
     - ../../apps/bg-translation-service/{{ .Environment.Name }}.yaml
     - ../../argocd-image-updater/bet-genius-apps/bet-genius-apps-bg-translation-service/{{ .Environment.Name }}.yaml
+  - name: bet-genius-apps-bg-translation-job
+    chart: betgenius-app
+    appImageOverride: bg-translation-job
+    workflowId: "207735885"
+    valueFilesOverride:
+    - ../../apps/bg-translation-job/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/bet-genius-apps/bet-genius-apps-bg-translation-job/{{ .Environment.Name }}.yaml

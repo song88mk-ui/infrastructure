@@ -86,7 +86,7 @@ inputs = {
     "platform-web-assets" = {}
     "platform-web"        = {}
     "platform-song88"     = {}
-    "platform-web-af"  = {}
+    "platform-web-af"     = {}
     # web utils
     "platform-webprops-api" = {}
     # odds feed

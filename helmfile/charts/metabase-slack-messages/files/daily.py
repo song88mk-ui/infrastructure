@@ -14,7 +14,7 @@ from openpyxl.utils.units import pixels_to_EMU
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-METABASE_URL    = "https://metabase.prd.song88.com/"
+METABASE_URL    = "https://metabase.prd.song88.com"
 API_KEY         = os.environ["METABASE_API_KEY"]
 QUESTION_ID_MTD = 300
 QUESTION_ID_DAY = 301

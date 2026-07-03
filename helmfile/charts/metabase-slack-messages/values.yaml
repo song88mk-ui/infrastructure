@@ -1,0 +1,37 @@
+image:
+  repository: python
+  tag: "3.13-slim"
+  pullPolicy: IfNotPresent
+
+daily_job:
+  schedule: "0 8 * * *" # Every day at 8AM
+  env: []
+
+monthly_job:
+  schedule: "0 8 1 * *" # Every first of the month at 8AM
+  env: []
+
+secrets:
+  - name: metabase-api-key
+    data:
+    - key: metabase-api-key
+      remoteKey: /prd/metabase-slack-messages/metabase-api-key
+      envVariable: METABASE_API_KEY
+  - name: slack-bot-token
+    data:
+    - key: slack-bot-token
+      remoteKey: /prd/metabase-slack-messages/slack-bot-token
+      envVariable: SLACK_BOT_TOKEN
+  - name: smtp
+    data:
+    - key: smtp-user
+      remoteKey: /prd/metabase-slack-messages/smtp-user
+      envVariable: SMTP_USER
+    - key: smtp-pass
+      remoteKey: /prd/metabase-slack-messages/smtp-pass
+      envVariable: SMTP_PASS
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

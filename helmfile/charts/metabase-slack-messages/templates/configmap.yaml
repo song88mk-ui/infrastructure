@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "metabase-slack-messages.fullname" . }}-scripts
+  labels:
+    {{- include "metabase-slack-messages.labels" . | nindent 4 }}
+data:
+  daily.py: |
+    {{ .Files.Get "files/daily.py" | nindent 4 }}
+  monthly.py: |
+    {{ .Files.Get "files/monthly.py" | nindent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "metabase-slack-messages.fullname" . }}-images
+  labels:
+    {{- include "metabase-slack-messages.labels" . | nindent 4 }}
+binaryData:
+  watermark.png: {{ .Files.Get "files/watermark.png" | b64enc }}

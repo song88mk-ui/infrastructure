@@ -1,0 +1,6 @@
+apiVersion: v2
+name: metabase-slack-messages
+description: A Helm chart to send slack notifications for metabase
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

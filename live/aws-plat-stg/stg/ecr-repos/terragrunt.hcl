@@ -43,15 +43,17 @@ inputs = {
     "oe-translation-service"         = {}
     "oe-utility-service"             = {}
     # oddsengine-2
-    "oev2-adapter-service"    = {}
-    "oev2-sportsbook-service" = {}
-    "oev2-websocket-service"  = {}
-    "oev2-uof-client"         = {}
-    "oev2-job-keepalive"      = {}
-    "oev2-job-settlement"     = {}
-    "oev2-job-cleanup"        = {}
-    "oev2-job-livestream"     = {}
-    "oev2-job-lookup"         = {}
+    "oev2-adapter-service"     = {}
+    "oev2-sportsbook-service"  = {}
+    "oev2-websocket-service"   = {}
+    "oev2-uof-client"          = {}
+    "oev2-job-keepalive"       = {}
+    "oev2-job-settlement"      = {}
+    "oev2-job-cleanup"         = {}
+    "oev2-job-livestream"      = {}
+    "oev2-job-lookup"          = {}
+    "oev2-translation-job"     = {}
+    "oev2-translation-service" = {}
     # platform apps (old platform)
     "platform-platform-api"             = {}
     "platform-betforwarder-service"     = {}

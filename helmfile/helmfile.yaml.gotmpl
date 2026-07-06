@@ -40,6 +40,8 @@ repositories:
   url: https://aws.github.io/eks-charts
 - name: metabase
   url: https://pmint93.github.io/helm-charts
+- name: opencost
+  url: https://opencost.github.io/opencost-helm-chart
 
 helmDefaults:
   verify: false
@@ -329,3 +331,11 @@ releases:
     namespace: platform
     chart: charts/metabase-slack-messages
     version: 1.0.0
+
+  - name: opencost
+    namespace: monitoring
+    chart: opencost/opencost
+    version: 2.5.26
+    values:
+      - common/opencost.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/opencost.yaml.gotmpl

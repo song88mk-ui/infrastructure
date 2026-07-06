@@ -122,6 +122,15 @@ inputs = {
       "eks-power-users",
     ]
     }, {
+    given_name  = "Lino"
+    family_name = "Gatchalian"
+    email       = "lgatchalian@song88.com"
+
+    groups = [
+      "developers",
+      "eks-power-users",
+    ]
+    }, {
     given_name  = "Steve"
     family_name = "Felizardo"
     email       = "sfelizardo@song88.com"

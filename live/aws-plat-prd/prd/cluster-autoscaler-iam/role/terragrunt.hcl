@@ -30,6 +30,10 @@ inputs = {
     service_account = "cluster-autoscaler-sa"
   }
 
+  additional_policy_arns = {
+    AutoScalingFullAccess = "arn:aws:iam::aws:policy/AutoScalingFullAccess"
+  }
+
   associations = {
     main = {
       cluster_name = dependency.eks.outputs.cluster_name

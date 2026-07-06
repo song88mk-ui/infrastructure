@@ -3,7 +3,7 @@ include "root" {
 }
 
 terraform {
-  source = "tfr:///terraform-aws-modules/eks-pod-identity/aws//.?version=2.2.1"
+  source = "tfr:///terraform-aws-modules/eks-pod-identity/aws//.?version=2.8.1"
 }
 
 locals {
@@ -28,6 +28,10 @@ inputs = {
   association_defaults = {
     namespace       = "kube-system"
     service_account = "cluster-autoscaler-sa"
+  }
+
+  additional_policy_arns = {
+    AutoScalingFullAccess = "arn:aws:iam::aws:policy/AutoScalingFullAccess"
   }
 
   associations = {

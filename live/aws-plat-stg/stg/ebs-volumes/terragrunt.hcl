@@ -19,7 +19,7 @@ inputs = {
     "mongodb-data" = {
       instance_id = dependency.mongodb.outputs.id
       device_name = "/dev/sdk"
-      throughput  = 500
+      throughput  = 125
       size        = "50"
     }
   }

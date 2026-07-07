@@ -11,6 +11,9 @@ Flow:
   cache/backfill hit and is kept as-is
 - translated text is written back into the TARGET_TEXT_<lang> columns, then the row is
   marked PROCESSED = 1
+- every other row sharing that exact SOURCE_TEXT/SOURCE_LANGUAGE and still missing that
+  language gets the same TARGET_TEXT_<lang> copied in and is marked PROCESSED = 1 too,
+  so DeepL never re-translates identical text under a different STRING_ID
 - newly available translations are announced via the Platform cache-preload endpoint
 
 TranslationCache2 fields:
@@ -482,6 +485,72 @@ def group_by_language_results(
     return dict(grouped)
 
 
+def propagate_to_siblings(conn, results: list[TranslationResult]) -> list[TranslationResult]:
+    """Once a SOURCE_TEXT is DeepL-translated for one row, copy the same TARGET_TEXT_<lang>
+    into every other TranslationCache2 row sharing that SOURCE_TEXT/SOURCE_LANGUAGE that
+    doesn't already have a value for that language, and mark those rows PROCESSED = 1 so
+    they never queue their own DeepL pass for text we've already translated. Rows that
+    already carry a (possibly different) translation for that language are left alone."""
+    if not results:
+        return []
+
+    # One UPDATE per distinct (source_text, target_lang); identical source_text within a
+    # batch should already carry the same target_text, so the first result stands in.
+    seen: dict[tuple[str, str], TranslationResult] = {}
+    for r in results:
+        seen.setdefault((r.source_text, r.target_language), r)
+
+    propagated: list[TranslationResult] = []
+    cursor = conn.cursor()
+    for (source_text, target_lang), r in seen.items():
+        target_column = TARGET_COLUMN_MAP[target_lang]
+        try:
+            cursor.execute(
+                f"""
+                UPDATE {CACHE_TABLE2}
+                SET    {target_column} = ?,
+                       PROCESSED = 1,
+                       UPDATED_AT = GETUTCDATE()
+                OUTPUT inserted.STRING_ID
+                WHERE  SOURCE_TEXT = ?
+                  AND  SOURCE_LANGUAGE = ?
+                  AND  STRING_ID <> ?
+                  AND  {target_column} = N''
+                """,
+                r.target_text[:MAX_TEXT_LEN], source_text, r.source_language, r.string_id,
+            )
+            sibling_ids = [row[0] for row in cursor.fetchall()]
+            conn.commit()
+        except Exception as exc:
+            conn.rollback()
+            log.error(
+                "sibling_propagation_failed",
+                lang=target_lang,
+                source_text=source_text[:50],
+                exc=str(exc)[:200],
+            )
+            continue
+
+        if sibling_ids:
+            log.info(
+                "propagated_to_siblings",
+                source_text=source_text[:50],
+                target_lang=target_lang,
+                sibling_count=len(sibling_ids),
+            )
+            propagated.extend(
+                TranslationResult(
+                    string_id=sid,
+                    source_language=r.source_language,
+                    target_language=target_lang,
+                    source_text=source_text,
+                    target_text=r.target_text,
+                )
+                for sid in sibling_ids
+            )
+    return propagated
+
+
 def trigger_cache_preload(results: list[TranslationResult]) -> None:
     """Announce changed TranslationCache2 rows downstream (2026-07 change path).
 
@@ -647,7 +716,10 @@ def main() -> None:
         )
 
         save_cache2(sql_conn, translated)
-        trigger_cache_preload(translated)
+        sibling_results = propagate_to_siblings(sql_conn, translated)
+        if sibling_results:
+            log.info("sibling_propagation_done", count=len(sibling_results))
+        trigger_cache_preload(translated + sibling_results)
 
         mark_processed(sql_conn, [s.string_id for s in sources])
 

@@ -1,6 +1,5 @@
 set dotenv-load := true
 
-
 default:
     @just --list
 
@@ -16,12 +15,3 @@ migrate env: (_flyway env "migrate")
 validate env: (_flyway env "validate")
 repair env: (_flyway env "repair")
 baseline env: (_flyway env "baseline")
-
-# Create a new versioned migration in common/: just new add_orders_table
-new name:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    version=$(date +%Y%m%d%H%M%S)
-    file="migrations/common/V${version}__{{name}}.sql"
-    touch "$file"
-    echo "Created $file"

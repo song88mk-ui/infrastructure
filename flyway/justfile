@@ -1,0 +1,27 @@
+set dotenv-load := true
+
+
+default:
+    @just --list
+
+_flyway env +args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export FLYWAY_USER=$(aws ssm get-parameter --name "/{{env}}/flyway/user" --with-decryption --query 'Parameter.Value' --output text)
+    export FLYWAY_PASSWORD=$(aws ssm get-parameter --name "/{{env}}/flyway/password" --with-decryption --query 'Parameter.Value' --output text)
+    flyway -configFiles=conf/flyway-{{env}}.conf {{args}}
+
+info env: (_flyway env "info")
+migrate env: (_flyway env "migrate")
+validate env: (_flyway env "validate")
+repair env: (_flyway env "repair")
+baseline env: (_flyway env "baseline")
+
+# Create a new versioned migration in common/: just new add_orders_table
+new name:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    version=$(date +%Y%m%d%H%M%S)
+    file="migrations/common/V${version}__{{name}}.sql"
+    touch "$file"
+    echo "Created $file"

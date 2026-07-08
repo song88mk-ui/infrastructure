@@ -33,6 +33,7 @@ pkgs.mkShell {
     mongosh
     mongodb-tools
     sqlcmd
+    flyway
     (writeShellApplication {
       name = "fmt";
       text = ''

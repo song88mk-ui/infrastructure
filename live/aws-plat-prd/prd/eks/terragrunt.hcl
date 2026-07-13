@@ -47,16 +47,16 @@ inputs = {
   // We use separate autoscaling group per AZ so we can scale independently.
   eks_managed_node_groups = {
     for az, subnet_id in dependency.vpc.outputs.private_subnets : "ng-${az}" => {
-      instance_types = ["m5.large"]
+      instance_types = ["m5.xlarge"]
       subnet_ids     = [subnet_id]
       ami_type       = "AL2023_x86_64_STANDARD"
 
-      min_size = 2
+      min_size = 3
       max_size = 8
 
       # This value is ignored after the initial creation
       # https://github.com/bryantbiggs/eks-desired-size-hack
-      desired_size = 2
+      desired_size = 3
     }
   }
 

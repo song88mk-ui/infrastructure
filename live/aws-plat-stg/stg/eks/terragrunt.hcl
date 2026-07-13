@@ -52,7 +52,7 @@ inputs = {
       ami_type       = "AL2023_x86_64_STANDARD"
 
       min_size = 2
-      max_size = 5
+      max_size = 8
 
       # This value is ignored after the initial creation
       # https://github.com/bryantbiggs/eks-desired-size-hack

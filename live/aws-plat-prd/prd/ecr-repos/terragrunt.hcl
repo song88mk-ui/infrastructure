@@ -20,6 +20,7 @@ inputs = {
     "bg-heartbeat-listener"  = {}
     "bg-translation-service" = {}
     "bg-translation-job"     = {}
+    "bg-job-cleanup"         = {}
     # old oddsengine (old platform)
     "oe-rabbitmq-api"                = {}
     "oe-adapter-uof"                 = {}

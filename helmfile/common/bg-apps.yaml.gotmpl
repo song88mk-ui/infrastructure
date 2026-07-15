@@ -52,3 +52,10 @@ apps:
     valueFilesOverride:
     - ../../apps/bg-heartbeat-listener/{{ .Environment.Name }}.yaml
     - ../../argocd-image-updater/bet-genius-apps/bet-genius-apps-bg-heartbeat-listener/{{ .Environment.Name }}.yaml
+  - name: bet-genius-apps-bg-job-cleanup
+    chart: betgenius-app
+    appImageOverride: bg-job-cleanup
+    workflowId: "207735885"
+    valueFilesOverride:
+    - ../../apps/bg-job-cleanup/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/bet-genius-apps/bet-genius-apps-bg-job-cleanup/{{ .Environment.Name }}.yaml

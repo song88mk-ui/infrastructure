@@ -17,6 +17,12 @@ secrets:
       envVariable: CACHE_PRELOAD_API_KEY
 
 env:
-  CACHE_PRELOAD_URL: "https://bo-api.{{ .Environment.Name }}.song88.com/api/config/cachepreload"
+  # Platform.API's payload-carrying announce (InternalController route "v1/cachepreload",
+  # auth: x-api-key must equal Platform.API Custom:InternalAPIKey — the cache-preload-api-key
+  # SSM secret above must hold that value). In-cluster URL: the CronJob runs in the same
+  # "platform" namespace. The previous bo-api.{env} URL hit Backoffice's legacy purge-only
+  # endpoint, which 400s on the {cacheType, translations} payload update.py sends — every
+  # announce silently failed, so services only saw new translations after a restart.
+  CACHE_PRELOAD_URL: "http://platform-api.platform.svc:3000/v1/cachepreload"
   ENVIRONMENT: {{ .Environment.Name | upper }}
   DEEPL_API_URL: https://api.deepl.com

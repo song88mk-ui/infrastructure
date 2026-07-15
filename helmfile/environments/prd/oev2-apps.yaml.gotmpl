@@ -109,3 +109,30 @@ apps:
     chart: platform-app
     valueFiles:
       - {{ .Environment.Name }}-oge.yaml
+
+{{- range $brand := .Values.AdeytechBrands }}
+  - name: websocket-service-{{ $brand.name | lower }}
+    config: websocket-service
+    chart: platform-app
+    valueFiles:
+      - {{ $.Environment.Name }}-{{ $brand.name | lower }}.yaml
+    rawValuesContents:
+      fullnameOverride: websocket-service-{{ $brand.name | lower }}
+
+      secrets:
+        - name: websocket-service-{{ $brand.name | lower }}
+          data:
+          - key: rabbitmq-username
+            remoteKey: /{{ $.Environment.Name }}/apps/rabbitmq/username
+            envVariable: MessageBroker__Username
+          - key: rabbitmq-password
+            remoteKey: /{{ $.Environment.Name }}/apps/rabbitmq/password
+            envVariable: MessageBroker__Password
+
+      env:
+        MessageBroker__Queue: "q.sb.engine.websocket.{{ $brand.name }}"
+        MessageBroker__Consumer: "OE.Engine.WebSocket.{{ $brand.name }}"
+        MessageBroker__RoutingKey: "r.oe.sb.engine.onoddschange|r.oe.sb.engine.onbetstopfixture|r.oe.sb.engine.onbetstopglobal|r.bet.betstatus.{{ $brand.name | lower }}|r.bet.cashoutchange.{{ $brand.name | lower }}|r.wallet.{{ $brand.name | lower }}|r.oe.sb.engine.onvisitfavorites.{{ $brand.name | lower }}|r.oe.sb.engine.onvisitboostedfixtures.{{ $brand.name | lower }}|r.oe.sb.engine.onmarketsortorderchange.{{ $brand.name | lower }}"
+        Custom__ClientId: "{{ $brand.client_id }}"
+        Custom__ClientCode: "{{ $brand.name }}"
+{{- end }}

@@ -83,9 +83,11 @@ loki:
     chunk_encoding: snappy
 
   pattern_ingester:
-    enabled: true
+    enabled: false
 
   limits_config:
+    ingestion_burst_size_mb: 100
+    ingestion_rate_mb: 60
     max_line_size: 512kb
     allow_structured_metadata: true
     volume_enabled: true

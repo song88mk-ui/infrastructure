@@ -88,7 +88,8 @@ loki:
   limits_config:
     ingestion_burst_size_mb: 100
     ingestion_rate_mb: 60
-    max_line_size: 512kb
+    max_line_size: 1MB
+    max_line_size_truncate: true
     allow_structured_metadata: true
     volume_enabled: true
     retention_period: 672h # 28 days retention

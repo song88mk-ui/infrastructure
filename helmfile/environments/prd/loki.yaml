@@ -1,0 +1,13 @@
+
+write:
+  persistence:
+    size: 20Gi
+
+read:
+  persistence:
+    size: 20Gi
+
+backend:
+  persistence:
+    size: 20Gi
+

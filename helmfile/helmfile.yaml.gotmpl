@@ -89,6 +89,7 @@ releases:
     version: 6.49.0
     values:
       - common/loki.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/loki.yaml
 
   - name: tempo
     namespace: monitoring

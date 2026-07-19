@@ -118,6 +118,10 @@ apps:
     rawValuesContents:
       fullnameOverride: websocket-service-{{ $brand.name | lower }}
 
+      # NOTE: Excessive logging. Can be removed once the logs are cleared.
+      podAnnotations:
+        fluentbit.io/exclude: "true"
+
       secrets:
         - name: websocket-service-{{ $brand.name | lower }}
           data:

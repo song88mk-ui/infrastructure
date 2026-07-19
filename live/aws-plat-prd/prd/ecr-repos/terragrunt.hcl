@@ -12,13 +12,13 @@ locals {
 
 inputs = {
   repositories = {
-    "bg-rabbitmq-api"        = {}
-    "bg-receiver-service"    = {}
-    "bg-feed-receiver-api"   = {}
-    "bg-engine-sportsbook"   = {}
-    "bg-feedlogger-service"  = {}
-    "bg-heartbeat-listener"  = {}
-    "bg-job-cleanup"         = {}
+    "bg-rabbitmq-api"       = {}
+    "bg-receiver-service"   = {}
+    "bg-feed-receiver-api"  = {}
+    "bg-engine-sportsbook"  = {}
+    "bg-feedlogger-service" = {}
+    "bg-heartbeat-listener" = {}
+    "bg-job-cleanup"        = {}
     # oddsengine-2
     "oev2-adapter-service"     = {}
     "oev2-sportsbook-service"  = {}

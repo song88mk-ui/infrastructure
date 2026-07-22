@@ -15,6 +15,16 @@ password:
 strategy:
   type: Recreate
 
+resources:
+  requests:
+    memory: 6Gi
+  limits:
+    memory: 6Gi
+
+extraEnv:
+  - name: JAVA_TOOL_OPTIONS
+    value: "-Xmx4g -Xms4g"
+
 ingress:
   enabled: true
   className: alb

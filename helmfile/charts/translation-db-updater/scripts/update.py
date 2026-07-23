@@ -153,12 +153,20 @@ def check_deepl_available() -> bool:
 
 
 def reset_for_missing_languages(conn) -> int:
-    """Re-open processed rows that lack a translation for a configured language
-    (e.g. after a new language is added to TARGET_LANGUAGES)."""
+    """Re-open PARTIALLY COVERED processed rows: translated for at least one language
+    but missing another configured one (e.g. after a new language is added to
+    TARGET_LANGUAGES). Rows with NO translation at all are deliberately left alone:
+    PROCESSED = 1 with all-empty targets is the "not machine-translated" state — the
+    seeder marks MaTeP: placeholder-template rows that way (GM-528 player-market
+    interpolation, "1st Innings {player} to Reach 50 Runs Yes/No") so DeepL never
+    touches the {player} marker; they are translated manually via backoffice."""
     if not TARGET_LANGUAGES:
         return 0
     empty_checks = " OR ".join(
         f"{TARGET_COLUMN_MAP[lang]} = N''" for lang in TARGET_LANGUAGES
+    )
+    any_filled = " OR ".join(
+        f"{column} <> N''" for column in TARGET_COLUMN_MAP.values()
     )
     cursor = conn.cursor()
     cursor.execute(
@@ -168,6 +176,7 @@ def reset_for_missing_languages(conn) -> int:
         WHERE  PROCESSED = 1
           AND  SOURCE_LANGUAGE = ?
           AND  ({empty_checks})
+          AND  ({any_filled})
         """,
         SOURCE_LANGUAGE_ID,
     )

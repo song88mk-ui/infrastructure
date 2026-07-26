@@ -7,17 +7,27 @@ prometheus:
   prometheusSpec:
     replicas: 1
     scrapeInterval: 30s
+    secrets:
+      - rabbitmq-basic-auth
     additionalScrapeConfigs:
       - job_name: "node-exporter-mongodb"
-        scrape_interval: 5s
+        scrape_interval: 30s
         scheme: http
         static_configs:
           - targets: ['10.59.100.160:9092']
       - job_name: "mongodb-exporter"
-        scrape_interval: 5s
+        scrape_interval: 30s
         scheme: http
         static_configs:
           - targets: ['10.59.100.160:9216']
+      - job_name: "rabbitmq"
+        scrape_interval: 60s
+        scheme: https
+        basic_auth:
+          username_file: /etc/prometheus/secrets/rabbitmq-basic-auth/username
+          password_file: /etc/prometheus/secrets/rabbitmq-basic-auth/password
+        static_configs:
+          - targets: ['b-bfc99daf-fb92-4742-af20-8bcf6bd1f118.mq.ap-east-1.on.aws:16001']
 
 grafana:
   ingress:
@@ -33,7 +43,7 @@ grafana:
       client_id: "ref+awsssm://prd/song88/google/client-id?region=ap-east-1"
       client_secret: "ref+awsssm://prd/song88/google/client-secret?region=ap-east-1"
       scopes: openid email profile
-      role_attribute_path: contains('["ksideris@song88.com","erivera@song88.com","michel@song88.com"]', email) && 'Admin' || 'Editor'
+      role_attribute_path: contains('["ksideris@song88.com","michel@song88.com"]', email) && 'Admin' || 'Editor'
       role_attribute_strict: true
       skip_org_role_sync: true
       allowed_domains: song88.com

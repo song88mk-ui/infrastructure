@@ -180,6 +180,13 @@ module "security_group" {
       protocol    = "tcp"
       description = "RabbitMQ AMQP"
       cidr_blocks = var.vpc_cidr_block
+    },
+    {
+      from_port   = 16001
+      to_port     = 16003
+      protocol    = "tcp"
+      description = "RabbitMQ Prometheus"
+      cidr_blocks = var.vpc_cidr_block
     }
   ]
 

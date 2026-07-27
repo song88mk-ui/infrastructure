@@ -19,6 +19,12 @@ inputs = {
 
   records = [
     {
+      name    = "results.song88.com"
+      type    = "A"
+      content = "20.157.219.6"
+      proxied = true
+    },
+    {
       name    = "song88.com"
       type    = "A"
       content = "20.157.219.6"

@@ -39,7 +39,7 @@ inputs = {
 
   routes = [
     {
-      pattern = "song88.com/api/sports/*"
+      pattern = "results.song88.com/api/sports/*"
       zone_id = local.env_vars.locals.zone_id
     },
   ]

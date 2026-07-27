@@ -22,7 +22,7 @@ inputs = {
   main_module  = "worker.js"
 
   compatibility_date  = "2026-07-01"
-  workers_dev_enabled = true # TODO: Remove after testing is done
+  workers_dev_enabled = false
 
   bindings = [
     {
@@ -39,7 +39,7 @@ inputs = {
 
   routes = [
     {
-      pattern = "test-api.song88.com/api/sports/*" # TODO: Update with the correct domain. 
+      pattern = "song88.com/api/sports/*"
       zone_id = local.env_vars.locals.zone_id
     },
   ]

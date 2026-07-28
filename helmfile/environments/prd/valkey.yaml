@@ -1,0 +1,4 @@
+dataStorage:
+  enabled: true
+  requestedSize: 2Gi
+  className: "gp3"

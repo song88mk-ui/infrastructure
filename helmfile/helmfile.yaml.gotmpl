@@ -42,6 +42,8 @@ repositories:
   url: https://pmint93.github.io/helm-charts
 - name: opencost
   url: https://opencost.github.io/opencost-helm-chart
+- name: valkey
+  url: https://valkey.io/valkey-helm/
 
 helmDefaults:
   verify: false
@@ -327,6 +329,20 @@ releases:
     version: 1.0.0
     values:
       - common/translation-db-updater.yaml.gotmpl
+
+  - name: api-sports-caching-proxy
+    namespace: platform
+    chart: charts/api-sports-caching-proxy
+    version: 1.0.0
+    values:
+      - environments/{{ .Environment.Name }}/api-sports-caching-proxy.yaml
+
+  - name: valkey
+    namespace: valkey
+    chart: valkey/valkey
+    version: 0.11.0
+    values:
+      - environments/{{ .Environment.Name }}/valkey.yaml
 
   - name: metabase-slack-messages
     namespace: platform

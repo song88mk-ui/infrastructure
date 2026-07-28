@@ -1,0 +1,8 @@
+{
+  "name": "api-sports-caching-proxy",
+  "version": "1.0.0",
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": { "start": "node index.js" },
+  "dependencies": { "ioredis": "5.11.1" }
+}

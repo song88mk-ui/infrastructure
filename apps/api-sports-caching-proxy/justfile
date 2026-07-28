@@ -1,0 +1,33 @@
+aws_account_id := "525375333516"
+region         := "ap-east-1"
+repo           := "api-sports-caching-proxy"
+
+# Derived values
+version  := `node -p "require('./package.json').version"`
+registry := aws_account_id + ".dkr.ecr." + region + ".amazonaws.com"
+image    := registry + "/" + repo
+
+# Show available commands
+default:
+    @just --list
+
+# Print the version resolved from package.json
+version:
+    @echo {{version}}
+
+# Build the image, tagging with both the package.json version and `latest`
+build:
+    docker build \
+        --tag {{image}}:{{version}} \
+        --tag {{image}}:latest \
+        .
+
+# Authenticate the local Docker daemon against ECR
+login:
+    aws ecr get-login-password --region {{region}} \
+        | docker login --username AWS --password-stdin {{registry}}
+
+# Build + authenticate + push (both tags)
+push: build login
+    docker push {{image}}:{{version}}
+    docker push {{image}}:latest

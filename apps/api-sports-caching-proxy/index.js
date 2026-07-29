@@ -16,6 +16,8 @@ const UPSTREAM = {
   'formula-1': 'https://v1.formula-1.api-sports.io/',
 };
 
+const BLOCKED = new Set(['status']);
+
 const TTL_GAMES  = 60;
 const TTL_STATIC = 6 * 60 * 60;
 const STALE_KEEP = 7 * 24 * 60 * 60;
@@ -91,6 +93,9 @@ const server = http.createServer(async (req, res) => {
   const upstreamBase = UPSTREAM[sport];
   if (!upstreamBase || !endpoint) {
     return sendJson(res, { errors: { proxy: 'unknown sport or endpoint' } }, 404);
+  }
+  if (BLOCKED.has(parts[3])) {
+    return sendJson(res, { errors: { proxy: 'endpoint not available' } }, 404);
   }
 
   url.searchParams.sort();

@@ -15,3 +15,33 @@ migrate env: (_flyway env "migrate")
 validate env: (_flyway env "validate")
 repair env: (_flyway env "repair")
 baseline env: (_flyway env "baseline")
+
+# Run an individual seed script that is NOT tracked by Flyway
+seed env script:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    conf="conf/flyway-{{env}}.conf"
+    [[ -f "$conf" ]]       || { echo "Config file not found: $conf" >&2; exit 1; }
+    [[ -f "{{script}}" ]]  || { echo "Seed script not found: {{script}}" >&2; exit 1; }
+
+    user=$(aws ssm get-parameter --name "/{{env}}/flyway/user" --with-decryption --query 'Parameter.Value' --output text)
+    password=$(aws ssm get-parameter --name "/{{env}}/flyway/password" --with-decryption --query 'Parameter.Value' --output text)
+
+    # Derive server/port/database from the Flyway JDBC URL in the conf file
+    # Expected form: jdbc:sqlserver://host[:port];databaseName=db;...
+    url=$(grep -E '^flyway\.url=' "$conf" | head -n1 | cut -d= -f2-)
+    [[ -n "$url" ]] || { echo "Could not find flyway.url in $conf" >&2; exit 1; }
+
+    tmp=${url#jdbc:sqlserver://}
+    hostport=${tmp%%;*}
+    host=${hostport%%:*}
+    if [[ "$hostport" == *:* ]]; then port=${hostport##*:}; else port=1433; fi
+
+    db_part=${url#*databaseName=}
+    database=${db_part%%;*}
+    [[ "$database" != "$url" ]] || { echo "Could not parse databaseName from flyway.url" >&2; exit 1; }
+
+    echo "Running {{script}} against $database on $host:$port ..."
+    export SQLCMDPASSWORD="$password"   # avoids exposing the password in the process list
+    sqlcmd -S "$host,$port" -d "$database" -U "$user" -i "{{script}}" -b

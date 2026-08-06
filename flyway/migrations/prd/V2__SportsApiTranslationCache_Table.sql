@@ -1,0 +1,1 @@
+stg/V2__SportsApiTranslationCache_Table.sql

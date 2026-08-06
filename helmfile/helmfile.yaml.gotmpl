@@ -2,6 +2,10 @@
 
 ---
 environments:
+  dev:
+    kubeContext: song88-stg-cluster
+    values:
+    - environments/dev/values.yaml
   stg:
     kubeContext: song88-stg-cluster
     values:
@@ -199,6 +203,14 @@ releases:
     needs:
       - argocd
 
+  - name: bg-apps-dev
+    namespace: dev
+    chart: charts/argocd-apps
+    version: 1.0.0
+    values:
+      - common/bg-apps.yaml.gotmpl
+      - environments/dev/bg-apps.yaml.gotmpl
+
   - name: platform-apps
     namespace: argocd
     chart: charts/argocd-apps
@@ -341,6 +353,13 @@ releases:
     version: 1.0.0
     values:
       - environments/{{ .Environment.Name }}/api-sports-caching-proxy.yaml
+
+  - name: fanout-proxy
+    namespace: platform
+    chart: charts/fanout-proxy
+    version: 1.0.0
+    values:
+      - environments/{{ .Environment.Name }}/fanout-proxy.yaml
 
   - name: valkey
     namespace: valkey

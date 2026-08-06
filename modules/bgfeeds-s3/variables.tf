@@ -31,3 +31,13 @@ variable "enable_bucket_versioning" {
 variable "tags" {
   type = map(string)
 }
+
+variable "namespace" {
+  type    = string
+  default = "bet-genius-apps"
+}
+
+variable "service_account" {
+  type    = string
+  default = "bg-feedlogger-service-sa"
+}

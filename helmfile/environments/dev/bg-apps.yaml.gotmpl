@@ -1,0 +1,50 @@
+# On dev we deploy every image that is built from a tag with the -dev suffix.
+---
+tagRegex: ".*-dev"
+namePrefix: "dev"
+namespace: "dev"
+project: dev
+
+apps:
+  - name: bg-engine-sportsbook
+    chart: betgenius-app
+    appImageOverride: bg-engine-sportsbook
+    valueFilesOverride:
+    - ../../apps/bg-engine-sportsbook/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/{{ .Environment.Name }}/bg-engine-sportsbook/{{ .Environment.Name }}.yaml
+  - name: bg-feed-receiver-api
+    chart: betgenius-app
+    appImageOverride: bg-feed-receiver-api
+    valueFilesOverride:
+    - ../../apps/bg-feed-receiver-api/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/{{ .Environment.Name }}/bg-feed-receiver-api/{{ .Environment.Name }}.yaml
+  - name: bg-rabbitmq-api
+    chart: betgenius-app
+    appImageOverride: bg-rabbitmq-api
+    valueFilesOverride:
+    - ../../apps/bg-rabbitmq-api/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/{{ .Environment.Name }}/bg-rabbitmq-api/{{ .Environment.Name }}.yaml
+  - name: bg-receiver-service
+    chart: betgenius-app
+    appImageOverride: bg-receiver-service
+    valueFilesOverride:
+    - ../../apps/bg-receiver-service/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/{{ .Environment.Name }}/bg-receiver-service/{{ .Environment.Name }}.yaml
+  - name: bg-feedlogger-service
+    chart: betgenius-app
+    appImageOverride: bg-feedlogger-service
+    valueFilesOverride:
+    - ../../apps/bg-feedlogger-service/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/{{ .Environment.Name }}/bg-feedlogger-service/{{ .Environment.Name }}.yaml
+  - name: bg-heartbeat-listener
+    chart: betgenius-app
+    appImageOverride: bg-heartbeat-listener
+    valueFilesOverride:
+    - ../../apps/bg-heartbeat-listener/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/{{ .Environment.Name }}/bg-heartbeat-listener/{{ .Environment.Name }}.yaml
+  - name: bg-job-cleanup
+    chart: betgenius-app
+    appImageOverride: bg-job-cleanup
+    valueFilesOverride:
+    - ../../apps/bg-job-cleanup/{{ .Environment.Name }}.yaml
+    - ../../argocd-image-updater/{{ .Environment.Name }}/bg-job-cleanup/{{ .Environment.Name }}.yaml

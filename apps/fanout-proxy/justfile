@@ -1,0 +1,41 @@
+region := "ap-south-1"
+repo   := "fanout-proxy"
+tag    := "0.1.2"
+
+# Show available recipes by default
+default:
+    @just --list
+
+# Authenticate Docker to your ECR registry
+login:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    account=$(aws sts get-caller-identity --query Account --output text)
+    registry="${account}.dkr.ecr.{{region}}.amazonaws.com"
+    aws ecr get-login-password --region {{region}} \
+      | docker login --username AWS --password-stdin "${registry}"
+
+# Build the image for the cluster architecture (EKS nodes are usually amd64)
+build:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    account=$(aws sts get-caller-identity --query Account --output text)
+    image="${account}.dkr.ecr.{{region}}.amazonaws.com/{{repo}}:{{tag}}"
+    docker build --platform linux/amd64 -t "${image}" .
+    echo "built ${image}"
+
+# Login, ensure the repo, build, then push to ECR
+push: login build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    account=$(aws sts get-caller-identity --query Account --output text)
+    image="${account}.dkr.ecr.{{region}}.amazonaws.com/{{repo}}:{{tag}}"
+    docker push "${image}"
+    echo "pushed ${image}"
+
+# Print the fully-qualified image reference (handy for your k8s manifest)
+image-uri:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    account=$(aws sts get-caller-identity --query Account --output text)
+    echo "${account}.dkr.ecr.{{region}}.amazonaws.com/{{repo}}:{{tag}}"

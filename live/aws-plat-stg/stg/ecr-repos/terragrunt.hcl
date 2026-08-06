@@ -93,6 +93,10 @@ inputs = {
     "backoffice-websocket-api"     = {}
     # internal documentation
     "corp-apps-internal-docs" = {}
+    # API-SPORTS
+    "api-sports-caching-proxy" = {}
+    # Fanout proxy
+    "fanout-proxy" = {}
   }
 }
 

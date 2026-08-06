@@ -37,8 +37,8 @@ module "bgfeeds_role" {
   name = var.iam_role_name
 
   association_defaults = {
-    namespace       = "bet-genius-apps"
-    service_account = "bg-feedlogger-service-sa"
+    namespace       = var.namespace
+    service_account = var.service_account
   }
 
   additional_policy_arns = {

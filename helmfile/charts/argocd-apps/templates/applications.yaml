@@ -4,10 +4,7 @@ kind: Application
 apiVersion: argoproj.io/v1alpha1
 metadata:
   name: {{ $app.name }}
-  {{- if .appImageOverride }}
-  {{- else }}
   namespace: {{ $.Values.namespace }}
-  {{- end }}
   labels:
     env: {{ $.Values.environment }}
   annotations:

@@ -1,0 +1,26 @@
+#
+# The ingress is used to capture the feed from BetGenius and forward it
+# to both the STG and DEV bg-feed-receiver-api services.
+#
+
+ingress:
+  enabled: true
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: stg-eks-alb
+    alb.ingress.kubernetes.io/group.name: apps
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-south-1:172065883315:certificate/511ed09e-124c-4f7d-8974-561b1907b29e
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-Res-2021-06
+
+  hosts:
+  - host: bg-feed-receiver-api.stg.song88.com
+    paths:
+      - path: /
+        pathType: Prefix
+
+env:
+  PRIMARY_URL: "http://bg-feed-receiver-api.bet-genius-apps.svc.cluster.local:3000"
+  MIRROR_URL: "http://bg-feed-receiver-api.dev.svc.cluster.local:3000"
+

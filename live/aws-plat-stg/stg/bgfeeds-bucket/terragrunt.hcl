@@ -25,5 +25,7 @@ inputs = {
   iam_role_name   = "${local.project_prefix}-${local.environment}-bgfeeds"
   iam_policy_name = "${local.project_prefix}-${local.environment}-bgfeeds"
 
+  namespace = "dev"
+
   eks_cluster_name = dependency.eks.outputs.cluster_name
 }

@@ -161,5 +161,11 @@ inputs = {
       remote_network_key = "prd"
       access_groups      = ["developers", "devops", "noc"]
     }
+    dev_databases = {
+      name               = "k8s-dev-database-57db2f90d4-4ab1951adb5d3794.elb.ap-south-1.amazonaws.com"
+      address            = "k8s-dev-database-57db2f90d4-4ab1951adb5d3794.elb.ap-south-1.amazonaws.com"
+      remote_network_key = "stg"
+      access_groups      = ["developers", "devops", "noc"]
+    }
   }
 }

@@ -2,3 +2,10 @@ dataStorage:
   enabled: true
   requestedSize: 2Gi
   className: "gp3"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 1.5Gi
+  limit:
+    memory: 1.5Gi

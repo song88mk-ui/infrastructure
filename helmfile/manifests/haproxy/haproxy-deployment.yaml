@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edge-haproxy
+  labels:
+    app: edge-haproxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: edge-haproxy
+  template:
+    metadata:
+      labels:
+        app: edge-haproxy
+    spec:
+      containers:
+        - name: haproxy
+          image: haproxy:3.4
+          ports:
+            - containerPort: 27017
+            - containerPort: 1433
+            - containerPort: 5672
+            - containerPort: 15672
+          volumeMounts:
+            - name: config
+              mountPath: /usr/local/etc/haproxy/haproxy.cfg
+              subPath: haproxy.cfg
+          readinessProbe:
+            tcpSocket: { port: 5672 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits:   { cpu: 500m, memory: 256Mi }
+      volumes:
+        - name: config
+          configMap:
+            name: edge-haproxy-config   # kustomize appends the hash suffix

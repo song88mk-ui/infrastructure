@@ -44,6 +44,8 @@ repositories:
   url: https://opencost.github.io/opencost-helm-chart
 - name: valkey
   url: https://valkey.io/valkey-helm/
+- name: jetstack
+  url: https://charts.jetstack.io
 
 helmDefaults:
   verify: false
@@ -273,7 +275,7 @@ releases:
       - environments/{{ .Environment.Name }}/postgresql.yaml.gotmpl
 
   - name: mssql
-    namespace: bet-genius-apps
+    namespace: dev
     chart: simcube/mssqlserver-2022
     version: 1.2.3
     values:
@@ -283,17 +285,20 @@ releases:
       - persistence:
           enabled: true
           storageClass: "gp3"
-          dataSize: 10Gi
+          dataSize: 20Gi
       - resources:
           requests:
-            cpu: 10m
-            memory: 2Gi # Minimum requirement
-      - service:
-          type: NodePort
-          nodePort: 31433
+            cpu: 200m
+            memory: 3Gi
+          limits:
+            memory: 3Gi
 
-  # NOTE: Rabbitmq is installed following: https://www.rabbitmq.com/kubernetes/operator/quickstart-operator
-  # TODO: It should be moved to AWS when ready
+  - name: mongodb
+    namespace: dev
+    chart: bitnami/mongodb
+    version: 19.1.23
+    values:
+      - common/mongodb.yaml
 
   - name: db-proxy
     namespace: bet-genius-apps
@@ -356,3 +361,10 @@ releases:
     values:
       - common/opencost.yaml.gotmpl
       - environments/{{ .Environment.Name }}/opencost.yaml.gotmpl
+
+  - name: cert-manager
+    namespace: cert-manager
+    chart: jetstack/cert-manager
+    version: 1.21.1
+    values:
+      - common/cert-manager.yaml.gotmpl

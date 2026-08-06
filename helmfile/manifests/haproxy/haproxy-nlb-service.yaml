@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-nlb
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
+    service.beta.kubernetes.io/load-balancer-source-ranges: 10.0.0.0/8
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: "TCP"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "1433"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: service.k8s.aws/nlb
+  selector:
+    app: edge-haproxy
+  ports:
+    - { name: mongodb,     port: 27017, targetPort: 27017, protocol: TCP }
+    - { name: mssql,       port: 1433,  targetPort: 1433,  protocol: TCP }
+    - { name: amqp,        port: 5672,  targetPort: 5672,  protocol: TCP }
+    - { name: rmq-mgmt,    port: 15672, targetPort: 15672, protocol: TCP }

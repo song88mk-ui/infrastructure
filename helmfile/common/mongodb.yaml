@@ -11,11 +11,11 @@ auth:
   enabled: false
 
 persistence:
-  size: 30Gi
+  size: 40Gi
 
 resources:
   requests:
-    cpu: 2
+    cpu: 500m
     memory: 2Gi
   limits:
     memory: 2Gi

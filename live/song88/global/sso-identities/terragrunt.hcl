@@ -145,6 +145,7 @@ inputs = {
     email       = "kbrillante@song88.com"
 
     groups = [
+      "devops",
       "developers",
       "eks-power-users",
     ]

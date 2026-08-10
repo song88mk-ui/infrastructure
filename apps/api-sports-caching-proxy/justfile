@@ -31,3 +31,7 @@ login:
 push: build login
     docker push {{image}}:{{version}}
     docker push {{image}}:latest
+
+# Start the local redis server
+run-redis:
+    docker compose up

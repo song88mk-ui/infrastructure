@@ -12,7 +12,7 @@ COPY package.json pnpm-lock.yaml ./
 # --prod skips devDependencies.
 RUN pnpm install --frozen-lockfile --prod
 
-COPY index.js ./
+COPY index.js zh.json ./
 
 USER node
 CMD ["node", "index.js"]

@@ -1,15 +1,6 @@
-image:
-  tag: "1.0.1"
-
-secrets:
-  - name: api-sports
-    data:
-    - key: api-sports-key
-      remoteKey: /prd/apps/api-sports-caching-proxy/key
-      envVariable: APISPORTS_KEY 
-      
 env:
-  REDIS_URL: "redis://valkey.valkey.svc.cluster.local:6379"
+  DEEPL_GLOSSARY_ID: "9b6bd63c-7dc5-4037-a8c1-19ccbcb3ae83"
+  MSSQL_HOST: "prd-song88-mssql-server.cdqkiuumgexn.ap-east-1.rds.amazonaws.com"
 
 ingresses:
   - name: gamsnap

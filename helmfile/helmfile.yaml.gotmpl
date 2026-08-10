@@ -352,6 +352,7 @@ releases:
     chart: charts/api-sports-caching-proxy
     version: 1.0.0
     values:
+      - common/api-sports-caching-proxy.yaml.gotmpl
       - environments/{{ .Environment.Name }}/api-sports-caching-proxy.yaml
 
   - name: fanout-proxy
@@ -366,6 +367,7 @@ releases:
     chart: valkey/valkey
     version: 0.11.0
     values:
+      - common/valkey.yaml.gotmpl
       - environments/{{ .Environment.Name }}/valkey.yaml
 
   - name: metabase-slack-messages

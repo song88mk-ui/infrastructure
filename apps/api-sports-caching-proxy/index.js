@@ -57,10 +57,10 @@ const TABLE       = process.env.MSSQL_TABLE || 'dbo.SportsApiTranslationCache';
 const TARGET_COL  = process.env.MSSQL_TARGET_COL || 'target_text_zh';
 const RELOAD_MS   = Number(process.env.RELOAD_MS || 5 * 60 * 1000);
 const FLUSH_MS    = Number(process.env.FLUSH_MS || 15 * 60 * 1000);
-const DEEPL_KEY   = process.env.DEEPL_KEY || '';
+const DEEPL_API_KEY   = process.env.DEEPL_API_KEY || '';
 const DEEPL_GLOSSARY_ID = process.env.DEEPL_GLOSSARY_ID || '';
 const DEEPL_HOST  = process.env.DEEPL_HOST ||
-  (DEEPL_KEY.endsWith(':fx') ? 'https://api-free.deepl.com' : 'https://api.deepl.com');
+  (DEEPL_API_KEY.endsWith(':fx') ? 'https://api-free.deepl.com' : 'https://api.deepl.com');
 
 const dbConfig = {
   server:   process.env.MSSQL_HOST || 'localhost',
@@ -122,7 +122,7 @@ async function deeplBatch(texts) {
   for (const t of texts) body.append('text', t);
   const r = await fetch(`${DEEPL_HOST}/v2/translate`, {
     method: 'POST',
-    headers: { Authorization: `DeepL-Auth-Key ${DEEPL_KEY}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: { Authorization: `DeepL-Auth-Key ${DEEPL_API_KEY}`, 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
   });
   if (!r.ok) throw new Error(`DeepL ${r.status}: ${await r.text()}`);
@@ -131,7 +131,7 @@ async function deeplBatch(texts) {
 
 let flushing = false;
 async function flushMisses() {
-  if (flushing || !DEEPL_KEY || !pool || misses.size === 0) return;
+  if (flushing || !DEEPL_API_KEY || !pool || misses.size === 0) return;
   flushing = true;
   const names = [...misses];
   misses.clear();
@@ -286,10 +286,10 @@ loadGlossary()
 if (RELOAD_MS > 0) {
   setInterval(() => loadGlossary().catch((e) => console.warn('glossary reload failed:', e.message)), RELOAD_MS);
 }
-if (DEEPL_KEY) {
+if (DEEPL_API_KEY) {
   setInterval(flushMisses, FLUSH_MS);
 } else {
-  console.log('deepl auto-fill off (no DEEPL_KEY) — missing names stay English');
+  console.log('deepl auto-fill off (no DEEPL_API_KEY) — missing names stay English');
 }
 
 // Graceful shutdown so k8s rolling updates don't drop in-flight requests

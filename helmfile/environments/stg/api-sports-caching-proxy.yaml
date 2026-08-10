@@ -1,0 +1,63 @@
+replicaCount: 1
+
+autoscaling:
+  enabled: false
+
+env:
+  DEEPL_GLOSSARY_ID: "48bc6faa-1987-40ea-89d9-f506994666be"
+  MSSQL_HOST: "stg-song88-mssql-server.cz8wmg0s28pd.ap-south-1.rds.amazonaws.com"
+
+ingresses:
+  - name: gamsnap
+    className: "alb"
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: stg-eks-gamsnap-alb
+      alb.ingress.kubernetes.io/group.name: gamsnap-apps
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/ssl-redirect: '443'
+      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-south-1:172065883315:certificate/7875f00a-660a-4c03-88c9-b6a6bc57c192
+      alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+      alb.ingress.kubernetes.io/healthcheck-path: /healthz
+
+    hosts:
+    - host: results.stg.jmj19876.com
+      paths:
+        - path: /api/sports/
+          pathType: Prefix
+
+  - name: og
+    className: "alb"
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: stg-eks-og-alb
+      alb.ingress.kubernetes.io/group.name: og-apps
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/ssl-redirect: '443'
+      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-south-1:172065883315:certificate/96ac9e68-145f-478f-9c01-16d9f83bf652
+      alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+      alb.ingress.kubernetes.io/healthcheck-path: /healthz
+
+    hosts:
+    - host: results.stg.jmj22222.com
+      paths:
+        - path: /api/sports/
+          pathType: Prefix
+
+  - name: song88
+    className: "alb"
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: stg-eks-alb
+      alb.ingress.kubernetes.io/group.name: apps
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/ssl-redirect: '443'
+      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-south-1:172065883315:certificate/511ed09e-124c-4f7d-8974-561b1907b29e
+      alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-Res-2021-06
+      alb.ingress.kubernetes.io/healthcheck-path: /healthz
+
+    hosts:
+    - host: results.stg.song88.com
+      paths:
+        - path: /api/sports/
+          pathType: Prefix

@@ -1,5 +1,5 @@
-aws_account_id := "525375333516"
-region         := "ap-east-1"
+aws_account_id := `aws sts get-caller-identity --query Account --output text`
+region         := `echo "$AWS_REGION"`
 repo           := "api-sports-caching-proxy"
 
 # Derived values
@@ -15,12 +15,9 @@ default:
 version:
     @echo {{version}}
 
-# Build the image, tagging with both the package.json version and `latest`
+# Build the image, tagging with the package.json version
 build:
-    docker build \
-        --tag {{image}}:{{version}} \
-        --tag {{image}}:latest \
-        .
+    docker build --tag {{image}}:{{version}} .
 
 # Authenticate the local Docker daemon against ECR
 login:
@@ -30,7 +27,6 @@ login:
 # Build + authenticate + push (both tags)
 push: build login
     docker push {{image}}:{{version}}
-    docker push {{image}}:latest
 
 # Start the local redis server
 run-redis:

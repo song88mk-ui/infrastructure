@@ -1,0 +1,27 @@
+image:
+  repository: {{ .Values.accountID }}.dkr.ecr.{{ .Values.awsRegion }}.amazonaws.com/api-sports-caching-proxy
+  tag: "1.1.1"
+
+env:
+  REDIS_URL: "redis://valkey.valkey.svc.cluster.local:6379"
+  DEEPL_HOST: "https://api.deepl.com"
+
+secrets:
+  - name: mssql
+    data:
+    - key: mssql-username
+      remoteKey: /{{ .Environment.Name }}/api-sports/mssql/username
+      envVariable: MSSQL_USER
+    - key: mssql-password
+      remoteKey: /{{ .Environment.Name }}/api-sports/mssql/password
+      envVariable: MSSQL_PASSWORD
+  - name: deepl
+    data:
+    - key: deepl-api-key
+      remoteKey: /{{ .Environment.Name }}/translation-db-updater/deepl-api-key
+      envVariable: DEEPL_API_KEY
+  - name: api-sports
+    data:
+    - key: api-sports-key
+      remoteKey: /{{ .Environment.Name }}/apps/api-sports-caching-proxy/key
+      envVariable: APISPORTS_KEY 

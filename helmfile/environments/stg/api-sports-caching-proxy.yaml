@@ -25,6 +25,10 @@ ingresses:
       paths:
         - path: /api/sports/
           pathType: Prefix
+        - path: /zh/api/sports/
+          pathType: Prefix
+        - path: /zh.json
+          pathType: Exact
 
   - name: og
     className: "alb"
@@ -43,6 +47,10 @@ ingresses:
       paths:
         - path: /api/sports/
           pathType: Prefix
+        - path: /zh/api/sports/
+          pathType: Prefix
+        - path: /zh.json
+          pathType: Exact
 
   - name: song88
     className: "alb"
@@ -61,3 +69,7 @@ ingresses:
       paths:
         - path: /api/sports/
           pathType: Prefix
+        - path: /zh/api/sports/
+          pathType: Prefix
+        - path: /zh.json
+          pathType: Exact

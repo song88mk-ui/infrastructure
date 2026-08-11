@@ -88,7 +88,7 @@ releases:
   - name: metrics-server
     namespace: kube-system
     chart: metrics-server/metrics-server
-    version: 3.13.0
+    version: 3.13.1
     values: []
 
   - name: loki
@@ -102,7 +102,7 @@ releases:
   - name: tempo
     namespace: monitoring
     chart: grafana/tempo
-    version: 1.24.1
+    version: 1.24.4
     values:
       - common/tempo.yaml.gotmpl
 
@@ -119,7 +119,7 @@ releases:
     namespace: argocd
     createNamespace: true
     chart: argo/argo-cd
-    version: 9.5.11
+    version: 9.7.1
     values:
       - common/argocd.yaml.gotmpl
       - common/argocd-notifications.yaml
@@ -135,7 +135,7 @@ releases:
   - name: fluent-bit
     namespace: kube-system
     chart: fluent/fluent-bit
-    version: 0.54.0
+    version: 0.57.9
     values:
       - common/fluent-bit.yaml.gotmpl
     needs:

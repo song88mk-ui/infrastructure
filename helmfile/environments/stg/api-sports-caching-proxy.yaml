@@ -4,7 +4,6 @@ autoscaling:
   enabled: false
 
 env:
-  DEEPL_GLOSSARY_ID: "f3c6b4bd-c60e-42ca-a850-79c691aa6cbd"
   MSSQL_HOST: "stg-song88-mssql-server.cz8wmg0s28pd.ap-south-1.rds.amazonaws.com"
 
 ingresses:

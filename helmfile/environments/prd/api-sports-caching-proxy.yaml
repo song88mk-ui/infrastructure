@@ -1,5 +1,4 @@
 env:
-  DEEPL_GLOSSARY_ID: "f83387be-2530-44fe-a428-a10c939ce360"
   MSSQL_HOST: "prd-song88-mssql-server.cdqkiuumgexn.ap-east-1.rds.amazonaws.com"
 
 ingresses:

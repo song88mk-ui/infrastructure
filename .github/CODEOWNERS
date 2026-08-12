@@ -1,0 +1,5 @@
+# Default owner for everything in the repo
+*          @FlyingCockatoo/devops
+
+# Database migrations
+/flyway/   @FlyingCockatoo/backend

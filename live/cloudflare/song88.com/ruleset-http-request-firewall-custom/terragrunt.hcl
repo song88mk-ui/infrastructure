@@ -16,7 +16,6 @@ terraform {
 inputs = {
   api_token  = local.api_token
   zone_id    = local.env_vars.locals.zone_id
-  account_id = null
 
   ruleset_name = "default"
   kind         = "zone"
@@ -50,40 +49,25 @@ inputs = {
     },
     {
       action      = "skip"
-      description = "Allow all requests to grafana"
-      enabled     = true
-      expression  = "(http.host wildcard \"grafana.*.song88.com\")"
-      logging = {
-        enabled = false
-      }
-      action_parameters = {
-        phases   = ["http_request_firewall_managed", "http_ratelimit", "http_request_sbfm"]
-        products = ["uaBlock", "bic", "securityLevel", "rateLimit", "zoneLockdown", "hot", "waf"]
-        ruleset  = "current"
-      }
-    },
-    {
-      action      = "skip"
-      description = "Cucumber UA Testing"
-      enabled     = true
-      expression  = "(http.user_agent contains \"Cucumber\")"
-      action_parameters = {
-        phases   = ["http_ratelimit", "http_request_firewall_managed", "http_request_sbfm"]
-        products = ["uaBlock", "bic", "hot", "securityLevel", "rateLimit", "waf", "zoneLockdown"]
-        ruleset  = "current"
-      }
-      logging = {
-        enabled = false
-      }
-    },
-    {
-      action      = "skip"
       description = "BG-Integration-Whitelist-Skip"
       enabled     = true
       expression  = "(starts_with(http.host, \"bg-feed-receiver-api\") and ip.src in $ip_list_bg_integration_svc)"
       action_parameters = {
         phases   = ["http_ratelimit", "http_request_firewall_managed", "http_request_sbfm"]
         products = ["bic", "zoneLockdown", "uaBlock", "hot", "securityLevel", "rateLimit", "waf"]
+        ruleset  = "current"
+      }
+      logging = {
+        enabled = true
+      }
+    },
+    {
+      action      = "skip"
+      description = "Allow BO access from third parties"
+      enabled     = true
+      expression  = "(http.host in {\"bo.stg.song88.com\" \"bo.song88.com\" \"metabase.prd.song88.com\" \"metabase.stg.song88.com\"} and ip.src in {85.115.157.176 3.108.12.97 149.174.254.31 84.46.186.198  172.216.211.21 43.225.113.205})"
+      action_parameters = {
+        phases   = ["http_request_firewall_managed", "http_ratelimit"]
         ruleset  = "current"
       }
       logging = {
@@ -104,15 +88,9 @@ inputs = {
     },
     {
       action      = "block"
-      description = "Block Backoffice & Metabase access by default"
+      description = "Block access to internal services by default"
       enabled     = true
-      expression  = "http.host in {\"bo.song88.com\" \"bo.stg.song88.com\" \"bo.dev.song88.com\" \"metabase.dev.song88.com\" \"metabase.stg.song88.com\" \"metabase.prd.song88.com\" }"
-    },
-    {
-      action      = "block"
-      description = "Block ArgoCD & Grafana access by default"
-      enabled     = true
-      expression  = "http.host in {\"argocd.prd.song88.com\" \"argocd.stg.song88.com\" \"argocd.dev.song88.com\" \"grafana.prd.song88.com\" \"grafana.stg.song88.com\" \"grafana.dev.song88.com\"}"
+      expression  = "(http.host wildcard r\"*.stg.song88.com\") or (http.host wildcard r\"*.dev.song88.com\") or (http.host wildcard r\"*.prd.song88.com\")"
     }
   ]
 }

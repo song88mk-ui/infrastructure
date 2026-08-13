@@ -61,8 +61,3 @@ variable "zone_id" {
   description = "The zone associated with this ruleset. One of zone_id or account_id must be present but not both."
   type        = string
 }
-
-variable "account_id" {
-  description = "The account associated with this ruleset. One of zone_id or account_id must be present but not both."
-  type        = string
-}

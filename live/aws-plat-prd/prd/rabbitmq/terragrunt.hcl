@@ -21,6 +21,8 @@ dependency "vpc" {
 inputs = {
   name = "main-broker"
 
+  host_instance_type = "mq.m7g.large"
+
   vpc_id         = dependency.vpc.outputs.vpc_id
   vpc_cidr_block = local.env_vars.locals.vpc_cidr
   subnet_ids     = [dependency.vpc.outputs.private_subnets[0]]

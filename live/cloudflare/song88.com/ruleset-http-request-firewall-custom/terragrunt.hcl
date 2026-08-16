@@ -14,8 +14,8 @@ terraform {
 }
 
 inputs = {
-  api_token  = local.api_token
-  zone_id    = local.env_vars.locals.zone_id
+  api_token = local.api_token
+  zone_id   = local.env_vars.locals.zone_id
 
   ruleset_name = "default"
   kind         = "zone"
@@ -67,8 +67,8 @@ inputs = {
       enabled     = true
       expression  = "(http.host in {\"bo.stg.song88.com\" \"bo.song88.com\" \"metabase.prd.song88.com\" \"metabase.stg.song88.com\"} and ip.src in {85.115.157.176 3.108.12.97 149.174.254.31 84.46.186.198  172.216.211.21 43.225.113.205})"
       action_parameters = {
-        phases   = ["http_request_firewall_managed", "http_ratelimit"]
-        ruleset  = "current"
+        phases  = ["http_request_firewall_managed", "http_ratelimit"]
+        ruleset = "current"
       }
       logging = {
         enabled = true

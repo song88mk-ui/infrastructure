@@ -39,7 +39,7 @@ grafana:
       client_id: "ref+awsssm://stg/song88/google/client-id?region=ap-south-1"
       client_secret: "ref+awsssm://stg/song88/google/client-secret?region=ap-south-1"
       scopes: openid email profile
-      role_attribute_path: contains('["ksideris@song88.com","michel@song88.com"]', email) && 'Admin' || 'Editor'
+      role_attribute_path: contains('["ksideris@song88.com","michel@song88.com","kbrillante@song88.com"]', email) && 'Admin' || 'Editor'
       role_attribute_strict: true
       skip_org_role_sync: true
       allowed_domains: song88.com

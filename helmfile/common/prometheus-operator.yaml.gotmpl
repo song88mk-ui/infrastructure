@@ -109,6 +109,62 @@ grafana:
     auth:
       oauth_allow_insecure_email_lookup: true # Allows to merge accounts from different OAuth providers
 
+additionalPrometheusRulesMap:
+  mongodb-rules:
+    groups:
+      - name: mongodb
+        rules:
+          - alert: MongodbDown
+            expr: mongodb_up == 0
+            for: 5m
+            labels:
+              severity: critical
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: MongoDB exporter target {{`{{ $labels.instance }}`}} is down
+              description: "mongodb_exporter has not been reachable for 5 minutes. Either the exporter or the underlying mongod is down."
+          - alert: MongodbReplsetNoPrimary
+            expr: absent(mongodb_rs_members_state{member_state="PRIMARY"})
+            for: 5m
+            labels:
+              severity: critical
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: MongoDB replica set has no PRIMARY
+              description: "No replica set member is reporting state PRIMARY. Writes are likely failing."
+          - alert: MongodbReplsetMemberUnhealthy
+            expr: mongodb_rs_members_health == 0
+            for: 5m
+            labels:
+              severity: critical
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: MongoDB replica set member {{`{{ $labels.member_idx }}`}} is unhealthy
+              description: "replSetGetStatus reports this member as unhealthy for 5 minutes."
+          - alert: MongodbReplicationLagHigh
+            expr: (mongodb_rs_members_optimeDate{member_state="PRIMARY"} - on(rs_nm) group_right() mongodb_rs_members_optimeDate{member_state="SECONDARY"}) > 300000
+            for: 10m
+            labels:
+              severity: warning
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: MongoDB replica set member {{`{{ $labels.member_idx }}`}} is lagging
+              description: "Secondary is more than 5 minutes behind the primary's oplog for 10 minutes."
+          - alert: MongodbTooManyConnections
+            expr: mongodb_ss_connections{conn_type="current"} / ignoring(conn_type) mongodb_ss_connections{conn_type="available"} > 0.8
+            for: 10m
+            labels:
+              severity: warning
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: MongoDB on {{`{{ $labels.instance }}`}} is close to max connections
+              description: "Current connections have exceeded 80% of the configured maximum for 10 minutes."
+
 prometheusOperator:
   kubeletService:
     enabled: false

@@ -75,7 +75,7 @@ CACHE_TYPE_DYNAMIC_TRANSLATION = 7
 PRELOAD_BATCH_SIZE = 500
 
 SOURCE_LANGUAGE_ID = "EN"
-TARGET_LANGUAGES = ["ZH"]
+TARGET_LANGUAGES = ["ZH_HANS"]
 
 FETCH_LIMIT = 1000
 MAX_TEXT_LEN = 250  # TARGET_TEXT_* columns are NVARCHAR(250)
@@ -95,7 +95,7 @@ Use terminology commonly used by betting websites.
 """
 
 TARGET_COLUMN_MAP: dict[str, str] = {
-    "ZH": "TARGET_TEXT_ZH",
+    "ZH_HANS": "TARGET_TEXT_ZH",
     "ES": "TARGET_TEXT_ES",
     "FR": "TARGET_TEXT_FR",
 }
@@ -210,7 +210,7 @@ def fetch_sources(conn) -> list[SourceRow]:
             string_id=row[0],
             source_text=str(row[1]).strip(),
             targets={
-                "ZH": str(row[2] or "").strip(),
+                "ZH_HANS": str(row[2] or "").strip(),
                 "ES": str(row[3] or "").strip(),
                 "FR": str(row[4] or "").strip(),
             },

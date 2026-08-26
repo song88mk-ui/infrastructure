@@ -164,6 +164,100 @@ additionalPrometheusRulesMap:
             annotations:
               summary: MongoDB on {{`{{ $labels.instance }}`}} is close to max connections
               description: "Current connections have exceeded 80% of the configured maximum for 10 minutes."
+  rabbitmq-rules:
+    groups:
+      - name: rabbitmq
+        rules:
+          - alert: RabbitmqDown
+            expr: up{job=~"rabbitmq.*"} == 0
+            for: 5m
+            labels:
+              severity: critical
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: RabbitMQ target {{`{{ $labels.instance }}`}} is down
+              description: "The rabbitmq_prometheus scrape target has not been reachable for 5 minutes."
+          - alert: RabbitmqMemoryAlarmActive
+            expr: rabbitmq_alarms_memory_used_watermark == 1
+            for: 2m
+            labels:
+              severity: critical
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: RabbitMQ on {{`{{ $labels.instance }}`}} has hit its memory high watermark
+              description: "The memory alarm has been active for 2 minutes. Publishers are being blocked cluster-wide."
+          - alert: RabbitmqDiskAlarmActive
+            expr: rabbitmq_alarms_free_disk_space_watermark == 1
+            for: 2m
+            labels:
+              severity: critical
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: RabbitMQ on {{`{{ $labels.instance }}`}} has hit its disk free space low watermark
+              description: "The free disk space alarm has been active for 2 minutes. Publishers are being blocked cluster-wide."
+          - alert: RabbitmqFileDescriptorsNearLimit
+            expr: (rabbitmq_process_open_fds / rabbitmq_process_max_fds) > 0.8
+            for: 10m
+            labels:
+              severity: warning
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: RabbitMQ on {{`{{ $labels.instance }}`}} is close to its file descriptor limit
+              description: "Open file descriptors have exceeded 80% of the configured max for 10 minutes."
+          - alert: RabbitmqUnackedMessagesHigh
+            expr: rabbitmq_queue_messages_unacked > 1000
+            for: 15m
+            labels:
+              severity: warning
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: RabbitMQ on {{`{{ $labels.instance }}`}} has a growing unacked message backlog
+              description: "More than 1000 messages have been unacked for 15 minutes, suggesting consumers are stuck, slow, or crash-looping before ack."
+          - alert: RabbitmqUnackedMessagesCritical
+            expr: rabbitmq_queue_messages_unacked > 3000
+            for: 15m
+            labels:
+              severity: critical
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: RabbitMQ on {{`{{ $labels.instance }}`}} has a critical unacked message backlog
+              description: "More than 3000 messages have been unacked for 15 minutes, suggesting consumers are stuck, slow, or crash-looping before ack."
+          - alert: RabbitmqReadyMessagesBacklog
+            expr: rabbitmq_queue_messages_ready > 1000
+            for: 15m
+            labels:
+              severity: warning
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: RabbitMQ on {{`{{ $labels.instance }}`}} has a growing ready-message backlog
+              description: "More than 1000 messages have been waiting for delivery for 15 minutes, suggesting consumers can't keep up with publish rate."
+          - alert: RabbitmqReadyMessagesBacklogCritical
+            expr: rabbitmq_queue_messages_ready > 5000
+            for: 15m
+            labels:
+              severity: critical
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: RabbitMQ on {{`{{ $labels.instance }}`}} has a critical ready-message backlog
+              description: "More than 5000 messages have been waiting for delivery for 15 minutes, suggesting consumers can't keep up with publish rate."
+          - alert: RabbitmqClusterPeerUnreachable
+            expr: rabbitmq_unreachable_cluster_peers_count > 0
+            for: 5m
+            labels:
+              severity: critical
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: RabbitMQ on {{`{{ $labels.instance }}`}} cannot reach one or more cluster peers
+              description: "At least one cluster peer has been unreachable for 5 minutes."
 
 prometheusOperator:
   kubeletService:

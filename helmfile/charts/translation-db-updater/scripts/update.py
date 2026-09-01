@@ -106,6 +106,22 @@ if unsupported:
         f"Unsupported target language(s) for TranslationCache2: {unsupported}."
     )
 
+# Language codes on the v1/cachepreload announce wire (Platform/OE LanguageCode).
+# DeepL codes stay internal to this script: the OE consumers' TranslationCache.Apply
+# accepts exactly ZH/ES/FR and silently drops anything else (GM-784: ZH-HANS announces
+# were ignored, so translations landed in SQL but never reached the caches or Mongo).
+ANNOUNCE_LANGUAGE_MAP: dict[str, str] = {
+    "ZH-HANS": "ZH",
+    "ES": "ES",
+    "FR": "FR",
+}
+
+unannounceable = [lang for lang in TARGET_LANGUAGES if lang not in ANNOUNCE_LANGUAGE_MAP]
+if unannounceable:
+    raise SystemExit(
+        f"No announce language mapping for target language(s): {unannounceable}."
+    )
+
 translator = deepl.Translator(DEEPL_API_KEY, server_url=DEEPL_API_URL)
 executor = ThreadPoolExecutor(max_workers=MAX_CONCURRENT)
 
@@ -584,7 +600,7 @@ def trigger_cache_preload(results: list[TranslationResult]) -> None:
     items = [
         {
             "stringId": result.string_id,
-            "targetLanguage": result.target_language,
+            "targetLanguage": ANNOUNCE_LANGUAGE_MAP[result.target_language],
             "targetText": result.target_text[:MAX_TEXT_LEN],
         }
         for result in results

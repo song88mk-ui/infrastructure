@@ -34,7 +34,7 @@ inputs = {
   engine_version       = "15.00"
   family               = "sqlserver-se-15.0"
   major_engine_version = "15.00"
-  instance_class       = "db.m5.large"
+  instance_class       = "db.m5.xlarge"
 
   allocated_storage     = 20
   max_allocated_storage = 80

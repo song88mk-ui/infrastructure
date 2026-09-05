@@ -1,0 +1,29 @@
+# vi: ft=yaml
+
+tagRegex: ".*-dev"
+environment: dev
+namespace: dev
+project: dev
+appPrefix: backoffice
+appsDir: corp-apps
+
+accountID: "{{ .Values.accountID }}"
+awsRegion: "{{ .Values.awsRegion }}"
+
+apps:
+  - name: bo-websocket-api
+    chart: platform-app
+    config: websocket-api
+  - name: bo-websocket-service
+    chart: platform-app
+    config: websocket-service
+  - name: bo-utility-service
+    chart: platform-app
+    config: utility-service
+  - name: bo-config-service
+    chart: platform-app
+    config: config-service
+  - name: bo-api
+    chart: platform-app
+  - name: bo-web
+    chart: platform-app

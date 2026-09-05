@@ -14,9 +14,11 @@ resource "aws_ecr_repository" "this" {
 }
 
 locals {
-  defaultDevImageCount  = 15
-  defaultProdImageCount = 30
-  defaultDevImagePrefix = "main-sha"
+  defaultDevImageCount  = 5
+  defaultStgImageCount  = 10
+  defaultProdImageCount = 20
+  defaultDevImagePrefix = "-dev"
+  defaultStgImagePrefix = "-stg"
 }
 
 resource "aws_ecr_lifecycle_policy" "this" {
@@ -32,7 +34,7 @@ resource "aws_ecr_lifecycle_policy" "this" {
       "description": "Retain at least ${lookup(each.value, "devImageCount", local.defaultDevImageCount)} images tagged as ${lookup(each.value, "devImagePrefix", local.defaultDevImagePrefix)}",
       "selection": {
         "tagStatus": "tagged",
-        "tagPatternList": ["${lookup(each.value, "devImagePrefix", local.defaultDevImagePrefix)}*"],
+        "tagPatternList": ["*${lookup(each.value, "devImagePrefix", local.defaultDevImagePrefix)}"],
         "countType": "imageCountMoreThan",
         "countNumber": ${lookup(each.value, "devImageCount", local.defaultDevImageCount)}
       },
@@ -42,12 +44,12 @@ resource "aws_ecr_lifecycle_policy" "this" {
     },
     {
       "rulePriority": 2,
-      "description": "Retain at least ${lookup(each.value, "prodImageCount", local.defaultProdImageCount)} images tagged as v*",
+      "description": "Retain at least ${lookup(each.value, "stgImageCount", local.defaultStgImageCount)} images tagged as ${lookup(each.value, "stgImagePrefix", local.defaultStgImagePrefix)}",
       "selection": {
         "tagStatus": "tagged",
-        "tagPatternList": ["v*"],
+        "tagPatternList": ["*${lookup(each.value, "stgImagePrefix", local.defaultStgImagePrefix)}"],
         "countType": "imageCountMoreThan",
-        "countNumber": ${lookup(each.value, "prodImageCount", local.defaultProdImageCount)}
+        "countNumber": ${lookup(each.value, "stgImageCount", local.defaultStgImageCount)}
       },
       "action": {
         "type": "expire"
@@ -55,12 +57,12 @@ resource "aws_ecr_lifecycle_policy" "this" {
     },
     {
       "rulePriority": 3,
-      "description": "Retain at least 5 images tagged as pr*",
+      "description": "Retain at least ${lookup(each.value, "prodImageCount", local.defaultProdImageCount)} images tagged as v*",
       "selection": {
         "tagStatus": "tagged",
-        "tagPatternList": ["pr-*"],
+        "tagPatternList": ["v*"],
         "countType": "imageCountMoreThan",
-        "countNumber": 5
+        "countNumber": ${lookup(each.value, "prodImageCount", local.defaultProdImageCount)}
       },
       "action": {
         "type": "expire"

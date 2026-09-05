@@ -4,7 +4,7 @@ environment: {{ .Environment.Name }}
 namespace: platform
 project: platform
 appPrefix: platform
-workflowId: "203388073"
+appsDir: platform
 
 accountID: "{{ .Values.accountID }}"
 awsRegion: "{{ .Values.awsRegion }}"
@@ -12,7 +12,6 @@ awsRegion: "{{ .Values.awsRegion }}"
 apps:
   - name: auth-api
     chart: platform-app
-    workflowId: "204794669"
   - name: job-forexeur
     chart: platform-app
   - name: job-resettlement
@@ -47,13 +46,10 @@ apps:
     chart: platform-app
   - name: web-assets
     chart: platform-app
-    workflowId: "214366460"
   - name: web
     chart: platform-app
-    workflowId: "214285389"
   - name: webprops-api
     chart: platform-app
-    workflowId: "232867564"
   - name: platform-api-ro
     chart: platform-app
     appImageOverride: platform-platform-api
@@ -61,35 +57,27 @@ apps:
     chart: platform-app
   - name: song88
     chart: platform-app
-    workflowId: "241337074"
   - name: web-af
     chart: platform-app
-    workflowId: "214285389"
 
   # Specific apps for OrientalGaming
   - name: og-web
     chart: platform-app
-    workflowId: "214285389"
     appImageOverride: platform-web
   - name: og-web-assets
     chart: platform-app
-    workflowId: "214366460"
     appImageOverride: platform-web-assets
   - name: og-song88
     chart: platform-app
-    workflowId: "241337074"
     appImageOverride: platform-song88
 
   # Specific apps for GamSnap
   - name: gamsnap-web
     chart: platform-app
-    workflowId: "214285389"
     appImageOverride: platform-web
   - name: gamsnap-web-assets
     chart: platform-app
-    workflowId: "214366460"
     appImageOverride: platform-web-assets
   - name: gamsnap-song88
     chart: platform-app
-    workflowId: "241337074"
     appImageOverride: platform-song88

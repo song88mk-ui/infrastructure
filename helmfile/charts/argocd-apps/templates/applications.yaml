@@ -8,18 +8,13 @@ metadata:
   labels:
     env: {{ $.Values.environment }}
   annotations:
-    {{- if .workflowId }}
-    ci.github.com/workflow-id: "{{ .workflowId }}"
-    {{- else if $.Values.workflowId }}
-    ci.github.com/workflow-id: "{{ $.Values.workflowId }}"
-    {{- end }}
     argocd-image-updater.argoproj.io/git-branch: main
     argocd-image-updater.argoproj.io/write-back-method: git
     {{- if .appImageOverride }}
-    argocd-image-updater.argoproj.io/write-back-target: "helmvalues:/argocd-image-updater/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml"
+    argocd-image-updater.argoproj.io/write-back-target: "helmvalues:/argocd-image-updater/{{ $.Values.appsDir }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml"
     argocd-image-updater.argoproj.io/image-list: "appimage={{ $.Values.accountID }}.dkr.ecr.{{ $.Values.awsRegion }}.amazonaws.com/{{ .appImageOverride }}"
     {{- else }}
-    argocd-image-updater.argoproj.io/write-back-target: "helmvalues:/argocd-image-updater/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml"
+    argocd-image-updater.argoproj.io/write-back-target: "helmvalues:/argocd-image-updater/{{ $.Values.appsDir }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml"
     argocd-image-updater.argoproj.io/image-list: "appimage={{ $.Values.accountID }}.dkr.ecr.{{ $.Values.awsRegion }}.amazonaws.com/{{ $.Values.appPrefix}}-{{ $app.config | default $app.name }}"
     {{- end }}
     argocd-image-updater.argoproj.io/appimage.update-strategy: {{ $.Values.updateStrategy | default "newest-build" }}
@@ -48,10 +43,10 @@ spec:
         - {{ $vf }}
         {{- end }}
         {{- else }}
-        - ../../apps/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml
-        - ../../argocd-image-updater/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml
+        - ../../apps/{{ $.Values.appsDir }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml
+        - ../../argocd-image-updater/{{ $.Values.appsDir }}/{{ $app.config | default $app.name }}/{{ $.Values.environment }}.yaml
         {{- range $vf := .valueFiles }}
-        - ../../apps/{{ $.Values.namespace }}/{{ $app.config | default $app.name }}/{{ $vf }}
+        - ../../apps/{{ $.Values.appsDir }}/{{ $app.config | default $app.name }}/{{ $vf }}
         {{- end}}
         {{- end}}
       {{- if .rawValuesContents }}

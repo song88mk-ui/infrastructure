@@ -1,0 +1,49 @@
+# vi: ft=yaml
+
+tagRegex: ".*-dev"
+environment: dev
+namespace: dev
+project: dev
+appPrefix: of
+appsDir: oddsfeed
+
+accountID: "{{ .Values.accountID }}"
+awsRegion: "{{ .Values.awsRegion }}"
+
+apps:
+  - name: of-rabbitmq-api
+    chart: platform-app
+    config: rabbitmq-api
+  - name: of-sportsbook-api
+    chart: platform-app
+    config: sportsbook-api
+  - name: of-betting-api
+    chart: platform-app
+    config: betting-api
+  - name: of-client-api
+    chart: platform-app
+    config: client-api
+  - name: of-platformclient-api
+    chart: platform-app
+    config: platformclient-api
+  - name: of-placement-service
+    chart: platform-app
+    config: placement-service
+  - name: of-cancellation-retry
+    chart: platform-app
+    config: cancellation-retry
+  - name: of-cancellation-service
+    chart: platform-app
+    config: cancellation-service
+  - name: of-job-resettlement
+    chart: platform-app
+    config: job-resettlement
+  - name: of-operator-service
+    chart: platform-app
+    config: operator-service
+  - name: of-settlement-service
+    chart: platform-app
+    config: settlement-service
+  - name: of-recovery-service
+    chart: platform-app
+    config: recovery-service

@@ -203,14 +203,6 @@ releases:
     needs:
       - argocd
 
-  - name: bg-apps-dev
-    namespace: dev
-    chart: charts/argocd-apps
-    version: 1.0.0
-    values:
-      - common/bg-apps.yaml.gotmpl
-      - environments/dev/bg-apps.yaml.gotmpl
-
   - name: platform-apps
     namespace: argocd
     chart: charts/argocd-apps
@@ -285,32 +277,6 @@ releases:
     values:
       - common/postgresql.yaml.gotmpl
       - environments/{{ .Environment.Name }}/postgresql.yaml.gotmpl
-
-  - name: mssql
-    namespace: dev
-    chart: simcube/mssqlserver-2022
-    version: 1.2.3
-    values:
-      - sapassword: YourStrong@Passw0rd123
-      - acceptEula:
-          value: "Y"
-      - persistence:
-          enabled: true
-          storageClass: "gp3"
-          dataSize: 20Gi
-      - resources:
-          requests:
-            cpu: 200m
-            memory: 3Gi
-          limits:
-            memory: 3Gi
-
-  - name: mongodb
-    namespace: dev
-    chart: bitnami/mongodb
-    version: 19.1.23
-    values:
-      - common/mongodb.yaml
 
   - name: db-proxy
     namespace: bet-genius-apps
@@ -389,3 +355,66 @@ releases:
     version: 1.21.1
     values:
       - common/cert-manager.yaml.gotmpl
+
+  # DEV environment
+  - name: bg-apps-dev
+    namespace: dev
+    chart: charts/argocd-apps
+    version: 1.0.0
+    values:
+      - common/bg-apps.yaml.gotmpl
+      - environments/dev/bg-apps.yaml.gotmpl
+
+  - name: platform-apps-dev
+    namespace: dev
+    chart: charts/argocd-apps
+    version: 1.0.0
+    values:
+      - environments/dev/platform-apps.yaml.gotmpl
+
+  - name: backoffice-apps-dev
+    namespace: dev
+    chart: charts/argocd-apps
+    version: 1.0.0
+    values:
+      - environments/dev/backoffice-apps.yaml.gotmpl
+
+  - name: oddsfeed-apps-dev
+    namespace: dev
+    chart: charts/argocd-apps
+    version: 1.0.0
+    values:
+      - environments/dev/oddsfeed-apps.yaml.gotmpl
+
+  - name: oev2-apps-dev
+    namespace: dev
+    chart: charts/argocd-apps
+    version: 1.0.0
+    values:
+      - environments/dev/oev2-apps.yaml.gotmpl
+
+  - name: mssql
+    namespace: dev
+    chart: simcube/mssqlserver-2022
+    version: 1.2.3
+    values:
+      - sapassword: YourStrong@Passw0rd123
+      - acceptEula:
+          value: "Y"
+      - persistence:
+          enabled: true
+          storageClass: "gp3"
+          dataSize: 20Gi
+      - resources:
+          requests:
+            cpu: 200m
+            memory: 3Gi
+          limits:
+            memory: 3Gi
+
+  - name: mongodb
+    namespace: dev
+    chart: bitnami/mongodb
+    version: 19.1.23
+    values:
+      - common/mongodb.yaml

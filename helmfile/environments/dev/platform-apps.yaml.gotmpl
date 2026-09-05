@@ -1,0 +1,62 @@
+# On dev we deploy every image that is built from a tag with the -dev suffix.
+---
+tagRegex: ".*-dev"
+namespace: "dev"
+project: dev
+appPrefix: platform
+appsDir: platform
+environment: dev
+
+accountID: "{{ .Values.accountID }}"
+awsRegion: "{{ .Values.awsRegion }}"
+
+apps:
+  - name: auth-api
+    chart: platform-app
+  - name: job-forexeur
+    chart: platform-app
+  - name: job-resettlement
+    chart: platform-app
+  - name: settlement-service
+    chart: platform-app
+  - name: operator-service
+    chart: platform-app
+  - name: placement-service
+    chart: platform-app
+  - name: provider-service
+    chart: platform-app
+  - name: rabbitmq-api
+    chart: platform-app
+  - name: sportsbook-api
+    chart: platform-app
+  - name: betting-api
+    chart: platform-app
+  - name: platform-api
+    chart: platform-app
+  - name: operator-api
+    chart: platform-app
+  - name: cashout-service
+    chart: platform-app
+  - name: cashoutstake-service
+    chart: platform-app
+  - name: websocket-api
+    chart: platform-app
+  - name: wallet-api
+    chart: platform-app
+  - name: cachesync-service
+    chart: platform-app
+  - name: web-assets
+    chart: platform-app
+  - name: web
+    chart: platform-app
+  - name: webprops-api
+    chart: platform-app
+  - name: platform-api-ro
+    chart: platform-app
+    appImageOverride: platform-platform-api
+  - name: clientplatform-api
+    chart: platform-app
+  - name: song88
+    chart: platform-app
+  - name: web-af
+    chart: platform-app

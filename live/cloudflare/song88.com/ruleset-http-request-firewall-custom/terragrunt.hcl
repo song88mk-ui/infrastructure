@@ -49,6 +49,19 @@ inputs = {
     },
     {
       action      = "skip"
+      description = "Allow access to the AF sites"
+      enabled     = true
+      expression  = "(http.host in {\"sb-af.stg.song88.com\" \"sb-af.song88.com\"} and ip.src in {3.1.243.244 46.137.204.242 46.137.204.242 52.76.231.168})"
+      logging = {
+        enabled = false
+      }
+      action_parameters = {
+        phases  = ["http_ratelimit", "http_request_firewall_managed", "http_request_sbfm"]
+        ruleset = "current"
+      }
+    },
+    {
+      action      = "skip"
       description = "BG-Integration-Whitelist-Skip"
       enabled     = true
       expression  = "(starts_with(http.host, \"bg-feed-receiver-api\") and ip.src in $ip_list_bg_integration_svc)"
@@ -65,7 +78,7 @@ inputs = {
       action      = "skip"
       description = "Allow BO access from third parties"
       enabled     = true
-      expression  = "(http.host in {\"bo.stg.song88.com\" \"bo.song88.com\" \"metabase.prd.song88.com\" \"metabase.stg.song88.com\"} and ip.src in {85.115.157.176 3.108.12.97 149.174.254.31 84.46.186.198  172.216.211.21 43.225.113.205 167.71.49.107})"
+      expression  = "(http.host in {\"bo.stg.song88.com\" \"bo.song88.com\" \"metabase.prd.song88.com\" \"metabase.stg.song88.com\"} and ip.src in {85.115.157.176 3.108.12.97 149.174.254.31 84.46.186.198  172.216.211.21 43.225.113.205 167.71.49.107 3.1.243.244 46.137.204.242 46.137.204.242 52.76.231.168})"
       action_parameters = {
         phases  = ["http_request_firewall_managed", "http_ratelimit"]
         ruleset = "current"

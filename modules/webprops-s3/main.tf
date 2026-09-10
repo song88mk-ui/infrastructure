@@ -37,7 +37,7 @@ module "webprops_role" {
   name = var.iam_role_name
 
   association_defaults = {
-    namespace       = "platform"
+    namespace       = var.namespace
     service_account = "webprops-api-sa"
   }
 

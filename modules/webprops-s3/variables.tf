@@ -31,3 +31,8 @@ variable "enable_bucket_versioning" {
 variable "tags" {
   type = map(string)
 }
+
+variable "namespace" {
+  type    = string
+  default = "platform"
+}

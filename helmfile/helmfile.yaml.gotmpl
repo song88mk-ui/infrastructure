@@ -50,6 +50,8 @@ repositories:
   url: https://valkey.io/valkey-helm/
 - name: jetstack
   url: https://charts.jetstack.io
+- name: sonarqube
+  url: https://SonarSource.github.io/helm-chart-sonarqube
 
 helmDefaults:
   verify: false
@@ -98,6 +100,15 @@ releases:
     values:
       - common/loki.yaml.gotmpl
       - environments/{{ .Environment.Name }}/loki.yaml
+
+  - name: sonarqube
+    installed: {{ eq .Environment.Name "stg" }}
+    namespace: sonarqube
+    chart: sonarqube/sonarqube
+    version: 2026.4.1
+    values:
+      - common/sonarqube.yaml.gotmpl
+      - environments/{{ .Environment.Name }}/sonarqube.yaml.gotmpl
 
   - name: tempo
     namespace: monitoring

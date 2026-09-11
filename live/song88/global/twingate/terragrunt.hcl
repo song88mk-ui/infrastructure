@@ -167,5 +167,17 @@ inputs = {
       remote_network_key = "stg"
       access_groups      = ["developers", "devops", "noc"]
     }
+    stg_liboasia_com = {
+      name               = "stg.liboasia.com"
+      address            = "stg.liboasia.com"
+      remote_network_key = "prd"
+      access_groups      = ["developers", "devops", "noc"]
+    }
+    liboasia_com = {
+      name               = "liboasia.com"
+      address            = "liboasia.com"
+      remote_network_key = "prd"
+      access_groups      = ["developers", "devops", "noc"]
+    }
   }
 }

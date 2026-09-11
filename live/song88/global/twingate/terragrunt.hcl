@@ -170,13 +170,37 @@ inputs = {
     stg_liboasia_com = {
       name               = "stg.liboasia.com"
       address            = "stg.liboasia.com"
-      remote_network_key = "prd"
+      remote_network_key = "stg"
       access_groups      = ["developers", "devops", "noc"]
     }
     liboasia_com = {
       name               = "liboasia.com"
       address            = "liboasia.com"
-      remote_network_key = "prd"
+      remote_network_key = "stg"
+      access_groups      = ["developers", "devops", "noc"]
+    }
+    zdassets_com = {
+      name               = "*.zdassets.com"
+      address            = "*.zdassets.com"
+      remote_network_key = "stg"
+      access_groups      = ["developers", "devops", "noc"]
+    }
+    web_core_windows_net = {
+      name               = "*.web.core.windows.net"
+      address            = "*.web.core.windows.net"
+      remote_network_key = "stg"
+      access_groups      = ["developers", "devops", "noc"]
+    }
+    azurefd_net = {
+      name               = "*.azurefd.net"
+      address            = "*.azurefd.net"
+      remote_network_key = "stg"
+      access_groups      = ["developers", "devops", "noc"]
+    }
+    liboasia_zendesk = {
+      name               = "liboasia.zendesk.com"
+      address            = "liboasia.zendesk.com"
+      remote_network_key = "stg"
       access_groups      = ["developers", "devops", "noc"]
     }
   }

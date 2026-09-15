@@ -83,55 +83,6 @@ inputs = {
       }]
     }
 
-    "platform_client_api_whitelist_prd" = {
-      name        = "platform_client_api_whitelist_prd",
-      description = "endpoint: client-api.song88.com"
-      kind        = "ip"
-
-      items = [{
-        ip      = "3.108.12.97"
-        comment = "KRJ-vpn-1"
-        }, {
-        ip      = "38.54.33.217"
-        comment = "KRJ-vpn-2"
-        }, {
-        ip      = "43.218.68.91"
-        comment = "KRJ-vpn-2"
-        }, {
-        ip      = "52.193.142.36"
-        comment = "KRJ-prod"
-        }, {
-        ip      = "2602:f72e:f:f211::/64"
-        comment = "elmer-ipv6"
-      }]
-    }
-
-    "platform_client_api_whitelist_stg" = {
-      name        = "platform_client_api_whitelist_stg",
-      description = "endpoint: client-api.stg.song88.com"
-      kind        = "ip"
-
-      items = [{
-        ip      = "3.108.12.97"
-        comment = "KRJ-vpn-1"
-        }, {
-        ip      = "38.54.33.217"
-        comment = "KRJ-vpn-2"
-        }, {
-        ip      = "43.218.68.91"
-        comment = "KRJ-vpn-3"
-        }, {
-        ip      = "52.69.200.239"
-        comment = "KRJ-stg"
-        }, {
-        ip      = "143.44.132.41"
-        comment = "elmer-test"
-        }, {
-        ip      = "2602:f72e:f:f211::/64"
-        comment = "elmer-ipv6"
-      }]
-    }
-
     "pp_clientplatapi" = {
       name        = "pp_clientplatapi",
       description = "Preprod Client Platform API IP List - HK"
@@ -140,15 +91,6 @@ inputs = {
       items = [{
         ip      = "202.164.191.254"
         comment = "FCIOffice2"
-        }, {
-        ip      = "103.139.80.34"
-        comment = "KRJ-Daryl"
-        }, {
-        ip      = "180.191.67.183"
-        comment = "Lino Home"
-        }, {
-        ip      = "112.198.253.208"
-        comment = "Song88 - Lino"
         }, {
         ip      = "13.230.149.183"
         comment = "W88"
@@ -358,6 +300,12 @@ inputs = {
         }, {
         ip      = "202.164.191.254"
         comment = "FCIOffice2"
+        }, {
+        ip      = "172.211.208.51"
+        comment = "Gamsnap IP (DEVOPS-228)"
+        }, {
+        ip      = "20.50.2.77"
+        comment = "Gamsnap IP (DEVOPS-228)"
       }]
     }
 

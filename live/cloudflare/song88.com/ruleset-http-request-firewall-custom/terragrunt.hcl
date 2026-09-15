@@ -23,18 +23,6 @@ inputs = {
 
   rules = [
     {
-      action      = "block"
-      description = "Client API IP Whitelist - prd"
-      enabled     = true
-      expression  = "(http.host eq \"client-api.song88.com\" and not ip.src in $platform_client_api_whitelist_prd)"
-    },
-    {
-      action      = "block"
-      description = "Client API IP Whitelist - stg"
-      enabled     = true
-      expression  = "(http.host eq \"client-api.stg.song88.com\" and not ip.src in $platform_client_api_whitelist_stg)"
-    },
-    {
       action      = "skip"
       description = "Allow our own egress IPs (AWS, twingate, etc)"
       enabled     = true
@@ -78,7 +66,7 @@ inputs = {
       action      = "skip"
       description = "Allow BO access from third parties"
       enabled     = true
-      expression  = "(http.host in {\"bo.stg.song88.com\" \"bo.song88.com\" \"metabase.prd.song88.com\" \"metabase.stg.song88.com\"} and ip.src in {85.115.157.176 3.108.12.97 149.174.254.31 84.46.186.198  172.216.211.21 43.225.113.205 167.71.49.107 3.1.243.244 46.137.204.242 46.137.204.242 52.76.231.168})"
+      expression  = "(http.host in {\"bo.stg.song88.com\" \"bo.song88.com\" \"metabase.prd.song88.com\" \"metabase.stg.song88.com\"} and ip.src in {85.115.157.176 149.174.254.31 84.46.186.198  172.216.211.21 43.225.113.205 167.71.49.107 3.1.243.244 46.137.204.242 46.137.204.242 52.76.231.168})"
       action_parameters = {
         phases  = ["http_request_firewall_managed", "http_ratelimit"]
         ruleset = "current"

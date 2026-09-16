@@ -225,17 +225,6 @@ releases:
       - argocd
       - argocd-projects
 
-  - name: oddsfeed-apps
-    namespace: argocd
-    chart: charts/argocd-apps
-    version: 1.0.0
-    values:
-      - common/oddsfeed-apps.yaml.gotmpl
-      - environments/{{ .Environment.Name }}/oddsfeed-apps.yaml.gotmpl
-    needs:
-      - argocd
-      - argocd-projects
-
   - name: checklist-apps
     namespace: argocd
     chart: charts/argocd-apps

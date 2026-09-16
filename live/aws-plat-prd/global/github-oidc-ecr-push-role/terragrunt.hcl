@@ -61,12 +61,10 @@ POLICY
 
   github_repositories = [
     "FlyingCockatoo/bet-genius:*",
-    "FlyingCockatoo/oddsengine:*",
     "FlyingCockatoo/platform-final:*",
     "FlyingCockatoo/Auth:*",
     "FlyingCockatoo/odds-engine-2:*",
     "FlyingCockatoo/platform-web:*",
-    "FlyingCockatoo/oddsfeed:*",
     "FlyingCockatoo/client-checklist:*",
     "FlyingCockatoo/backoffice-final:*",
     "FlyingCockatoo/internal.s88platform.com:*",

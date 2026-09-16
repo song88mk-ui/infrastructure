@@ -103,7 +103,6 @@ inputs = {
               "betgenius",
               "data",
               "oddsengine",
-              "oddsfeed",
               "oesr",
               "platform",
               "platformsr",

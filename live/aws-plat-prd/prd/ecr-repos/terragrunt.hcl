@@ -68,19 +68,6 @@ inputs = {
     "platform-web-af"     = {}
     # web utils
     "platform-webprops-api" = {}
-    # odds feed
-    "of-betting-api"          = {}
-    "of-client-api"           = {}
-    "of-rabbitmq-api"         = {}
-    "of-sportsbook-api"       = {}
-    "of-platformclient-api"   = {}
-    "of-placement-service"    = {}
-    "of-cancellation-retry"   = {}
-    "of-cancellation-service" = {}
-    "of-job-resettlement"     = {}
-    "of-operator-service"     = {}
-    "of-settlement-service"   = {}
-    "of-recovery-service"     = {}
     # client checklist
     "client-checklist-api" = {}
     "client-checklist-web" = {}

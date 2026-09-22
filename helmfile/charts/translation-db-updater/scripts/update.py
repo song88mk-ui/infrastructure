@@ -106,20 +106,28 @@ if unsupported:
         f"Unsupported target language(s) for TranslationCache2: {unsupported}."
     )
 
-# Language codes on the v1/cachepreload announce wire (Platform/OE LanguageCode).
-# DeepL codes stay internal to this script: the OE consumers' TranslationCache.Apply
-# accepts exactly ZH/ES/FR and silently drops anything else (GM-784: ZH-HANS announces
-# were ignored, so translations landed in SQL but never reached the caches or Mongo).
-ANNOUNCE_LANGUAGE_MAP: dict[str, str] = {
+# DeepL target code -> Platform/OE LanguageCode. DeepL codes stay internal to this
+# script; everything outside it speaks the platform code, so this map is applied at
+# EVERY boundary that leaves the script:
+#   1. the v1/cachepreload announce wire - OE's TranslationCache.Apply accepts exactly
+#      ZH/ES/FR and silently drops anything else (GM-784: ZH-HANS announces were
+#      ignored, so translations landed in SQL but never reached the caches or Mongo).
+#   2. the SportsbookStatic glossary lookup - that table is keyed by the platform code,
+#      so querying it with "ZH-HANS" returned zero rows and DeepL ran with no glossary
+#      at all from 2026-08-24 (GM-748 switched the target code) until this fix. Names
+#      were passed through untransliterated, which is why ~42k rows ended up with the
+#      Chinese column equal to the English source.
+# Adding a boundary without mapping here is the recurring bug in this file.
+PLATFORM_LANGUAGE_MAP: dict[str, str] = {
     "ZH-HANS": "ZH",
     "ES": "ES",
     "FR": "FR",
 }
 
-unannounceable = [lang for lang in TARGET_LANGUAGES if lang not in ANNOUNCE_LANGUAGE_MAP]
-if unannounceable:
+unmapped = [lang for lang in TARGET_LANGUAGES if lang not in PLATFORM_LANGUAGE_MAP]
+if unmapped:
     raise SystemExit(
-        f"No announce language mapping for target language(s): {unannounceable}."
+        f"No platform language mapping for target language(s): {unmapped}."
     )
 
 translator = deepl.Translator(DEEPL_API_KEY, server_url=DEEPL_API_URL)
@@ -315,6 +323,10 @@ _glossary_cache: dict[str, deepl.GlossaryInfo | None] = {}
 
 
 def fetch_glossary_entries(conn, target_lang: str) -> dict[str, str]:
+    # SportsbookStatic.LanguageCode holds the PLATFORM code ("ZH"), not DeepL's target
+    # code ("ZH-HANS"), so the DeepL code must be mapped before it reaches the query.
+    # Mapped here rather than at the call site so no future caller can miss it.
+    platform_lang = PLATFORM_LANGUAGE_MAP[target_lang]
     cursor = conn.cursor()
     cursor.execute(
         f"""
@@ -324,10 +336,15 @@ def fetch_glossary_entries(conn, target_lang: str) -> dict[str, str]:
           AND  Name IS NOT NULL AND LTRIM(RTRIM(Name)) <> ''
           AND  Value IS NOT NULL AND LTRIM(RTRIM(Value)) <> ''
         """,
-        target_lang,
+        platform_lang,
     )
     entries = {str(row[0]).strip(): str(row[1]).strip() for row in cursor.fetchall()}
-    log.info("glossary_entries_loaded", target_lang=target_lang, entry_count=len(entries))
+    log.info(
+        "glossary_entries_loaded",
+        target_lang=target_lang,
+        platform_lang=platform_lang,
+        entry_count=len(entries),
+    )
     return entries
 
 
@@ -337,7 +354,16 @@ def ensure_glossary(conn, target_lang: str) -> deepl.GlossaryInfo | None:
 
     entries = fetch_glossary_entries(conn, target_lang)
     if not entries:
-        log.warning("glossary_empty", target_lang=target_lang)
+        # Error, not warning: with no glossary DeepL still returns 200s, so every
+        # translation silently degrades (names pass through untransliterated) and
+        # nothing else in the pipeline reports a problem. This went unnoticed for
+        # roughly a month at WARN level.
+        log.error(
+            "glossary_empty",
+            target_lang=target_lang,
+            platform_lang=PLATFORM_LANGUAGE_MAP[target_lang],
+            table=STATIC_TABLE,
+        )
         _glossary_cache[target_lang] = None
         return None
 
@@ -600,7 +626,7 @@ def trigger_cache_preload(results: list[TranslationResult]) -> None:
     items = [
         {
             "stringId": result.string_id,
-            "targetLanguage": ANNOUNCE_LANGUAGE_MAP[result.target_language],
+            "targetLanguage": PLATFORM_LANGUAGE_MAP[result.target_language],
             "targetText": result.target_text[:MAX_TEXT_LEN],
         }
         for result in results

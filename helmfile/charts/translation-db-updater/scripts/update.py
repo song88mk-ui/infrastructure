@@ -628,6 +628,7 @@ def trigger_cache_preload(results: list[TranslationResult]) -> None:
             "stringId": result.string_id,
             "targetLanguage": PLATFORM_LANGUAGE_MAP[result.target_language],
             "targetText": result.target_text[:MAX_TEXT_LEN],
+            "sourceText": result.source_text[:MAX_TEXT_LEN],
         }
         for result in results
     ]

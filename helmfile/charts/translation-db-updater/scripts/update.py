@@ -56,9 +56,9 @@ DEEPL_API_URL = os.environ.get("DEEPL_API_URL", "").strip() or None
 SQL_CONNECTION_STRING = os.environ["SQL_CONNECTION_STRING"]
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "").strip().upper()
-if ENVIRONMENT not in {"STG", "PRD"}:
+if ENVIRONMENT not in {"STG", "PRD", "DEV"}:
     raise SystemExit(
-        f"ENVIRONMENT must be set to 'STG' or 'PRD' (got {ENVIRONMENT!r})"
+        f"ENVIRONMENT must be set to 'STG', 'PRD', or 'DEV' (got {ENVIRONMENT!r})"
     )
 
 CACHE_PRELOAD_URL = os.environ.get("CACHE_PRELOAD_URL")

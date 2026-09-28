@@ -113,12 +113,12 @@ def test_chunked_splits_without_losing_items(update):
 # trigger_cache_preload: the announce wire
 # --------------------------------------------------------------------------
 
-def _result(update, string_id="Te:1", target_language="ZH-HANS", target_text="弗盧米嫩塞"):
+def _result(update, string_id="Te:1", target_language="ZH-HANS", target_text="弗盧米嫩塞", source_text="Fluminense"):
     return update.TranslationResult(
         string_id=string_id,
         source_language="EN",
         target_language=target_language,
-        source_text="Fluminense",
+        source_text=source_text,
         target_text=target_text,
     )
 
@@ -171,6 +171,27 @@ def test_trigger_cache_preload_truncates_to_the_column_width(update, monkeypatch
     update.trigger_cache_preload([_result(update, target_text="a" * (update.MAX_TEXT_LEN + 50))])
 
     assert len(posts[0]["json"]["translations"][0]["targetText"]) == update.MAX_TEXT_LEN
+
+
+# GM-852: OE.Translation.Service scopes a MaTe update to the markets whose MaNa equals
+# this SrcTx, so the row's SOURCE_TEXT must travel with every announced item.
+def test_trigger_cache_preload_sends_source_text(update, monkeypatch):
+    posts = _capture_posts(update, monkeypatch)
+
+    update.trigger_cache_preload([_result(update, string_id="MaTe:16", source_text="Total Goals")])
+
+    item = posts[0]["json"]["translations"][0]
+    assert item["sourceText"] == "Total Goals"
+    assert item["targetText"] == "弗盧米嫩塞"  # not swapped with the source
+
+
+# SOURCE_TEXT is NVARCHAR(250) too, so the announce matches what SQL stores.
+def test_trigger_cache_preload_truncates_source_text_to_the_column_width(update, monkeypatch):
+    posts = _capture_posts(update, monkeypatch)
+
+    update.trigger_cache_preload([_result(update, source_text="s" * (update.MAX_TEXT_LEN + 50))])
+
+    assert posts[0]["json"]["translations"][0]["sourceText"] == "s" * update.MAX_TEXT_LEN
 
 
 def test_trigger_cache_preload_batches_by_preload_batch_size(update, monkeypatch):
@@ -291,6 +312,20 @@ def test_propagate_to_siblings_excludes_the_origin_and_filled_columns(update):
     assert f"{update.TARGET_COLUMN_MAP['ZH-HANS']} = N''" in sql
     assert "PROCESSED = 1" in sql
     assert params == ["弗盧米嫩塞", "Fluminense", "EN", "Te:1"]
+
+
+# Sibling results are announced too (main() sends translated + sibling_results), so each
+# must carry the full SOURCE_TEXT, not the 50-character excerpt written to the log.
+def test_propagate_to_siblings_results_carry_the_full_source_text(update):
+    long_source = "Total Goals Over/Under 2.5 - 1st Half (Regular Time Only)"
+    assert len(long_source) > 50
+    cursor = FakeCursor(rows_to_return=[[("MaTe:17",), ("MaTe:18",)]])
+    conn = FakeConnection(cursor)
+
+    propagated = update.propagate_to_siblings(conn, [_result(update, string_id="MaTe:16", source_text=long_source)])
+
+    assert [p.string_id for p in propagated] == ["MaTe:17", "MaTe:18"]
+    assert all(p.source_text == long_source for p in propagated)
 
 
 def test_propagate_to_siblings_does_nothing_for_no_results(update):

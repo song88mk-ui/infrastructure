@@ -1,0 +1,7 @@
+# Test-only dependencies. The runtime ones the CronJob installs (templates/cronjob.yaml)
+# are pinned to the same versions here; deepl and mssql_python are stubbed in conftest.py
+# and deliberately absent.
+pytest==9.1.1
+structlog==25.5.0
+tenacity==9.1.4
+requests==2.34.2

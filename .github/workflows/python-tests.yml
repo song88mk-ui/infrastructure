@@ -1,0 +1,40 @@
+name: Python tests
+
+on:
+  pull_request:
+    paths:
+      - 'helmfile/charts/translation-db-updater/scripts/**'
+      - '.github/workflows/python-tests.yml'
+
+  push:
+    branches:
+      - main
+    paths:
+      - 'helmfile/charts/translation-db-updater/scripts/**'
+      - '.github/workflows/python-tests.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  translation-db-updater:
+    runs-on: ubuntu-latest
+    name: translation-db-updater
+    defaults:
+      run:
+        working-directory: helmfile/charts/translation-db-updater/scripts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Setup Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13'
+
+      - name: Install test dependencies
+        run: pip install -r tests/requirements.txt
+
+      - name: Run tests
+        run: pytest tests -q

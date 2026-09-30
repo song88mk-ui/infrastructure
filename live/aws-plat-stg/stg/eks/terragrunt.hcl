@@ -101,7 +101,9 @@ inputs = {
             namespaces = [
               "bet-genius-apps",
               "betgenius",
+              "corp-apps",
               "data",
+              "dev",
               "oddsengine",
               "oesr",
               "platform",

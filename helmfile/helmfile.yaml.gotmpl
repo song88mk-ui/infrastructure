@@ -105,7 +105,7 @@ releases:
     installed: {{ eq .Environment.Name "stg" }}
     namespace: sonarqube
     chart: sonarqube/sonarqube
-    version: 2026.4.1
+    version: 2026.5.1000
     values:
       - common/sonarqube.yaml.gotmpl
       - environments/{{ .Environment.Name }}/sonarqube.yaml.gotmpl

@@ -76,6 +76,19 @@ inputs = {
       }
     },
     {
+      action      = "skip"
+      description = "Allow STG access from third parties"
+      enabled     = true
+      expression = "(http.host eq \"stg.song88.com\" or http.host wildcard \"*.stg.song88.com\") and ip.src in $prod_qtechapi_allow_list"
+      action_parameters = {
+        phases  = ["http_request_firewall_managed", "http_ratelimit"]
+        ruleset = "current"
+      }
+      logging = {
+        enabled = true
+      }
+    },
+    {
       action      = "block"
       description = "BG-Integration-Whitelist-Block"
       enabled     = true

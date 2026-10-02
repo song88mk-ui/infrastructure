@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "translation-db-updater.name" . }}
+  name: {{ include "translation-db-updater.fullname" . }}
   labels:
     {{- include "translation-db-updater.labels" . | nindent 4 }}
 spec:
@@ -46,7 +46,7 @@ spec:
                 - name: {{ $entry.envVariable }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ $secret.name }}
+                      name: {{ include "translation-db-updater.fullname" $ }}-{{ $secret.name }}
                       key: {{ $entry.key }}
                 {{- end }}
                 {{- end }}

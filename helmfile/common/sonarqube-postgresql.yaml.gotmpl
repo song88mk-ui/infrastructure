@@ -1,0 +1,26 @@
+fullnameOverride: sonarqube-postgresql
+type: postgresql
+mode: standalone
+version:
+  postgresql: "17"
+cluster:
+  instances: 1
+  enablePDB: false
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.11-202609281634-minimal-trixie@sha256:d78e771decf39071aa8bfb96684e8b7e6e5f3c6e00a945404249756db2c6c712
+  storage:
+    size: 5Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 512Mi
+  enableSuperuserAccess: false
+  initdb:
+    database: sonarqube
+    owner: sonarqube
+    encoding: UTF8
+    secret:
+      name: sonarqube-db
+backups:
+  enabled: false

@@ -52,6 +52,8 @@ repositories:
   url: https://charts.jetstack.io
 - name: sonarqube
   url: https://SonarSource.github.io/helm-chart-sonarqube
+- name: cnpg
+  url: https://cloudnative-pg.github.io/charts
 
 helmDefaults:
   verify: false
@@ -100,6 +102,21 @@ releases:
     values:
       - common/loki.yaml.gotmpl
       - environments/{{ .Environment.Name }}/loki.yaml
+
+  - name: cnpg
+    installed: {{ eq .Environment.Name "stg" }}
+    namespace: cnpg-system
+    chart: cnpg/cloudnative-pg
+    version: 0.29.1
+
+  - name: sonarqube-postgresql
+    namespace: sonarqube
+    chart: cnpg/cluster
+    version: 0.9.0
+    needs:
+      - cnpg-system/cnpg
+    values:
+      - common/sonarqube-postgresql.yaml.gotmpl
 
   - name: sonarqube
     installed: {{ eq .Environment.Name "stg" }}

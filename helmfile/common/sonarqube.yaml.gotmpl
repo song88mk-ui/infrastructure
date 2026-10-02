@@ -11,5 +11,13 @@ persistence:
 
 initSysctl:
   enabled: true
+
 initFs:
   enabled: true
+
+jdbcOverwrite:
+  enabled: true
+  jdbcUrl: "jdbc:postgresql://sonarqube-postgresql-rw.sonarqube.svc.cluster.local:5432/sonarqube"
+  jdbcUsername: sonarqube
+  jdbcSecretName: sonarqube-db
+  jdbcSecretPasswordKey: password

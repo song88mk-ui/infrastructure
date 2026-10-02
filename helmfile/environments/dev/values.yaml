@@ -2,6 +2,10 @@ accountID: "172065883315"
 
 awsRegion: ap-south-1
 
+# dev shares song88-stg-cluster with stg, so translation-db-updater needs a distinct
+# release name here to avoid clobbering stg's CronJob/ConfigMap/Secrets.
+translationDbUpdaterSuffix: "-dev"
+
 AdeytechBrands:
   - name: "SAB"
     client_id: "B8260C6B-3AB1-4123-8491-8B36B4D35E2D"

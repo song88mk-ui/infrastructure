@@ -306,7 +306,7 @@ releases:
     chart: charts/metabase-backup
     version: 1.0.0
 
-  - name: translation-db-updater
+  - name: translation-db-updater{{ index .Values "translationDbUpdaterSuffix" | default "" }}
     namespace: platform
     chart: charts/translation-db-updater
     version: 1.0.0

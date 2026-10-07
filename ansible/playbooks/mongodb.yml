@@ -55,3 +55,32 @@
         poll: 10
         interval: 10
       when: repl.changed == True
+
+    - name: Create systemd drop-in directory
+      ansible.builtin.file:
+        path: "/etc/systemd/system/mongod.service.d"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      tags:
+        - systemd
+
+    - name: Add restart-on-failure drop-in
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/mongod.service.d/override.conf"
+        content: |
+          [Service]
+          Restart=on-failure
+          RestartSec=10s
+        mode: "0644"
+      register: dropin
+      tags:
+        - systemd
+
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+      when: dropin.changed
+      tags:
+        - systemd

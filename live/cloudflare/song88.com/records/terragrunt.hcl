@@ -115,6 +115,20 @@ inputs = {
       proxied = false
     },
     {
+      name    = "_ca0536fa12e0d845514ed49c6e5ff21e.song88.com"
+      type    = "CNAME"
+      content = "_f1165e4f857c14f2e9da83fc9517b069.jkddzztszm.acm-validations.aws"
+      proxied = false
+      comment = "ACM DNS validation for *.song88.com (PRD, 525375333516 ap-east-1). Must stay DNS-only."
+    },
+    {
+      name    = "_32c2636d509dc993072eaabb4a71befb.stg.song88.com"
+      type    = "CNAME"
+      content = "_cd46df2dfe9a8f9bbfb44d1671f0e8dc.jkddzztszm.acm-validations.aws"
+      proxied = false
+      comment = "ACM DNS validation for *.stg.song88.com (STG, 172065883315 ap-south-1). Must stay DNS-only."
+    },
+    {
       name     = "song88.com"
       type     = "MX"
       content  = "alt1.aspmx.l.google.com"

@@ -11,6 +11,8 @@
 -- 0 Admin, 1 SportsbookClient, 2 PartnerManagement, 4 Translations, 10 AgentManagement and 99 hidden), copied
 -- verbatim except for PermissionId, which is generated (grants reference it per environment).
 -- Admin.Settlements.MessageSettlement is absent on STG as well (removed by V4__DisableMessageSettlementPermission).
+-- BO-107 adds SBC.OE.LeagueSorting (League Sorting under Sports Settings), which STG does not have yet
+-- (V14__AddLeagueSortingPermission adds it to STG and DEV, V13 to PRD).
 --
 -- Repeatable and idempotent: a row is inserted only when its ClaimType is missing, so renames or SortOrder changes
 -- made by operators are never overwritten. dbo.Permission has no unique constraint on ClaimType, so this guard is
@@ -65,6 +67,7 @@ INSERT INTO @seed (CategoryId, CategoryName, SubCategoryName, GroupName, Name, C
     (1, 'SportsbookClient', 'Clients', '', 'Clients Access', 'SBC.Clients.Access', 0, 20, 0, 0, 0),
     (1, 'SportsbookClient', 'Odds Engine', '', 'Odds Engine', 'SBC.OE', 0, 21, 1, 0, 2),
     (1, 'SportsbookClient', 'Odds Engine', 'Sports Settings', 'Sports Settings', 'SBC.OE.SportsSettings', 1, 25, 1, 0, 2),
+    (1, 'SportsbookClient', 'Odds Engine', 'Sports Settings', 'League Sorting', 'SBC.OE.LeagueSorting', 1, 26, 1, 0, 2),
     (1, 'SportsbookClient', 'Odds Engine', 'Market Settings', 'Market Sort Order', 'SBC.OE.MarketSetting.SortOrder', 1, 26, 1, 0, 2),
     (1, 'SportsbookClient', 'Odds Engine', 'Market Settings', 'Market Group', 'SBC.OE.MarketSetting.Group', 0, 27, 1, 0, 2),
     (1, 'SportsbookClient', 'Odds Engine', 'Market Settings', 'Selector Market Templates', 'SBC.OE.MarketSetting.SelectorTemplates', 1, 27, 1, 0, 2),

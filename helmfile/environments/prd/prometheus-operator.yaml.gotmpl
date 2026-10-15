@@ -28,6 +28,19 @@ prometheus:
           password_file: /etc/prometheus/secrets/rabbitmq-basic-auth/password
         static_configs:
           - targets: ['b-bfc99daf-fb92-4742-af20-8bcf6bd1f118.mq.ap-east-1.on.aws:16001']
+      - job_name: "rabbitmq-detailed"
+        scrape_interval: 60s
+        scheme: https
+        metrics_path: /metrics/detailed
+        params:
+          family:
+            - queue_coarse_metrics
+            - queue_consumer_count
+        basic_auth:
+          username_file: /etc/prometheus/secrets/rabbitmq-basic-auth/username
+          password_file: /etc/prometheus/secrets/rabbitmq-basic-auth/password
+        static_configs:
+          - targets: ['b-bfc99daf-fb92-4742-af20-8bcf6bd1f118.mq.ap-east-1.on.aws:16001']
 
 grafana:
   ingress:

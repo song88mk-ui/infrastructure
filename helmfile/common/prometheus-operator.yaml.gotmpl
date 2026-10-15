@@ -258,6 +258,40 @@ additionalPrometheusRulesMap:
             annotations:
               summary: RabbitMQ on {{`{{ $labels.instance }}`}} cannot reach one or more cluster peers
               description: "At least one cluster peer has been unreachable for 5 minutes."
+  oe-translation-rules:
+    groups:
+      - name: oe-translation
+        rules:
+          - alert: OETranslationQueueNoConsumers
+            expr: max by (queue) (rabbitmq_detailed_queue_consumers{job="rabbitmq-detailed", queue="q.oe.translation"}) == 0
+            for: 5m
+            labels:
+              severity: critical
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: q.oe.translation has had no consumers for 5 minutes
+              description: "OE.Translation.Service is not consuming. Check the translation-service pod logs (e.g. AMQP 406 PRECONDITION_FAILED channel close) and restart the deployment. Messages will keep piling up until a consumer reattaches."
+          - alert: OETranslationQueueBacklog
+            expr: max by (queue) (rabbitmq_detailed_queue_messages{job="rabbitmq-detailed", queue="q.oe.translation"}) > 10000
+            for: 15m
+            labels:
+              severity: warning
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: q.oe.translation depth is {{`{{ $value | humanize }}`}}
+              description: "More than 10,000 messages have been sitting in q.oe.translation for 15 minutes. A consumer is attached but falling behind (or stuck before ack). Team-name translations will go stale."
+          - alert: OETranslationQueueMetricsMissing
+            expr: absent(rabbitmq_detailed_queue_consumers{job="rabbitmq-detailed", queue="q.oe.translation"})
+            for: 15m
+            labels:
+              severity: warning
+              cluster: {{ .Values.clusterName }}
+              env: {{ .Environment.Name }}
+            annotations:
+              summary: No per-queue metrics for q.oe.translation
+              description: "The rabbitmq-detailed scrape returns nothing for q.oe.translation, so OETranslationQueueNoConsumers and OETranslationQueueBacklog cannot fire. Check the scrape target, credentials, and that the queue still exists."
 
 prometheusOperator:
   kubeletService:

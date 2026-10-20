@@ -119,7 +119,7 @@ def deploy_to_stage(gh, bump_part, target, initial_version, dry_run):
         raise click.ClickException(f"Tag {new_tag} already exists.")
 
     release(
-        gh, new_tag, sha, previous, prerelease=True, make_latest=False, dry_run=dry_run
+        gh, new_tag, sha, previous, prerelease=False, make_latest=False, dry_run=dry_run
     )
 
 

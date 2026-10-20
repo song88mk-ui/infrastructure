@@ -55,6 +55,7 @@ apps:
   - name: platform-api-ro
     chart: platform-app
     appImageOverride: platform-platform-api
+    useDefaultNamespace: true
   - name: clientplatform-api
     chart: platform-app
   - name: song88
@@ -66,20 +67,26 @@ apps:
   - name: og-web
     chart: platform-app
     appImageOverride: platform-web
+    useDefaultNamespace: true
   - name: og-web-assets
     chart: platform-app
     appImageOverride: platform-web-assets
+    useDefaultNamespace: true
   - name: og-song88
     chart: platform-app
     appImageOverride: platform-song88
+    useDefaultNamespace: true
 
   # Specific apps for GamSnap
   - name: gamsnap-web
     chart: platform-app
     appImageOverride: platform-web
+    useDefaultNamespace: true
   - name: gamsnap-web-assets
     chart: platform-app
     appImageOverride: platform-web-assets
+    useDefaultNamespace: true
   - name: gamsnap-song88
     chart: platform-app
     appImageOverride: platform-song88
+    useDefaultNamespace: true

@@ -4,7 +4,11 @@ kind: Application
 apiVersion: argoproj.io/v1alpha1
 metadata:
   name: {{ $app.name }}
+  {{- /* FIXME: Legacy configuration for previous deployments on the argocd namespace */}}
+  {{- if .useDefaultNamespace }}
+  {{- else }}
   namespace: {{ $.Values.namespace }}
+  {{- end }}
   labels:
     env: {{ $.Values.environment }}
   annotations:

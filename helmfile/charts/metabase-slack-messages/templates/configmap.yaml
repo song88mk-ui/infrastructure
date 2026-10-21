@@ -8,8 +8,6 @@ metadata:
 data:
   daily.py: |
     {{ .Files.Get "files/daily.py" | nindent 4 }}
-  monthly.py: |
-    {{ .Files.Get "files/monthly.py" | nindent 4 }}
 ---
 apiVersion: v1
 kind: ConfigMap

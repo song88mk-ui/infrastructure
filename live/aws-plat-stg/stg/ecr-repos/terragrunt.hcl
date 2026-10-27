@@ -31,6 +31,7 @@ inputs = {
     "oev2-job-lookup"          = {}
     "oev2-translation-job"     = {}
     "oev2-translation-service" = {}
+    "oev2-job-boostedoddscap"  = {}
     # platform apps (old platform)
     "platform-platform-api"             = {}
     "platform-betforwarder-service"     = {}

@@ -13,6 +13,8 @@
 -- Admin.Settlements.MessageSettlement is absent on STG as well (removed by V4__DisableMessageSettlementPermission).
 -- BO-107 adds SBC.OE.LeagueSorting (League Sorting under Sports Settings), which STG does not have yet
 -- (V14__AddLeagueSortingPermission adds it to STG and DEV, V13 to PRD).
+-- BO-128 moves SBC.OE.Config out of the hidden category 99 into category 1, so the Odds Engine Config tab can show
+-- again (V20__ShowOEConfigPermission on STG and DEV, V19 on PRD). The Monitoring rows stay in category 99.
 --
 -- Repeatable and idempotent: a row is inserted only when its ClaimType is missing, so renames or SortOrder changes
 -- made by operators are never overwritten. dbo.Permission has no unique constraint on ClaimType, so this guard is
@@ -108,7 +110,8 @@ INSERT INTO @seed (CategoryId, CategoryName, SubCategoryName, GroupName, Name, C
     (10, 'AgentManagement', '', '', 'Payments', 'AMS.Payments', 0, 8, 1, 0, 1),
     (99, 'SportsbookClient', 'Odds Engine', 'Monitoring', 'Match Type', 'SBC.OE.Monitoring.MatchType', 1, 22, 1, 0, 2),
     (99, 'SportsbookClient', 'Odds Engine', 'Monitoring', 'Outright', 'SBC.OE.Monitoring.Outright', 0, 23, 1, 0, 2),
-    (99, 'SportsbookClient', 'Odds Engine', 'Config', 'Config', 'SBC.OE.Config', 1, 24, 1, 0, 2);
+    -- BO-128: category 1 (visible), the STG export had 99 (see V20__ShowOEConfigPermission)
+    (1, 'SportsbookClient', 'Odds Engine', 'Config', 'Config', 'SBC.OE.Config', 1, 24, 1, 0, 2);
 
 INSERT INTO dbo.Permission
     (PermissionId, CategoryId, CategoryName, SubCategoryName, GroupName, Name, ClaimType, HasReadOnly, SortOrder, IsSubUser, UserGroupTemplateIdRef, Version)

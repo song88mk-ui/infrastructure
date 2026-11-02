@@ -92,7 +92,7 @@ releases:
   - name: metrics-server
     namespace: kube-system
     chart: metrics-server/metrics-server
-    version: 3.13.1
+    version: 3.14.0
     values: []
 
   - name: loki
@@ -122,7 +122,7 @@ releases:
     installed: {{ eq .Environment.Name "stg" }}
     namespace: sonarqube
     chart: sonarqube/sonarqube
-    version: 2026.5.1000
+    version: 2026.5.1003
     values:
       - common/sonarqube.yaml.gotmpl
       - environments/{{ .Environment.Name }}/sonarqube.yaml.gotmpl
@@ -137,7 +137,7 @@ releases:
   - name: external-dns-cloudflare
     namespace: kube-system
     chart: external-dns/external-dns
-    version: 1.20.0
+    version: 1.23.0
     values:
       - common/external-dns-cloudflare.yaml.gotmpl
     needs:
@@ -163,7 +163,7 @@ releases:
   - name: fluent-bit
     namespace: kube-system
     chart: fluent/fluent-bit
-    version: 0.57.9
+    version: 0.58.3
     values:
       - common/fluent-bit.yaml.gotmpl
     needs:
@@ -173,7 +173,7 @@ releases:
   - name: aws-load-balancer-controller
     namespace: kube-system
     chart: eks/aws-load-balancer-controller
-    version: 3.1.0
+    version: 3.6.2
     values:
       - common/aws-load-balancer-controller.yaml.gotmpl
 
@@ -207,7 +207,7 @@ releases:
   - name: blackbox-exporter
     namespace: monitoring
     chart: prometheus/prometheus-blackbox-exporter
-    version: 11.5.0
+    version: 11.20.2
     values:
       - common/blackbox-exporter.yaml.gotmpl
       - environments/{{ .Environment.Name }}/blackbox-exporter.yaml
@@ -361,7 +361,7 @@ releases:
   - name: opencost
     namespace: monitoring
     chart: opencost/opencost
-    version: 2.5.26
+    version: 2.5.33
     values:
       - common/opencost.yaml.gotmpl
       - environments/{{ .Environment.Name }}/opencost.yaml.gotmpl
@@ -369,7 +369,7 @@ releases:
   - name: cert-manager
     namespace: cert-manager
     chart: jetstack/cert-manager
-    version: 1.21.1
+    version: v1.21.3
     values:
       - common/cert-manager.yaml.gotmpl
 

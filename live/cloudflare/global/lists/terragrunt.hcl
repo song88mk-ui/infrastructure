@@ -286,6 +286,9 @@ inputs = {
         }, {
         ip      = "13.70.36.216"
         comment = "vm-api4"
+        }, {
+        ip      = "143.44.192.213"
+        comment = "qtech-eazywin999"
       }]
     }
 

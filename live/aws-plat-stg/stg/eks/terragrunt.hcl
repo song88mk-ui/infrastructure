@@ -29,7 +29,7 @@ dependency "developers_role" {
 
 inputs = {
   name               = "${local.project_prefix}-${local.environment}-cluster"
-  kubernetes_version = "1.34"
+  kubernetes_version = "1.35"
   region             = local.aws_region
 
   endpoint_public_access                   = true
